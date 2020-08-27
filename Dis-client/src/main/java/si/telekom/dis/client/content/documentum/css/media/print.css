@@ -1,0 +1,51 @@
+/* These are internal styles that are suitable to print media only.
+
+   Note that there will be a corresponding class defined in screen.css
+   for each class in this file.
+*/
+
+.panesetPositioning
+{
+   position: static;
+}
+
+.pane-visible-Positioning
+{
+   position: static;
+}
+
+.pane-hidden-Positioning
+{
+   position: static;
+}
+
+.pane-scroll-Positioning
+{
+   position: static;
+}
+
+.pane-auto-Positioning
+{
+   position: static;
+}
+
+.unprintablePane-visible-Positioning
+{
+   display: none;
+}
+
+.unprintablePane-hidden-Positioning
+{
+   display: none;
+}
+
+.unprintablePane-scroll-Positioning
+{
+   display: none;
+}
+
+.unprintablePane-auto-Positioning
+{
+   display: none;
+}
+

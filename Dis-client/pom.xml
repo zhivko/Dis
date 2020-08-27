@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>si.telekom.dis</groupId>
+		<artifactId>Dis</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>Dis-client</artifactId>
+	<packaging>gwt-app</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>Dis-shared</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>Dis-shared</artifactId>
+			<version>${project.version}</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-dev</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.gwtbootstrap3</groupId>
+			<artifactId>gwtbootstrap3-extras</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.google.elemental2/elemental2-core -->
+		<dependency>
+			<groupId>com.google.elemental2</groupId>
+			<artifactId>elemental2-core</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.google.elemental2/elemental2-dom -->
+		<dependency>
+			<groupId>com.google.elemental2</groupId>
+			<artifactId>elemental2-dom</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>net.ltgt.gwt.maven</groupId>
+				<artifactId>gwt-maven-plugin</artifactId>
+				<configuration>
+					<moduleName>si.telekom.erender.webUi2.WebUi2</moduleName>
+					<moduleShortName>WebUi2</moduleShortName>
+					<failOnError>true</failOnError>
+					<!-- GWT compiler 2.8 requires 1.8, hence define sourceLevel here if 
+						you use a different source language for java compilation -->
+					<sourceLevel>1.8</sourceLevel>
+					<!-- Compiler configuration -->
+					<compilerArgs>
+						<!-- Ask GWT to create the Story of Your Compile (SOYC) (gwt:compile) -->
+						<arg>-compileReport</arg>
+						<arg>-XcompilerMetrics</arg>
+						<arg>-optimize</arg>
+						<arg>0</arg>
+						<arg>-style</arg>
+						<arg>PRETTY</arg>
+						<!-- <arg>-localWorkers</arg> -->
+						<!-- <arg>4</arg> -->
+					</compilerArgs>
+					<!-- DevMode configuration -->
+					<warDir>${project.build.directory}/${project.build.finalName}</warDir>
+					<classpathScope>compile+runtime</classpathScope>
+					<!-- URL(s) that should be opened by DevMode (gwt:devmode). -->
+					<startupUrls>
+						<startupUrl>WebUi2.html</startupUrl>
+					</startupUrls>
+					<includes>
+						<include>${project.basedir}/src/main/webapp/ViewerJS</include>
+					</includes>
+
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -1,0 +1,27 @@
+/* ######################################### start of widget style ############################################ */
+/*form properties*/
+
+/*widget control*/
+.widget-control {
+   text-align: right;
+}
+
+/*widget label in vertical box*/
+.widget-label-in-VBox {
+   padding-left: 5px;
+   padding-right: 0px;
+}
+
+/*widget in horizontal box*/
+.widget-in-HBox {
+   margin-left: 10px;
+   margin-right: 0px;
+}
+
+/*widget label in horizontal box*/
+.widget-label-in-HBox {
+   padding-left: 5px;
+   padding-right: 0px;
+}
+
+/********************** end of widget style ********************/

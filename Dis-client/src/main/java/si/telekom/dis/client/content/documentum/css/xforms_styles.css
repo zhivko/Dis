@@ -1,0 +1,108 @@
+start of widget style ********************/
+/*form properties*/
+.form {
+   font-family: "Trebuchet MS", Verdana, GillSans, Arial;
+   font-size: 11px
+}
+
+/*form title properties*/
+.form-title {
+   font-family: "Trebuchet MS", Verdana, GillSans, Arial;
+   color: #000;
+   font-size: 12px;
+   font-weight: bold
+}
+
+/*box properties*/
+.box {
+   font-family: "Trebuchet MS", Verdana, GillSans, Arial;
+   font-size: 11px;
+   white-space: nowrap
+}
+
+/*box label*/
+.box-label {
+   color: #000;
+   font-size: 12px;
+   font-weight: bold
+}
+
+/*widget properties*/
+.widget {
+   border: none
+}
+
+/*widget label*/
+.widget-label {
+   color: #333;
+   text-decoration: none;
+   font-size: 12px;
+   font-weight: bold;
+   border: none;
+
+}
+
+/*widget control*/
+.widget-control {
+   text-align: left;
+   vertical-align: top;
+   border: none;
+   white-space: nowrap;
+}
+
+/* WEBTOP-35437:- added for textwrap for multiline textfield */
+.textarea-control {
+   white-space: pre-wrap;
+}
+
+.widget-control input{
+    vertical-align: top;
+}
+
+/*widget in vertical box*/
+.widget-in-VBox {
+   margin-top: 5px
+}
+
+/*widget label in vertical box*/
+.widget-label-in-VBox {
+   width: 120px;   
+   padding-left: 0px;
+   padding-right: 5px;
+}
+
+/*widget in horizontal box*/
+.widget-in-HBox {
+   margin-left: 0px;
+   margin-right: 10px;
+}
+
+/*widget label in horizontal box*/
+.widget-label-in-HBox {
+   width: 120px;   
+   height: 100%;
+   padding-left: 0px;
+   padding-right: 5px;
+}
+
+
+/********************** end of widget style ********************/
+
+div.wait-background
+{
+   text-align: center;
+   position: absolute; 
+   z-index: 100
+}
+img.wait-image
+{
+}
+#id-wait-label
+{
+   display:block; 
+   text-align:center
+}
+
+.xforms-listbox-readonly-selected {
+    background-color:#316ac5;
+}

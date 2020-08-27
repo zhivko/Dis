@@ -1,0 +1,135 @@
+
+/* RTE toolbar background should look consistent with .modalnavbg */
+.rte_toolbar
+{
+	background-color: #C6C6C6;
+	cursor: default;
+}
+
+/* Should not inherit padding or width from other "#scrollingcontent" CSS selectors */
+#scrollingcontent .rte_toolbar div
+{
+   padding: 0px;
+   width: auto;
+}
+
+/* RTE menu positioning is absolute              */
+/* Menus also inherit from .menu in webforms.css */
+.rte_toolbar div.menu
+{
+	position: absolute; 
+	visibility: hidden; 
+	width: 34px;
+	border-width: 1px;
+	border-style: solid;
+	cursor: default;
+}
+
+
+/* RTE toolbar and menus are not displayed in printouts */
+@media print
+{
+	.rte_toolbar
+	{
+		display: none;
+	}
+	.rte_toolbar div.menu 
+	{
+		display: none;
+	}
+}
+
+/* RTE text buttons & menu items need padding to align with icons, should look consistent with .menu       */
+/* Buttons and menu items have mouseover and mousedown effects, should look consistent with .menuHighlight */
+.rte_textButton
+{
+	font-family: Trebuchet MS, Verdana, GillSans, Arial;
+	font-size: 11;
+	font-weight: bold;
+	color: black;
+	padding: 2px;
+	padding-left: 4px;
+	padding-right: 4px;
+}
+
+.rte_textButtonOver
+{
+	color: #333333;
+	background-color: #cccccc;
+}
+
+.rte_textButtonDown
+{
+	color: #222222;
+	background-color: #e0e0e0;
+}
+
+/* RTE spell checker dialog has a column of buttons separated by gaps,     */
+/* should not inherit padding from other "#scrollingcontent" CSS selectors */
+#scrollingcontent .rte_spellcheckButtons DIV
+{
+   margin: 0px 0px 2px 8px;
+   padding: 0px;
+}
+
+/* Gaps above and below button for "add to dictionary" are special-cased   */
+.rte_spellcheckButtons div#add
+{
+	margin-top: 14px;
+	margin-bottom: 16px;
+}
+
+/* Buttons should all fill the width of their containing DIV               */
+.rte_spellcheckButtons div button.button
+{
+   width: 100%;
+}
+
+/* RTE color palettes have swatches with borders and mouseover effects */
+TD.rte_paletteSwatch
+{
+	border: 1px solid #cccccc;
+	border-color: #cccccc #666666 #666666 #cccccc;
+}
+
+TD.rte_paletteSwatchOver
+{
+	border-color: white #999999 #999999 white;
+}
+
+TD.rte_paletteSwatchDown
+{
+	border-color: black #333333 #333333 black;
+}
+
+TD.rte_paletteCaption
+{
+	padding: 0px 4px;
+	border-top: 1px solid #cccccc;
+}
+
+.rte A:link
+{
+   color: blue; background: none; text-decoration: underline;
+}
+
+.rte A:visited
+{
+   color: blue; background: none; text-decoration: underline;
+}
+
+/* set the default font and size for the rich text editor */
+.rte
+{
+   font-family: Trebuchet MS, Verdana, GillSans, Arial;
+   /* The font size ensures there is a font set for the display and editing.  For some    */
+   /* reason this also fixes the problem where IE was not writing out the Font size=3 tag */
+   /* in some cases.  Mozilla does not obey this font-size in the editor but does in the  */
+   /* display.                                                                            */
+   font-size: 12px;
+}
+
+.rte P, .rte DIV
+{
+   margin: 0px;
+}
