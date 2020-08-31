@@ -5,9 +5,6 @@ https://github.com/mihaisdm/tools
 
 package si.telekom.dis.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.validation.constraints.NotNull;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -32,8 +29,6 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-import si.telekom.dis.shared.ExplorerService;
-import si.telekom.dis.shared.ExplorerServiceAsync;
 import si.telekom.dis.shared.LoginService;
 import si.telekom.dis.shared.LoginServiceAsync;
 

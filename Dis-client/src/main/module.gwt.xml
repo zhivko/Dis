@@ -57,7 +57,7 @@
 		<include name='/js/*.js' />
 	</public>
 
-  <stylesheet src='WebUi2.css'/>
+<!--   <stylesheet src='dis.css'/> -->
   <!-- <script src='js/theme.js'/> -->
 
 </module>
