@@ -1,0 +1,6 @@
+<module>
+  <inherits name='com.google.gwt.user.User' />
+  <inherits name='com.tractionsoftware.gwt.user.DocumentStyle' />
+
+  <stylesheet src='autosize.css' />   
+</module>

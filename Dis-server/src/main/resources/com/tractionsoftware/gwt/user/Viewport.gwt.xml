@@ -1,0 +1,22 @@
+<module>
+  <inherits name='com.google.gwt.user.User'/>
+
+  <replace-with class="com.tractionsoftware.gwt.user.client.impl.ViewportImplStandard">
+    <when-type-is class="com.tractionsoftware.gwt.user.client.impl.ViewportImpl"/>
+  </replace-with>
+
+  <replace-with class="com.tractionsoftware.gwt.user.client.impl.ViewportImplIE">
+    <when-type-is class="com.tractionsoftware.gwt.user.client.impl.ViewportImpl"/>
+    <any>
+      <when-property-is name="user.agent" value="ie6"/>
+      <when-property-is name="user.agent" value="ie8"/>
+    </any>
+  </replace-with>
+
+  <source path='client'>
+    <include name='Viewport.java' />
+    <include name='impl/ViewportImpl*.java' />
+  </source>
+
+</module>
+

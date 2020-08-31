@@ -1,0 +1,25 @@
+<module>
+  <inherits name='com.google.gwt.user.User'/>
+
+  <replace-with class="com.tractionsoftware.gwt.user.client.animation.impl.SetOpacityImplStandard">
+    <when-type-is class="com.tractionsoftware.gwt.user.client.animation.impl.SetOpacityImpl"/>
+  </replace-with>
+
+  <replace-with class="com.tractionsoftware.gwt.user.client.animation.impl.SetOpacityImplIE6">
+    <when-type-is class="com.tractionsoftware.gwt.user.client.animation.impl.SetOpacityImpl"/>
+    <when-property-is name="user.agent" value="ie6"/>
+  </replace-with>
+
+  <replace-with class="com.tractionsoftware.gwt.user.client.animation.impl.SetOpacityImplIE8">
+    <when-type-is class="com.tractionsoftware.gwt.user.client.animation.impl.SetOpacityImpl"/>
+    <when-property-is name="user.agent" value="ie8"/>
+  </replace-with>
+
+  <source path='client'>
+    <include name='animation/*.java' />
+    <include name='animation/impl/*.java' />
+    <include name='util/RgbaColor.java' />
+  </source>  
+
+</module>
+

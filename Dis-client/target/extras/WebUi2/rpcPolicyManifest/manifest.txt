@@ -1,0 +1,5 @@
+# Module WebUi2
+# RPC service class, partial path of RPC policy file
+si.telekom.dis.shared.LoginService, 5CF5F6A56E6514E8040C239D95FEB631.gwt.rpc
+si.telekom.dis.shared.AdminService, 5C87CDAB7B4F499FF0A8C0F04B4412C1.gwt.rpc
+si.telekom.dis.shared.ExplorerService, 1F03AF91CE8E8858AD8D90620DBD111D.gwt.rpc

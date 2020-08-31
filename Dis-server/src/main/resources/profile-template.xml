@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<profile>
+	<roles>
+		<role id="id" name="name"></role>
+	</roles>
+	<states>
+		<state id="id" name="name"></state>
+	</states>
+	<tabs>
+		<tab id="id" name="name"></tab>
+	</tabs>
+	<attributes />
+</profile>

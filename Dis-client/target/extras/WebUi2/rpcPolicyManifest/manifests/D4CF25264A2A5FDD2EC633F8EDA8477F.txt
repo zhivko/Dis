@@ -1,0 +1,2 @@
+serviceClass: si.telekom.dis.shared.ExplorerService
+path: 1F03AF91CE8E8858AD8D90620DBD111D.gwt.rpc

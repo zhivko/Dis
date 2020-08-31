@@ -1,0 +1,150 @@
+﻿@font-face {
+	font-family: "TSLight";
+	src: url("font/ts/ts_light.woff") format('woff');
+}
+
+@font-face {
+	font-family: "myfont";
+	src: url("fonts/awesome-font-bold.woff") format('woff');
+	font-weight: bold;
+}
+
+@font-face {
+	font-family: "myfont";
+	src: url("fonts/awesome-font-boldoblique.woff") format('woff');
+	font-weight: bold;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: "myfont";
+	src: url("fonts/awesome-font-oblique.woff") format('woff');
+	font-style: italic;
+}
+
+#MenuPanel td {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+}
+
+/* #MenuPanel .gwt-StackPanelContent { */
+/* 	background-color: #EFEFEF; */
+/* } */
+
+#LogHtml {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-ToggleButton gwt-ToggleButton-up {
+	background: #009EE3;
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-ToggleButton gwt-ToggleButton-down {
+	background: gray;
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-StackPanelContent button {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+	background-color: #009ee3;
+}
+.gwt-StackPanelContent button:hover, .gwt-StackPanelContent button:focus {
+    background-color: #006da7;
+}
+
+.gwt-TextArea {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+}
+
+#MainPanel .com-google-gwt-user-cellview-client-CellTree-Style-cellTreeItemValue {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+#MainPanel button {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+#MainPanel .gwt-TextBox {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+#MainPanel .gwt-Label {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-PopupPanel .gwt-TextBox {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-PopupPanel .gwt-Label {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-PopupPanel .gwt-DateBox {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-PopupPanel .gwt-Button {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-PopupPanel .gwt-DateBox {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-ListBox {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-TextBox {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-SuggestBox {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+.gwt-PasswordTextBox {
+	font-family: TSLight, Arial, Helvetica, sans-serif;
+	text-align: left;
+}
+
+td {
+	font-family: TSLight, Arial, Helvetica, sans-serif !important; 
+	text-align: left;
+}
+
+.gwt-Button {
+		font-family: TSLight, Arial, Helvetica, sans-serif !important; 
+		text-align: center !important;
+}
+
+h1 {
+		font-family: TSLight, Arial, Helvetica, sans-serif !important;
+		font-weight: bolder; 
+		text-align: center !important;
+}
+
+input.gwt-DateBox {
+		font-family: TSLight, Arial, Helvetica, sans-serif !important;
+}
+
+input {
+		font-family: TSLight, Arial, Helvetica, sans-serif !important;
+}

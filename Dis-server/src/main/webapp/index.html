@@ -5,55 +5,104 @@
 <!-- with a "Quirks Mode" doctype is not supported. -->
 
 <html>
-  <head>
-    <meta charset=UTF-8>
+<head>
+<meta
+	http-equiv="content-type"
+	content="text/html; charset=UTF-8">
 
-    <!--                                                               -->
-    <!-- Consider inlining CSS to reduce the number of requested files -->
-    <!--                                                               -->
-    <link type="text/css" rel="stylesheet" href="Dis.css">
+<link
+	type="text/css"
+	rel="stylesheet"
+	href="telekom.css" />
+<link
+	type="text/css"
+	rel="stylesheet"
+	href="dis.css" />
+<link
+	rel="shortcut icon"
+	href="favicon.ico"
+	type="image/ico" />
 
-    <!--                                           -->
-    <!-- Any title is fine                         -->
-    <!--                                           -->
-    <title>Web Application Starter Project</title>
-    
-    <!--                                           -->
-    <!-- This script loads your compiled module.   -->
-    <!-- If you add any GWT meta tags, they must   -->
-    <!-- be added before this line.                -->
-    <!--                                           -->
-    <script src="DIS_webapp/DIS_webapp.nocache.js"></script>
-  </head>
+<!--                                           -->
+<!-- Any title is fine                         -->
+<!--                                           -->
+<title>DIS</title>
 
-  <!--                                           -->
-  <!-- The body can have arbitrary html, or      -->
-  <!-- you can leave the body empty if you want  -->
-  <!-- to create a completely dynamic UI.        -->
-  <!--                                           -->
-  <body>
+<!--                                           -->
+<!-- This script loads your compiled module.   -->
+<!-- If you add any GWT meta tags, they must   -->
+<!-- be added before this line.                -->
+<!--                                           -->
 
-    <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
-    <noscript>
-      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
-        Your web browser must have JavaScript enabled
-        in order for this application to display correctly.
-      </div>
-    </noscript>
+<!-- before your module(*.nocache.js) loading  -->
+<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif] -->
+<!--[if IE 7]>
+ 		<link rel="stylesheet" href="{your module name}/css/font-awesome-ie7.css">
+		<![endif] -->
+<!-- your module(*.nocache.js) loading 	 -->
 
-    <h1>Web Application Starter Project</h1>
 
-    <table align="center">
-      <tr>
-        <td colspan="2" style="font-weight:bold;">Please enter your name:</td>        
-      </tr>
-      <tr>
-        <td id="nameFieldContainer"></td>
-        <td id="sendButtonContainer"></td>
-      </tr>
-      <tr>
-        <td colspan="2" style="color:red;" id="errorLabelContainer"></td>
-      </tr>
-    </table>
-  </body>
+<script
+	type="text/javascript"
+	language="javascript"
+    <script src="WebUi2/WebUi2.nocache.js"></script>
+</head>
+
+<!--                                           -->
+<!-- The body can have arbitrary html, or      -->
+<!-- you can leave the body empty if you want  -->
+<!-- to create a completely dynamic UI.        -->
+<!--                                           -->
+<body>
+
+	<!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
+	<noscript>
+		<div
+			style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+			Your web browser must have JavaScript enabled in order for this
+			application to display correctly.</div>
+	</noscript>
+	<div id="loginPanel">
+		<h1>DIS</h1>
+
+		<table style="margin: 0 auto;">
+			<col width="130">
+			<col width="80">
+			<tr>
+				<td
+					colspan="1"
+					style="font-weight: bold;">Login name:</td>
+				<td id="loginNameFieldContainer"></td>
+			</tr>
+			<tr>
+				<td
+					colspan="1"
+					style="font-weight: bold;">Login password:</td>
+				<td id="loginPassFieldContainer"></td>
+			</tr>
+			<tr>
+				<td
+					colspan="2"
+					id="sendButtonContainer"
+					align="center"></td>
+			</tr>
+			<tr>
+				<td
+					colspan="2"
+					style="color: red;"
+					id="errorLabelContainer"></td>
+			</tr>
+		</table>
+		<div id="test"></div>
+	</div>
+	<div id="mainPanel"></div>
+
+	<iframe
+		src="javascript:''"
+		id="__gwt_historyFrame"
+		style="position: absolute; width: 0; height: 0; border: 0"></iframe>
+
+</body>
 </html>

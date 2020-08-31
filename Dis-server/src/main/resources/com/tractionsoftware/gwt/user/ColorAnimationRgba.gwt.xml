@@ -1,0 +1,27 @@
+
+<!-- This module will use a real rgba() value for browsers that support it. -->
+
+<module>
+  <inherits name='com.google.gwt.user.User'/>
+
+  <replace-with class="com.tractionsoftware.gwt.user.client.animation.impl.SetColorImplRgba">
+    <when-type-is class="com.tractionsoftware.gwt.user.client.animation.impl.SetColorImpl"/>
+  </replace-with>
+
+  <replace-with class="com.tractionsoftware.gwt.user.client.animation.impl.SetColorImplIE6">
+    <when-type-is class="com.tractionsoftware.gwt.user.client.animation.impl.SetColorImpl"/>
+    <when-property-is name="user.agent" value="ie6"/>
+  </replace-with>
+
+  <replace-with class="com.tractionsoftware.gwt.user.client.animation.impl.SetColorImplIE8">
+    <when-type-is class="com.tractionsoftware.gwt.user.client.animation.impl.SetColorImpl"/>
+    <when-property-is name="user.agent" value="ie8"/>
+  </replace-with>
+
+  <source path='client'>
+    <include name='animation/*.java' />
+    <include name='animation/impl/*.java' />
+    <include name='util/RgbaColor.java' />
+  </source>  
+
+</module>
