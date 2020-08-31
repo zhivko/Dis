@@ -149,8 +149,8 @@
 		<!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/sqljdbc4 -->
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
-			<artifactId>jdbc</artifactId>
-			<version>1.2</version>
+			<artifactId>mssql-jdbc</artifactId>
+			<version>8.4.1.jre14</version>
 		</dependency>
 
 
