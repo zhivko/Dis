@@ -1,2 +1,0 @@
-serviceClass: si.telekom.dis.shared.LoginService
-path: 5CF5F6A56E6514E8040C239D95FEB631.gwt.rpc

@@ -1,2 +1,0 @@
-serviceClass: si.telekom.dis.shared.AdminService
-path: 5C87CDAB7B4F499FF0A8C0F04B4412C1.gwt.rpc
