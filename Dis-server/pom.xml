@@ -63,6 +63,17 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
 		</dependency>
+
+
+
+
+
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
 		<dependency>
 			<groupId>javax.mail</groupId>
@@ -117,10 +128,9 @@
 			<version>2.6</version>
 		</dependency>
 
-		<!-- END Documentum Dependencies -->
 
-		<!-- https://mvnrepository.com/artifact/net.sf.saxon/Saxon-HE -->
-		<!-- https://mvnrepository.com/artifact/net.sf.saxon/Saxon-HE -->
+
+
 		<dependency>
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>Saxon-HE</artifactId>
@@ -140,14 +150,6 @@
 		</dependency>
 
 
-		<!-- jersey dependencies START -->
-		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.containers/jersey-container-servlet-core -->
-		<!-- https://mvnrepository.com/artifact/com.sun.jersey/jersey-bundle -->
-		<!-- <dependency> -->
-		<!-- <groupId>com.sun.jersey</groupId> -->
-		<!-- <artifactId>jersey-bundle</artifactId> -->
-		<!-- <version>1.19.4</version> -->
-		<!-- </dependency> -->
 
 
 		<dependency>
@@ -269,35 +271,13 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>org.dominokit.jackson</groupId> -->
-		<!-- <artifactId>jackson-apt</artifactId> -->
-		<!-- <version>1.0-SNAPSHOT</version> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>org.dominokit.jackson</groupId> -->
-		<!-- <artifactId>jackson-apt-processor</artifactId> -->
-		<!-- <version>1.0-SNAPSHOT</version> -->
-		<!-- <scope>provided</scope> -->
-		<!-- </dependency> -->
+
+
 
 		<dependency>
 			<groupId>org.simplejavamail</groupId>
 			<artifactId>outlook-message-parser</artifactId>
 			<version>1.5.0</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/com.google.elemental2/elemental2-core -->
-		<dependency>
-			<groupId>com.google.elemental2</groupId>
-			<artifactId>elemental2-core</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.google.elemental2/elemental2-dom -->
-		<dependency>
-			<groupId>com.google.elemental2</groupId>
-			<artifactId>elemental2-dom</artifactId>
-			<version>1.0.0</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api -->
@@ -333,36 +313,6 @@
 			<version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-core/target/docx4j-core-8.1.5-SNAPSHOT.jar</systemPath> 
 			</dependency> -->
 
-		<!-- https://mvnrepository.com/artifact/com.googlecode.gwt-crypto/gwt-crypto -->
-		<dependency>
-			<groupId>com.googlecode.gwt-crypto</groupId>
-			<artifactId>gwt-crypto</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.gwtbootstrap3</groupId>
-			<artifactId>gwtbootstrap3-extras</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.github.gwtmaterialdesign</groupId>
-			<artifactId>gwt-material</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.gwtmaterialdesign</groupId>
-			<artifactId>gwt-material-themes</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.gwtbootstrap3</groupId>
-			<artifactId>gwtbootstrap3</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-
 		<dependency>
 			<groupId>com.oracle</groupId>
 			<artifactId>ojdbc7</artifactId>
@@ -380,6 +330,7 @@
 			<version>5.5.4</version>
 		</dependency>
 
+
 		<!-- https://mvnrepository.com/artifact/com.cloudhopper.proxool/proxool -->
 		<!-- <dependency> -->
 		<!-- <groupId>com.cloudhopper.proxool</groupId> -->
@@ -393,16 +344,6 @@
 			<version>0.8.3</version>
 		</dependency>
 
-
-
-
-		<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
-		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>pdfbox</artifactId>
-			<version>2.0.19</version>
-		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
@@ -411,44 +352,12 @@
 			<type>pom</type>
 		</dependency>
 
+
 		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parsers</artifactId>
 			<version>1.24.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.bouncycastle</groupId>
-					<artifactId>bcmail-jdk15on</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.bouncycastle</groupId>
-					<artifactId>bcprov-jdk15on</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcmail-jdk16 -->
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcmail-jdk16</artifactId>
-			<version>1.46</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk16 -->
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk16</artifactId>
-			<version>1.46</version>
-		</dependency>
-
-
-
-
-		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
-			<version>1.18</version>
 		</dependency>
 
 

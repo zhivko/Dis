@@ -62,7 +62,7 @@
 				<groupId>net.ltgt.gwt.maven</groupId>
 				<artifactId>gwt-maven-plugin</artifactId>
 				<configuration>
-					<moduleName>si.telekom.dis.client.WebUi2</moduleName>
+					<moduleName>si.telekom.dis.WebUi2</moduleName>
 					<moduleShortName>WebUi2</moduleShortName>
 					<failOnError>true</failOnError>
 					<!-- GWT compiler 2.8 requires 1.8, hence define sourceLevel here if 
