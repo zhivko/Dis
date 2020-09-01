@@ -40,6 +40,7 @@
 					<launcherDir>${project.build.directory}/gwt/launcherDir</launcherDir>
 				</configuration>
 			</plugin>
+			
 		</plugins>
 		<pluginManagement>
 			<plugins>
