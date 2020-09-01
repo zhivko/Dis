@@ -84,7 +84,7 @@ public class MyCellTree<T> extends CellTree {
 					ExplorerPanel.explorerService.massDownloadContent(loginName, loginPass, list, new AsyncCallback<String>() {
 						@Override
 						public void onSuccess(String result) {
-							String url = GWT.getHostPageBaseURL() + "webui2/explorerServ?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
+							String url = GWT.getHostPageBaseURL() + "WebUi2/explorerServ?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
 									+ MainPanel.getInstance().loginPass + "&downloadZip=" + result;
 							String safeUriDocView = UriUtils.fromString(url).asString();
 							Window.open(URL.encode(safeUriDocView), "_self", "status=0,toolbar=0,menubar=0,location=0");

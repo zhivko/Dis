@@ -215,13 +215,13 @@ public class DocumentView extends WindowBox {
 
 	public static String getUrl(String r_object_id, String rendition) {
 		// TODO Auto-generated method stub
-		return GWT.getHostPageBaseURL() + "webui2/explorerServ?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
+		return GWT.getHostPageBaseURL() + "WebUi2/explorerServ?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
 				+ MainPanel.getInstance().loginPass + "&r_object_id=" + r_object_id + "&rendition=" + rendition;
 	}
 
 	public static String getWebOdfUrl(String r_object_id, String rendition) {
 		// TODO Auto-generated method stub
-		return GWT.getHostPageBaseURL() + "webui2/explorerServ?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
+		return GWT.getHostPageBaseURL() + "WebUi2/explorerServ?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
 				+ MainPanel.getInstance().loginPass + "&r_object_id=" + r_object_id + "&rendition=" + rendition;
 	}
 
