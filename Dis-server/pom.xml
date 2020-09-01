@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -147,11 +146,13 @@
 		<!-- <version>6</version> -->
 		<!-- </dependency> -->
 		<!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/sqljdbc4 -->
+		<!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
-			<version>8.4.1.jre14</version>
+			<version>8.2.2.jre8</version>
 		</dependency>
+
 
 
 
@@ -309,12 +310,9 @@
 
 
 
-		<!-- <dependency> <groupId>org.docx4j</groupId> <artifactId>docx4j</artifactId> 
-			<version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-bundle/target/docx4j-bundle-8.1.5-SNAPSHOT-shaded.jar</systemPath> 
-			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>jaxb-Internal</artifactId> 
-			<version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-JAXB-Internal/target/docx4j-JAXB-Internal-8.1.5-SNAPSHOT.jar</systemPath> 
-			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>core</artifactId> 
-			<version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-core/target/docx4j-core-8.1.5-SNAPSHOT.jar</systemPath> 
+		<!-- <dependency> <groupId>org.docx4j</groupId> <artifactId>docx4j</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-bundle/target/docx4j-bundle-8.1.5-SNAPSHOT-shaded.jar</systemPath> 
+			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>jaxb-Internal</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-JAXB-Internal/target/docx4j-JAXB-Internal-8.1.5-SNAPSHOT.jar</systemPath> 
+			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>core</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-core/target/docx4j-core-8.1.5-SNAPSHOT.jar</systemPath> 
 			</dependency> -->
 
 		<dependency>
@@ -392,6 +390,80 @@
 			</resource>
 		</resources>
 
+		<plugins>
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<charset>ISO-8859-1</charset>
+					<mode>war</mode>
+					<path>/${appserver.context}</path>
+					<update>true</update>
+					<url>http://${appserver.server}:${appserver.port}/manager/text</url>
+					<warFile>${project.build.directory}/${project.build.finalName}.war</warFile>
+					<server>${appserver.server}</server>
+					<username>${appserver.username}</username>
+					<password>${appserver.password}</password>
+				</configuration>
+				<executions>
+					<execution>
+						<id>tomcat-run</id>
+						<goals>
+							<goal>exec-war-only</goal>
+						</goals>
+						<phase>deploy</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jvnet.jax-ws-commons</groupId>
+				<artifactId>jaxws-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<!-- Needed with JAXP 1.5 -->
+					<vmArgs>
+						<vmArg>-Djavax.xml.accessExternalSchema=all</vmArg>
+					</vmArgs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>generate-stubs0</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<xauthfile>${basedir}/src/main/resources/authFile</xauthfile>
+							<packageName>si.telekom.dis.server.jaxwsClient.catalogService</packageName>
+							<encoding>UTF-8</encoding>
+
+							<!-- <wsdlDirectory>${basedir}/src/wsdl</wsdlDirectory> -->
+							<!-- <wsdlFiles> -->
+							<!-- <wsdlFile>CatalogService_1_6_0.wsdl</wsdlFile> -->
+							<!-- </wsdlFiles> -->
+
+							<wsdlUrls>
+								<wsdlUrl>http://services.ts.telekom.si/services/common/base/v1/CatalogService/v/1.8.0?wsdl</wsdlUrl>
+							</wsdlUrls>
+
+							<keep>false</keep>
+							<portname>{http://telekom.si/services/common/base/v1}CatalogSoapBindingPort</portname>
+							<protocol>soap1.1</protocol>
+							<sourceDestDir>src/main/java</sourceDestDir>
+							<verbose>true</verbose>
+							<keep>false</keep>
+							<xdebug>true</xdebug>
+							<target>2.1</target>
+							<bindingFiles>
+								<bindingFile>${basedir}/src/remote-xjc/bindings-default.xjc</bindingFile>
+							</bindingFiles>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 
 		<pluginManagement>
 			<plugins>
@@ -453,8 +525,7 @@
 
 	<profiles>
 		<profile>
-			<!-- XXX: We want to exclude Dis-client from 'env-dev' profile, Maven 
-				forces us to make a 'env-prod' profile -->
+			<!-- XXX: We want to exclude Dis-client from 'env-dev' profile, Maven forces us to make a 'env-prod' profile -->
 			<id>env-prod</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
