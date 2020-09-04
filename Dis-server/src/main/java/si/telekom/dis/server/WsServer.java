@@ -1,8 +1,9 @@
 package si.telekom.dis.server;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -14,6 +15,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.websocket.CloseReason;
+import javax.websocket.CloseReason.CloseCodes;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -23,8 +26,6 @@ import javax.websocket.server.ServerEndpoint;
 
 import org.apache.log4j.Logger;
 
-import com.documentum.dmcl.impl.GetLoginHandler;
-
 @ServerEndpoint(value = "/ws")
 public class WsServer {
 
@@ -32,7 +33,7 @@ public class WsServer {
 
 	static HashMap<String, Session> sessions = new HashMap<String, Session>();
 	static HashMap<String, Instant> lastGetSessionTime = new HashMap<String, Instant>();
-	static int maxInactivityTimeSec = 10*60;
+	static int maxInactivityTimeSec = 10 * 60;
 
 	static {
 		timer.scheduleAtFixedRate(new TimerTask() {
@@ -43,20 +44,22 @@ public class WsServer {
 					for (String userLoginName : sessions.keySet()) {
 						Session session = sessions.get(userLoginName);
 						String data = "Ping";
-						ByteBuffer payload = ByteBuffer.wrap(data.getBytes());
-						session.getAsyncRemote().sendPing(payload);
-						SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-						session.getAsyncRemote().sendText("time=" + sdf.format(new Date()));
-						Instant now = Instant.now();
+						if (session.isOpen()) {
+							ByteBuffer payload = ByteBuffer.wrap(data.getBytes());
+							session.getAsyncRemote().sendPing(payload);
+							SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+							session.getAsyncRemote().sendText("time=" + sdf.format(new Date()));
+							Instant now = Instant.now();
 
-						Instant lastGetSession = lastGetSessionTime.get(userLoginName);
-						if (lastGetSession != null) {
-							Duration timeElapsed = Duration.between(lastGetSession, now);
-							if (timeElapsed.getSeconds() > maxInactivityTimeSec) {
-								session.getAsyncRemote().sendText("logout");
-								Logger.getLogger(this.getClass())
-										.warn(userLoginName + " inactivity time " + timeElapsed.getSeconds() + "s greater then: " + maxInactivityTimeSec + "s");
-								toremove.add(userLoginName);
+							Instant lastGetSession = lastGetSessionTime.get(userLoginName);
+							if (lastGetSession != null) {
+								Duration timeElapsed = Duration.between(lastGetSession, now);
+								if (timeElapsed.getSeconds() > maxInactivityTimeSec) {
+									session.getAsyncRemote().sendText("logout");
+									Logger.getLogger(this.getClass())
+											.warn(userLoginName + " inactivity time " + timeElapsed.getSeconds() + "s greater then: " + maxInactivityTimeSec + "s");
+									toremove.add(userLoginName);
+								}
 							}
 						}
 
@@ -69,10 +72,19 @@ public class WsServer {
 					// } catch (IllegalArgumentException e) {
 					// Logger.getLogger(this.getClass()).error(e);
 				} catch (Exception e) {
-					Logger.getLogger(this.getClass()).error(e);
+					StringWriter errors = new StringWriter();
+					e.printStackTrace(new PrintWriter(errors));
+					Logger.getLogger(this.getClass()).error(errors);
 				}
 
 				for (String toRemoveLoginName : toremove) {
+					if (sessions.get(toRemoveLoginName).isOpen())
+						try {
+							sessions.get(toRemoveLoginName).close(new CloseReason(CloseCodes.NO_STATUS_CODE, "inactivity"));
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					sessions.remove(toRemoveLoginName);
 				}
 			}
@@ -124,7 +136,7 @@ public class WsServer {
 						sessions.get(user).getAsyncRemote().sendText(message);
 					}
 				} else {
-					if(sessions.get(toUser)!=null)
+					if (sessions.get(toUser) != null)
 						sessions.get(toUser).getAsyncRemote().sendText(message);
 				}
 		} catch (Exception ex) {

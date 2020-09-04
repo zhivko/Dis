@@ -2,6 +2,6 @@ eclipse.preferences.version=1
 gwtMavenModuleName=si.telekom.dis.WebUi2
 gwtMavenModuleShortName=WebUi2
 jarsExcludedFromWebInfLib=
-lastWarOutDir=C\:/git/Dis/Dis-client/target/Dis-client-1.0-SNAPSHOT
+lastWarOutDir=/home/klemen/git/Dis/Dis-client/target/Dis-client-1.0-SNAPSHOT
 warSrcDir=src/main/webapp
 warSrcDirIsOutput=false

@@ -90,6 +90,7 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	
 	<modules>
 		<module>Dis-client</module>
 		<module>Dis-shared</module>

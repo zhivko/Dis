@@ -1,21 +1,30 @@
 package si.telekom.dis.server;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -26,6 +35,12 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -35,12 +50,17 @@ import org.simplejavamail.outlookmessageparser.OutlookMessageParser;
 import org.simplejavamail.outlookmessageparser.model.OutlookAttachment;
 import org.simplejavamail.outlookmessageparser.model.OutlookFileAttachment;
 import org.simplejavamail.outlookmessageparser.model.OutlookMessage;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.documentum.fc.client.IDfFormat;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.common.DfId;
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 import si.telekom.dis.shared.DocumentViewFileTypes;
 import si.telekom.dis.shared.ServerException;
@@ -52,11 +72,14 @@ import si.telekom.dis.shared.ServerException;
 // @RemoteServiceRelativePath("login")
 public class ExplorerServlet extends HttpServlet {
 
+	String loginName;
+	String loginPassword;
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String loginName = req.getParameter("loginName");
-		String loginPassword = req.getParameter("loginPassword");
+		loginName = req.getParameter("loginName");
+		loginPassword = req.getParameter("loginPassword");
 		String rObjectId = req.getParameter("r_object_id");
 		String rendition = req.getParameter("rendition");
 		String downloadZip = req.getParameter("downloadZip");
@@ -76,9 +99,8 @@ public class ExplorerServlet extends HttpServlet {
 
 		try {
 			baOs = new ByteArrayOutputStream();
-			
-			if(downloadZip!=null)
-			{
+
+			if (downloadZip != null) {
 				File f = new File(downloadZip);
 				FileInputStream fIS = new FileInputStream(f);
 
@@ -90,19 +112,19 @@ public class ExplorerServlet extends HttpServlet {
 				resp.setContentType("application/x-download");
 				resp.setHeader("Content-Disposition", "attachment; filename=" + "\"" + f.getName() + "\"");
 				resp.setStatus(200);
-				
+
 				ServletOutputStream out = resp.getOutputStream();
 				baOs.writeTo(out);
-				out.flush();				
-				
-				if(f.delete())
+				out.flush();
+
+				if (f.delete())
 					Logger.getLogger(this.getClass()).info("Delete temp zip file succeded.");
 				else
 					Logger.getLogger(this.getClass()).warn("Delete temp zip file succeded.");
-				
+
 				return;
 			}
-			
+
 			if (loginName == null)
 				throw new Exception("LoginName should not be null");
 			if (loginPassword == null)
@@ -191,6 +213,10 @@ public class ExplorerServlet extends HttpServlet {
 				} else {
 
 				}
+			} else if (rendition.equals("odt")) {
+				// make transformation odt fill in all custom fields
+				int id = Integer.valueOf(sysObj.getString("mob_template_id")).intValue();
+				bacontentStreamIs = makeSureAllFieldsExist(bacontentStreamIs, id);
 			}
 
 			baOs.write(IOUtils.toByteArray(bacontentStreamIs));
@@ -259,4 +285,179 @@ public class ExplorerServlet extends HttpServlet {
 		}
 		return false;
 	}
+
+	private ByteArrayInputStream makeSureAllFieldsExist(ByteArrayInputStream baIs, int templateId) {
+// @formatter:off			
+			String systemFields[] = {
+					"barcode", 
+					"komerc_version", 
+					"modify_date", 
+					"object_name", 
+					"object_name_first_part", 
+					"object_name_second_part", 
+					"r_object_id", 
+					"r_version_label", 
+					"subscription_inet_id", 
+					"type_id", 
+					"type_name" 
+			};
+// @formatter:on		
+		byte[] buffer = new byte[2048];
+		ZipEntry entry;
+		ZipInputStream zis = new ZipInputStream(baIs);
+		ByteArrayOutputStream output = null;
+		boolean changed = false;
+		HashMap<String, byte[]> files = new HashMap<String, byte[]>();
+
+		try {
+			while ((entry = zis.getNextEntry()) != null) {
+				if (entry.getName().equals("meta.xml")) {
+					ArrayList<String> systemFieldsAl = new ArrayList<String>(Arrays.asList(systemFields));
+
+					List<List<String>> fields = AdminServiceImpl.getInstance().getColIdsForTemplate(loginName, loginPassword, templateId, 0, -1);
+					ArrayList<String> allColIds = new ArrayList<String>();
+					for (List<String> list : fields) {
+						String col_id = list.get(0);
+						allColIds.add(col_id.toLowerCase());
+					}
+
+					output = new ByteArrayOutputStream();
+					int len = 0;
+					while ((len = zis.read(buffer)) > 0) {
+						output.write(buffer, 0, len);
+					}
+
+					ByteArrayInputStream is = new ByteArrayInputStream(output.toByteArray());
+
+					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+					factory.setNamespaceAware(true); // never forget this!
+					DocumentBuilder builder = factory.newDocumentBuilder();
+					Document doc = builder.parse(is);
+
+					XPathFactory xpathFac = XPathFactory.newInstance();
+					XPath xpath = xpathFac.newXPath();
+					xpath.setNamespaceContext(new OONamespaceContext());
+
+					// lets remove nodes that are not in col_ids
+					XPathExpression expr = xpath.compile("/office:document-meta/office:meta/meta:user-defined");
+					NodeList nodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+					Logger.getLogger(this.getClass()).info("Length: " + nodes.getLength());
+					for (int i = 0; i < nodes.getLength(); i++) {
+						Node n = nodes.item(i);
+						String attName = n.getAttributes().getNamedItem("meta:name").getNodeValue();
+						if (!(allColIds.contains(attName.toLowerCase()) || systemFieldsAl.contains(attName.toLowerCase()))) {
+							Logger.getLogger(this.getClass()).info("Doesn't contain: " + attName + " removing.");
+							n.getParentNode().removeChild(n);
+							changed = true;
+						}
+					}
+
+					// lets add nodes that are missing
+					for (String col_id : allColIds) {
+						XPathExpression expr1 = xpath.compile("/office:document-meta/office:meta/meta:user-defined[@meta:name='" + col_id + "']");
+						NodeList nodes1 = (NodeList) expr1.evaluate(doc, XPathConstants.NODESET);
+						if (nodes1.getLength() == 0) {
+							Logger.getLogger(this.getClass()).info("Doesn't contain: " + col_id + " adding field.");
+							Node newNode = nodes.item(0).cloneNode(true);
+							newNode.getAttributes().getNamedItem("meta:name").setNodeValue(col_id);
+							nodes.item(0).getParentNode().appendChild(newNode);
+							changed = true;
+
+							ByteArrayOutputStream ret = new ByteArrayOutputStream();
+							// XERCES 1 or 2 additionnal classes.
+							OutputFormat of = new OutputFormat("XML", "UTF-8", false);
+							// of.setPreserveSpace(true);
+							// of.setIndent(1);
+							// of.setIndenting(true);
+
+							// of.setDoctype(null,"users.dtd");
+							XMLSerializer serializer = new XMLSerializer(ret, of);
+							// As a DOM Serializer
+
+							serializer.asDOMSerializer();
+							serializer.serialize(doc.getDocumentElement());
+							ret.close();
+
+							entry.setMethod(ZipEntry.STORED);
+							entry.setCompressedSize(ret.toByteArray().length);
+							entry.setSize(ret.toByteArray().length);
+							CRC32 crc = new CRC32();
+							crc.update(ret.toByteArray());
+							entry.setCrc(crc.getValue());
+
+							files.put("meta.xml", ret.toByteArray());
+
+							changed = true;
+							break;
+						}
+					}
+					is.close();
+				}
+			}
+			
+			if (changed)
+			{
+				zis.close();
+				baIs.reset();
+				ZipInputStream zis2 = new ZipInputStream(baIs);
+				ByteArrayOutputStream baOs = saveZip2(zis2, files);
+				ByteArrayInputStream is = new ByteArrayInputStream(baOs.toByteArray());
+				baIs = is;
+			}
+			zis.close();
+			baIs.close();
+				
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		} finally {
+		}
+		baIs.reset();
+		return baIs;
+	}
+
+	private ByteArrayOutputStream saveZip2(ZipInputStream inZip, HashMap<String, byte[]> files) throws Exception {
+
+		ByteArrayOutputStream result = null;
+		ZipOutputStream outZip = null;
+		try {
+			result = new ByteArrayOutputStream();
+			outZip = new ZipOutputStream(result);
+
+			for (ZipEntry in; (in = inZip.getNextEntry()) != null;) {
+				ZipEntry out = null;
+				InputStream source = null;
+				for (String fileName : files.keySet()) {
+					if (in.getName().equals(fileName)) {
+						byte[] contentAsBytes = files.get(fileName);
+						out = new ZipEntry(in);
+
+						out.setMethod(ZipEntry.STORED);
+						out.setCompressedSize(contentAsBytes.length);
+						out.setSize(contentAsBytes.length);
+						CRC32 crc = new CRC32();
+						crc.update(contentAsBytes);
+						out.setCrc(crc.getValue());
+						source = new ByteArrayInputStream(contentAsBytes);
+						break;
+					} else {
+						Logger.getLogger(this.getClass()).info(in.getName());
+					}
+				}
+				if (out == null) {
+					out = in;
+					source = inZip;
+				}
+				outZip.putNextEntry(out);
+				IOUtils.copy(source, outZip); // Apache's Commons-IO
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			outZip.flush();
+			inZip.close();
+			outZip.close();
+		}
+		return result;
+	}
+
 }

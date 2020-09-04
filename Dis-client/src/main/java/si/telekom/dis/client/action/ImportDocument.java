@@ -606,7 +606,7 @@ public class ImportDocument extends WindowBox {
 			throws IOException, SerializationException {
 
 	//@formatter:off				
-		SafeUri safeUriUploadDoc = UriUtils.fromString(GWT.getHostPageBaseURL() + "webui2/uploadServlet?"
+		SafeUri safeUriUploadDoc = UriUtils.fromString(GWT.getHostPageBaseURL() + "WebUi2/uploadServlet?"
 				+ "loginName=" + MainPanel.getInstance().loginName
 				+ "&loginPassword=" + MainPanel.getInstance().loginPass
 				+ "&profileId=" + prof.id

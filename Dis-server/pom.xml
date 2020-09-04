@@ -154,7 +154,7 @@
 		</dependency>
 
 
-
+		<!-- jersey dependencies start -->
 
 
 		<dependency>
@@ -206,7 +206,6 @@
 
 		<!-- jersey dependencies END -->
 
-
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
 			<groupId>org.json</groupId>
@@ -214,11 +213,16 @@
 			<version>20190722</version>
 		</dependency>
 
+
+		<!-- jersey dependencies END -->
+
+
+
+
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.6</version>
 		</dependency>
 
 		<dependency>
@@ -340,11 +344,13 @@
 		<!-- <version>0.9.1</version> -->
 		<!-- </dependency> -->
 		<!-- https://mvnrepository.com/artifact/proxool/proxool -->
+		<!-- https://mvnrepository.com/artifact/com.cloudhopper.proxool/proxool -->
 		<dependency>
-			<groupId>proxool</groupId>
+			<groupId>com.cloudhopper.proxool</groupId>
 			<artifactId>proxool</artifactId>
-			<version>0.8.3</version>
+			<version>0.9.1</version>
 		</dependency>
+
 
 		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika -->
 		<dependency>
@@ -361,6 +367,7 @@
 			<artifactId>tika-parsers</artifactId>
 			<version>1.24.1</version>
 		</dependency>
+
 
 
 	</dependencies>
@@ -391,7 +398,7 @@
 		</resources>
 
 		<plugins>
-		
+
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
 				<artifactId>tomcat7-maven-plugin</artifactId>
@@ -416,8 +423,8 @@
 						<phase>deploy</phase>
 					</execution>
 				</executions>
-			</plugin>				
-		
+			</plugin>
+
 			<plugin>
 				<groupId>org.jvnet.jax-ws-commons</groupId>
 				<artifactId>jaxws-maven-plugin</artifactId>
@@ -431,7 +438,7 @@
 				<executions>
 					<execution>
 						<id>generate-stubs0</id>
-						<phase>process-resources</phase>
+						<phase>generate-sources</phase>
 						<goals>
 							<goal>wsimport</goal>
 						</goals>
@@ -481,6 +488,7 @@
 								<includes>
 									<include>**/dfc.properties</include>
 									<include>**/log4j.properties</include>
+									<include>**/config.xml</include>
 								</includes>
 								<filtering>true</filtering>
 							</resource>

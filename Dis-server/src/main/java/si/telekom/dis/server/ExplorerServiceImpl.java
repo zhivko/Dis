@@ -3,13 +3,11 @@ package si.telekom.dis.server;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -23,7 +21,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -83,7 +80,6 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.ocr.TesseractOCRConfig;
 import org.apache.tika.parser.pdf.PDFParserConfig;
 import org.apache.tika.sax.BodyContentHandler;
-import org.apache.xmlgraphics.xmp.Metadata;
 import org.json.JSONArray;
 import org.logicalcobwebs.proxool.ProxoolException;
 import org.logicalcobwebs.proxool.ProxoolFacade;
@@ -1419,9 +1415,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 									IDfTime time = new DfTime(date);
 									Logger.getLogger(this.getClass()).info("\t\t = '" + time.toString() + "'");
 									dfDocument.setTime(attName, time);
-								}
-								else
-								{
+								} else {
 									dfDocument.setTime(attName, null);
 								}
 							} else if (attr.domain_type.equals("5"))
@@ -1684,7 +1678,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	}
 
 	@Override
-	public List<List<String>> dqlLookup(String loginName, String password, String dql) throws ServerException {
+	public List<List<String>> dqlLookup(String loginName, String passwordEncrypted, String dql) throws ServerException {
 		ArrayList<List<String>> ret = new ArrayList<List<String>>();
 		if (dql.equals(""))
 			return ret;
@@ -1710,7 +1704,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			if (loginName.equals(AdminServiceImpl.superUserName))
 				userSession = AdminServiceImpl.getAdminSession();
 			else
-				userSession = AdminServiceImpl.getSession(loginName, password);
+				userSession = AdminServiceImpl.getSession(loginName, passwordEncrypted);
 
 			query.setDQL(dql);
 			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
@@ -2677,8 +2671,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return null;
 	}
 
-	public String importDocument(String loginName, String password, String folderRObjectId, String profileId, Map<String, List<String>> attributes,
-			Map<String, List<String>> rolesUsers, byte[] base64Content, String format) throws ServerException {
+	public synchronized String importDocument(String loginName, String password, String folderRObjectId, String profileId,
+			Map<String, List<String>> attributes, Map<String, List<String>> rolesUsers, byte[] base64Content, String format) throws ServerException {
 
 		Logger.getLogger(this.getClass()).info("ImportDocument started.");
 
@@ -2710,10 +2704,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				Logger.getLogger(this.getClass()).info("Updating attribute: " + attName);
 				Attribute att = wizardAttributes.get(attName);
 				DcmtAttribute dcmtAttribute = AdminServiceImpl.getInstance().findAttribute(prof.objType, attName);
+
 				if (dcmtAttribute == null)
 					throw new Exception("No such attribute: " + attName + " on type: " + prof.objType);
+
+				List<String> values = attributes.get(attName);
+
 				if (!att.isReadOnly) {
-					List<String> values = attributes.get(attName);
 					if (values.size() > 1) {
 						int i = 0;
 						for (String value : values) {
@@ -2723,6 +2720,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							}
 						}
 					} else if (values.size() == 1) {
+
 						if (!values.get(0).equals("")) {
 							if (dcmtAttribute.domain_type.equals("4")) {
 								String miliSeconds = values.get(0);
@@ -2734,10 +2732,26 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								IDfValue val = new DfValue(values.get(0).split("\\|")[0]);
 								persObject.setValue(attName, val);
 							}
+
 						}
 					}
 				}
+				
+				
+				if (att.defaultValueIsCalculatedOnServer) {
+					if (att.defaultValueIsDql) {
+						// att.defaultValue
+						String value = ExplorerServiceImpl.getInstance().dqlLookup(loginName, password, att.defaultValue).get(0).get(0);
+						IDfValue val = new DfValue(value);
+						persObject.setValue(attName, val);						
+					}
+				}
+				
 			}
+			
+			
+			
+			
 
 			GregorianCalendar gcal = new GregorianCalendar();
 			gcal.setTime(new Date());
@@ -2880,8 +2894,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					Logger.getLogger(this.getClass()).info("\t\tUpdating attribute: " + attName);
 					Attribute att = wizardAttributes.get(attName);
 					DcmtAttribute dcmtAttribute = AdminServiceImpl.getInstance().findAttribute(prof.objType, attName);
+					List<String> values = attributes.get(attName);
+
 					if (!att.isReadOnly) {
-						List<String> values = attributes.get(attName);
 						if (values.size() > 1) {
 							int i = 0;
 							for (String value : values) {
@@ -2905,6 +2920,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							}
 						}
 					}
+
+					if (att.defaultValueIsCalculatedOnServer) {
+						if (att.defaultValueIsDql) {
+							// att.defaultValue
+							String value = ExplorerServiceImpl.getInstance().dqlLookup(loginName, password, att.defaultValue).get(0).get(0);
+							IDfValue val = new DfValue(value);
+							persObject.setValue(attName, val);						
+						}
+					}
+					
 				}
 
 				// copy attribute subject and title from template
@@ -3030,16 +3055,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 		int rangeStart = start + 1;
 		int rangeEnd = start + length;
-		
+
 		// remove lines starting with #
 		String[] lines = dql.split("\n");
-		String resultLine="";
+		String resultLine = "";
 		for (String line : lines) {
-			if(!line.startsWith("#"))
-				resultLine = resultLine + line +  "\n";
+			if (!line.startsWith("#"))
+				resultLine = resultLine + line + "\n";
 		}
 		dql = resultLine;
-		
 
 		IDfSession userSession = null;
 		IDfCollection collection = null;
@@ -3856,7 +3880,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			boolean deleteDir) throws ServerException {
 
 		// https://github.com/vasturiano/3d-force-graph
-		
+
 		IDfSession userSession = null;
 
 		Thread.currentThread().setName("prepareAiTrainDataForFolderAndClassification");
@@ -3886,7 +3910,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			for (String r_object_id : r_object_ids) {
 				IDfFolder fold = (IDfFolder) userSession.getObjectByQualification("dm_folder where r_object_id='" + r_object_id + "'");
 				String folderPath = fold.getAllRepeatingStrings("r_folder_path", "");
-				
+
 // @formatter:off				
 				IDfQuery q = new DfQuery("select r_object_id from dm_document where folder('" + folderPath + "') and a_content_type='pdf' union " +
 																 "select r_object_id from dm_document where folder('" + folderPath + "') and a_content_type='tiff' union " +
@@ -3920,7 +3944,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 					TesseractOCRConfig config = new TesseractOCRConfig();
 					config.setLanguage("slv+eng");
-					
+
 					PDFParserConfig pdfConfig = new PDFParserConfig();
 					pdfConfig.setExtractInlineImages(true);
 
@@ -3946,37 +3970,43 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					f.delete();
 					f = new File(txtFileName);
 
-//					if (f != null && Files.size(f.toPath()) > 0) {
-//						// "curl -T testpdf.pdf http://localhost:9998/tika";
-//
-//						Runtime rt = Runtime.getRuntime();
-//						String[] commands = { "curl", "-T", f.getAbsolutePath(), "http://localhost:9998/tika" };
-//						Process proc = rt.exec(commands);
-//
-//						BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-//						BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-//						// Read the output from the command
-//						System.out.println("Here is the standard output of the command:\n");
-//						String s = null;
-//
-//						File fTxt = new File(f.getAbsolutePath() + "." + "txt");
-//						BufferedWriter writer = new BufferedWriter(new FileWriter(fTxt.getAbsolutePath()));
-//						while ((s = stdInput.readLine()) != null) {
-//							writer.write(s + "\n");
-//							// if tika returns ocr-ed text
-//							// Logger.getLogger(this.getClass()).info(s);
-//						}
-//						writer.close();
-//						// f.delete();
-//
-//						// Read any errors from the attempted command
-//						// System.out.println("Here is the standard error of the command (if
-//						// any):\n");
-//						while ((s = stdError.readLine()) != null) {
-//							Logger.getLogger(this.getClass()).error(s);
-//						}
-//
-//					}
+					// if (f != null && Files.size(f.toPath()) > 0) {
+					// // "curl -T testpdf.pdf http://localhost:9998/tika";
+					//
+					// Runtime rt = Runtime.getRuntime();
+					// String[] commands = { "curl", "-T", f.getAbsolutePath(),
+					// "http://localhost:9998/tika" };
+					// Process proc = rt.exec(commands);
+					//
+					// BufferedReader stdInput = new BufferedReader(new
+					// InputStreamReader(proc.getInputStream()));
+					// BufferedReader stdError = new BufferedReader(new
+					// InputStreamReader(proc.getErrorStream()));
+					// // Read the output from the command
+					// System.out.println("Here is the standard output of the
+					// command:\n");
+					// String s = null;
+					//
+					// File fTxt = new File(f.getAbsolutePath() + "." + "txt");
+					// BufferedWriter writer = new BufferedWriter(new
+					// FileWriter(fTxt.getAbsolutePath()));
+					// while ((s = stdInput.readLine()) != null) {
+					// writer.write(s + "\n");
+					// // if tika returns ocr-ed text
+					// // Logger.getLogger(this.getClass()).info(s);
+					// }
+					// writer.close();
+					// // f.delete();
+					//
+					// // Read any errors from the attempted command
+					// // System.out.println("Here is the standard error of the command
+					// (if
+					// // any):\n");
+					// while ((s = stdError.readLine()) != null) {
+					// Logger.getLogger(this.getClass()).error(s);
+					// }
+					//
+					// }
 
 				}
 				coll.close();

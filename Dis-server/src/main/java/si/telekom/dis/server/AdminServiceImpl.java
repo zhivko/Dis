@@ -12,6 +12,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.InetAddress;
@@ -33,6 +34,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -68,8 +70,9 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.logicalcobwebs.proxool.ProxoolException;
+import org.logicalcobwebs.proxool.ProxoolFacade;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -108,7 +111,6 @@ import com.documentum.fc.common.IDfValue;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.sun.syndication.io.impl.Base64;
 
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.AdminService;
@@ -341,7 +343,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				long timeMs2 = System.currentTimeMillis();
 				Logger.getLogger(AdminServiceImpl.class).info("Started in: " + Math.round(((timeMs2 - timeMs1) / 1000)) + "s.");
 
-				//MassClassify();
+				// MassClassify();
 				// checkPermForUser();
 
 			}
@@ -401,7 +403,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				ecsStore = (IDfStore) adminSession.newObject("dm_ca_store");
 
 				ecsStore.setName(ecsstoreDisName);
-				List<List<String>> lookupResult = ExplorerServiceImpl.getInstance().dqlLookup(superUserName, Base64.encode(superUserPassword),
+				List<List<String>> lookupResult = ExplorerServiceImpl.getInstance().dqlLookup(superUserName, Base64.getEncoder().encode(superUserPassword.getBytes()).toString(),
 						"select r_object_id from dm_plugin where object_name='CSEC Plugin'");
 				String plugin_id = lookupResult.get(0).get(0);
 				ecsStore.setId("a_plugin_id", new DfId(plugin_id));
@@ -438,7 +440,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	}
 
-	static AdminServiceImpl getInstance() {
+	public static AdminServiceImpl getInstance() {
 		if (instance == null)
 			instance = new AdminServiceImpl();
 		return instance;
@@ -700,8 +702,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-//				e.printStackTrace();
-//				modifiedTime = new Date((new File(absolutePath)).lastModified());
+				// e.printStackTrace();
+				// modifiedTime = new Date((new File(absolutePath)).lastModified());
 			}
 		else
 			modifiedTime = new Date((new File(absolutePath)).lastModified());
@@ -3051,9 +3053,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
 				File devConfig;
 				if (SystemUtils.IS_OS_LINUX) {
-					devConfig = new File("/home/klemen/workspace/ErenderWebUi/src/main/resources/config.xml");
+					devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
 				} else {
-					devConfig = new File("c:\\git\\ERenderWebUi\\src\\main\\resources\\config.xml");
+					devConfig = new File("c:\\git\\Dis\\Dis-server\\src\\main\\resources\\config.xml");
 				}
 				FileUtils.copyFile(new File(configPathFileName), devConfig);
 				Logger.getLogger(this.getClass()).info("Saved search to dev config file: " + devConfig.getAbsolutePath());
@@ -3142,10 +3144,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		Statement stmt = null;
 		ResultSet rs = null;
 
-		int pageNumber = rowNo / pageSize;
-
-		pageNumber = pageNumber + 1;
-
 		try {
 			if (loginName == null)
 				throw new Exception("LoginName should not be null");
@@ -3154,7 +3152,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			String sql = "select col_id, col_name from mobile.t_subscription_inet_col where type_id = " + templateId + " order by col_id";
 
-			String pagedSql =
+			String pagedSql = "";
+			if (pageSize != -1) {
+				int pageNumber = rowNo / pageSize;
+
+				pageNumber = pageNumber + 1;
+
+				pagedSql =
 // @formatter:off
 			"SELECT * FROM " +
 			"( " +
@@ -3166,15 +3170,24 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			"WHERE r__ >= (((pageNumber-1) * pageSize) + 1)";
 // @formatter:on
 
-			pagedSql = pagedSql.replace("sql", sql);
-			pagedSql = pagedSql.replace("pageNumber", String.valueOf(pageNumber));
-			pagedSql = pagedSql.replace("pageSize", String.valueOf(pageSize));
+				pagedSql = pagedSql.replace("sql", sql);
+				pagedSql = pagedSql.replace("pageNumber", String.valueOf(pageNumber));
+				pagedSql = pagedSql.replace("pageSize", String.valueOf(pageSize));
+			} else {
+				pagedSql = sql;
+			}
 
 			Logger.getLogger(this.getClass()).info(String.format("[%s] sql for retrieving fields: %s", loginName, pagedSql));
 
 			con = getDbConnection();
 			stmt = con.createStatement();
+
+			long t1 = System.currentTimeMillis();
 			rs = stmt.executeQuery(pagedSql);
+			long t2 = System.currentTimeMillis();
+			String durationStr = String.format(Locale.ROOT, "%.3fs", (t2 - t1) / 1000.0);
+			Logger.getLogger(this.getClass()).info(String.format("[%s] sql query done in: %s", loginName, durationStr));
+			
 
 			int lineCount = 0;
 			while (rs.next()) {
@@ -3207,26 +3220,91 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return ret;
 	}
 
-	public static Connection getDbConnection() throws SQLException {
+	public synchronized static Connection getDbConnection() throws Exception {
+//		Connection connectionn = null;
+//		
+//		try {
+//			Class.forName("org.logicalcobwebs.proxool.ProxoolDriver");
+//			Class.forName("oracle.jdbc.OracleDriver");
+//		} catch (ClassNotFoundException e) {
+//			Logger.getLogger(AdminServiceImpl.class).error(e.getMessage());
+//		}
+//
+//		String alias = "OracleDb";
+//		String driverClass = "oracle.jdbc.OracleDriver";
+//		String driverUrl = "jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS=(PROTOCOL=TCP)(HOST=dbm02.ts.telekom.si)(PORT=1521))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=select)(METHOD=basic))(SERVER=dedicated)(SERVICE_NAME=tsbeta.ts.telekom.si)))";
+//		String url = "proxool." + alias + ":" + driverClass + ":" + driverUrl;
+//
+//		
+//		Properties info = new Properties();
+//		info.setProperty("proxool.maximum-connection-count", "5");
+//		info.setProperty("simultaneous-build-throttle", "5");
+//		info.setProperty("proxool.house-keeping-test-sql", "select * from dual");
+//		info.setProperty("user", "reports");
+//		info.setProperty("password", "ReportsPw01");
+//		info.setProperty("proxool.driver", driverClass);
+//		info.setProperty("proxool.url", url);
+//
+//		connectionn = DriverManager.getConnection("proxool." + alias, info);
+//		
+//		Logger.getLogger(AdminServiceImpl.class).log(Level.INFO, String.format("JDBC url: %s", driverUrl));
+//		return connectionn;
+		
+		
+		
+		String jdbcUser = "reports";
+		String jdbcPassword = "ReportsPw01";
+		
+		Properties proxoolProps = new Properties();
+		proxoolProps.setProperty("user", jdbcUser);
+		proxoolProps.setProperty("password", jdbcPassword);
+		proxoolProps.setProperty("statistics-log-level", "DEBUG");
 
+		// String driverClass = jdbcString.split("@")[0];
+		String driverUrl = "jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS=(PROTOCOL=TCP)(HOST=dbm02.ts.telekom.si)(PORT=1521))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=select)(METHOD=basic))(SERVER=dedicated)(SERVICE_NAME=tsbeta.ts.telekom.si)))";
+
+		// +
+		// alias
+		// +
+		String alias = "oracleDb";
+		Connection lconn = null;
 		try {
-			Class.forName("oracle.jdbc.OracleDriver");
-		} catch (ClassNotFoundException e) {
-			Logger.getLogger(AdminServiceImpl.class).error(e.getMessage());
-		}
+			// DriverManager.setLogStream(System.out);
+			lconn = DriverManager.getConnection("proxool." + alias);
+		} catch (SQLException ex) {
+			try {
+				Class.forName("org.logicalcobwebs.proxool.ProxoolDriver");
+				Properties info = new Properties();
+				info.setProperty("proxool.maximum-connection-count", "10");
+				info.setProperty("proxool.house-keeping-test-sql", "select CURRENT_DATE");
+				info.setProperty("user", jdbcUser);
+				info.setProperty("password", jdbcPassword);
+				String driverClass = "oracle.jdbc.driver.OracleDriver";
+				Class.forName(driverClass);
+				String url = "proxool." + alias + ":" + driverClass + ":" + driverUrl;
 
-		Connection conn = null;
-		Properties connectionProps = new Properties();
-		connectionProps.put("user", "reports");
-		connectionProps.put("password", "ReportsPw01");
-
-		// String sqlUrl =
-		// "jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS_LIST=(FAILOVER=on)(ADDRESS=(PROTOCOL=TCP)(HOST=dbm01.ts.telekom.si)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=dbm02.ts.telekom.si)(PORT=1521)))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=select)
-		// (METHOD=basic))(SERVER=dedicated)(SERVICE_NAME=tscrm.ts.telekom.si)))";
-		String sqlUrl = "jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS=(PROTOCOL=TCP)(HOST=dbm02.ts.telekom.si)(PORT=1521))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=select)(METHOD=basic))(SERVER=dedicated)(SERVICE_NAME=tsbeta.ts.telekom.si)))";
-		conn = DriverManager.getConnection(sqlUrl, connectionProps);
-		Logger.getLogger(AdminServiceImpl.class).log(Level.INFO, String.format("JDBC url: %s", sqlUrl));
-		return conn;
+				ProxoolFacade.registerConnectionPool(url, proxoolProps);
+				try {
+					lconn = DriverManager.getConnection("proxool." + alias);
+				} catch (SQLException e) {
+					StringWriter errorStringWriter = new StringWriter();
+					PrintWriter pw = new PrintWriter(errorStringWriter);
+					e.printStackTrace(pw);
+					Logger.getLogger(AdminServiceImpl.class).error(errorStringWriter.getBuffer().toString());
+					throw new ServerException(e);
+				}
+			} catch (ProxoolException | ClassNotFoundException e) {
+				StringWriter errorStringWriter = new StringWriter();
+				PrintWriter pw = new PrintWriter(errorStringWriter);
+				e.printStackTrace(pw);
+				Logger.getLogger(AdminServiceImpl.class).error(errorStringWriter.getBuffer().toString());
+			}
+		}		
+		return lconn;
+		
+		
+		
+		
 	}
 
 	public void updateCollId(String loginName, String loginPass, int templateId, String templateName, String col_id_old, String columnName,
@@ -3591,7 +3669,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				ExplorerServiceImpl.getInstance().classifyDocument(loginUser, loginPassword, document.getId("r_object_id").toString(), prof.id, stateId,
 						values, rolesUsers);
 
-				//Logger.getLogger(AdminServiceImpl.class).info("classified: " + document.getObjectName() + "(" + document.getId("r_object_id") + ")");
+				// Logger.getLogger(AdminServiceImpl.class).info("classified: " +
+				// document.getObjectName() + "(" + document.getId("r_object_id") +
+				// ")");
 				// }
 				// else
 				// {

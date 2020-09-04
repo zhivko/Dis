@@ -62,6 +62,8 @@ public class Attribute implements com.google.gwt.user.client.rpc.IsSerializable,
 	public boolean defaultValueIsConstant;
 	public boolean defaultValueIsDql;
 	public boolean defaultValueIsSql;
+	public boolean defaultValueIsCalculatedOnServer;
+
 	/**
 	 * attribute can depend on another attribute in that case definnition would be [att_name, column_no from suggestbox attribute]
 	 */

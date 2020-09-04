@@ -25,6 +25,8 @@ public class OONamespaceContext implements NamespaceContext {
 			return "urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0";
 		else if ("xml".equals(prefix))
 			return XMLConstants.XML_NS_URI;
+	  else if ("meta".equals(prefix))
+	  	return "urn:oasis:names:tc:opendocument:xmlns:meta:1.0";
 		return XMLConstants.DEFAULT_NS_PREFIX;
 	}
 

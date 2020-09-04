@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-  version="2.5"
-  metadata-complete="false">
+	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5" metadata-complete="false">
 
 	<!-- Servlets -->
-  <servlet>
-    <servlet-name>greetServlet</servlet-name>
-    <servlet-class>si.telekom.dis.GreetingServiceImpl</servlet-class>
-  </servlet>
+	<servlet>
+		<servlet-name>greetServlet</servlet-name>
+		<servlet-class>si.telekom.dis.GreetingServiceImpl</servlet-class>
+	</servlet>
 
-  <servlet-mapping>
-    <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/DIS_webapp/greet</url-pattern>
-  </servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>greetServlet</servlet-name>
+		<url-pattern>/DIS_webapp/greet</url-pattern>
+	</servlet-mapping>
 
 	<!-- Default page to serve -->
-  <welcome-file-list>
-    <welcome-file>index.html</welcome-file>
-  </welcome-file-list>
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
 
 
 	<!-- Servlets -->
@@ -74,18 +73,23 @@
 			<param-name>jersey.config.server.provider.packages</param-name>
 			<param-value>si.telekom.dis.server.rest</param-value>
 		</init-param>
-	<!-- <init-param> -->
-	<!-- <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name> -->
-	<!-- <param-value>true</param-value> -->
-	<!-- </init-param> -->
-	<!-- <init-param> -->
-	<!-- <param-name>com.sun.jersey.config.feature.DisableWADL</param-name> -->
-	<!-- <param-value>true</param-value> -->
-	<!-- </init-param> -->
+		<!-- <init-param> -->
+		<!-- <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name> -->
+		<!-- <param-value>true</param-value> -->
+		<!-- </init-param> -->
+		<!-- <init-param> -->
+		<!-- <param-name>com.sun.jersey.config.feature.DisableWADL</param-name> -->
+		<!-- <param-value>true</param-value> -->
+		<!-- </init-param> -->
 
 		<init-param>
 			<param-name>jersey.config.server.tracing</param-name>
 			<param-value>true</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>jersey.config.server.provider.classnames</param-name>
+			<param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
 		</init-param>
 
 		<load-on-startup>1</load-on-startup>
@@ -113,7 +117,7 @@
 		<param-name>documentum.docbrokerHost</param-name>
 		<param-value>${documentum.docbrokerHost}</param-value>
 	</context-param>
-		<context-param>
+	<context-param>
 		<description>Documentum docbase name</description>
 		<param-name>documentum.docbaseName</param-name>
 		<param-value>${documentum.docbaseName}</param-value>
@@ -171,12 +175,12 @@
 		<param-name>barcode.sqlPort</param-name>
 		<param-value>${barcode.sqlPort}</param-value>
 	</context-param>
-	
+
 	<context-param>
 		<description>Application configuration path (folder of profiles)</description>
 		<param-name>configPath</param-name>
 		<param-value>${configPath}</param-value>
-	</context-param>	
+	</context-param>
 
 
 

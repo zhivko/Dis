@@ -53,6 +53,7 @@ public class ProfileAttribute extends IsSelected {
 	private RadioButton rbDefaultValueIsConstant = new RadioButton("defaultValueType");
 	private RadioButton rbDefaultValueIsDql= new RadioButton("defaultValueType");
 	private RadioButton rbDefaultValueIsSql = new RadioButton("defaultValueType");
+	private CheckBox cbDefaultValueIsCalculatedOnServer;
 	
 	private MyTextArea jdbcValueListDefinition;
 	private MyTextArea dqlValueListDefinition;
@@ -172,6 +173,19 @@ public class ProfileAttribute extends IsSelected {
 		});
 		hp1.add(isLimitedToValueList);
 
+		cbDefaultValueIsCalculatedOnServer = new CheckBox();
+		cbDefaultValueIsCalculatedOnServer.setText("izračunan na serverju");
+		cbDefaultValueIsCalculatedOnServer.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				// TODO Auto-generated method stub
+				ProfileAttribute.this.attr.defaultValueIsCalculatedOnServer = cbDefaultValueIsCalculatedOnServer.getValue();
+			}
+		});
+		hp1.add(cbDefaultValueIsCalculatedOnServer);
+		
+		
+		
 		dropDownCol = new MyTxtBox("Stolpec za prenos v vrednost att") {
 			@Override
 			public void valueChanged() {
@@ -414,6 +428,7 @@ public class ProfileAttribute extends IsSelected {
 		this.isReadOnly.setValue(this.attr.isReadOnly);
 		this.isMandatory.setValue(attr.isMandatory);
 		this.isLimitedToValueList.setValue(attr.isLimitedToValueList);
+		this.cbDefaultValueIsCalculatedOnServer.setValue(this.attr.defaultValueIsCalculatedOnServer);
 
 		if (attr.commaSeparatedValueListDefinition != null)
 			if (!attr.commaSeparatedValueListDefinition.equals("null"))

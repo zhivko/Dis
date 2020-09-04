@@ -146,7 +146,7 @@ public class DocumentAddRendition extends WindowBox {
 	}
 
 	public SafeUri calculateSafeUriDownload() {
-		return UriUtils.fromString(GWT.getHostPageBaseURL() + "webui2/uploadServlet?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
+		return UriUtils.fromString(GWT.getHostPageBaseURL() + "WebUi2/uploadServlet?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
 				+ MainPanel.getInstance().loginPass + "&objectId=" + this.r_object_id + "&actionId=" + this.getClass().getName() + "&format=" + possibleFormats.getSelectedItemText());
 	}	
 	

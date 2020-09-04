@@ -117,7 +117,7 @@ public class UploadServlet extends HttpServlet {
 				@Override
 				public void update(long pBytesRead, long pContentLength, int pItems) {
 					// TODO Auto-generated method stub
-					Logger.getLogger(this.getClass()).info("Items: " + pItems + " bytesread: " + pBytesRead + " conetntLength:" + pContentLength);
+					Logger.getLogger(this.getClass()).info("Items: " + pItems + " bytesread: " + pBytesRead + " content Length:" + pContentLength);
 				}
 			});
 			try {
@@ -307,11 +307,6 @@ public class UploadServlet extends HttpServlet {
 												sysObj.setContentType(fmt.getName()); // only if your
 																															// file
 
-												if (fmt.getName().contentEquals("odt")) {
-													int id = Integer.valueOf(sysObj.getString("mob_template_id")).intValue();
-													makeSureAllFieldsExist(tempFile.getAbsolutePath(), id);
-												}
-
 												sysObj.setFile(tempFile.getAbsolutePath());
 
 												if (!addVersionLabel.equals(""))
@@ -438,140 +433,6 @@ public class UploadServlet extends HttpServlet {
 
 	}
 
-	private void makeSureAllFieldsExist(String absolutePath, int templateId) {
-		try {
-			List<List<String>> fields = AdminServiceImpl.getInstance().getColIdsForTemplate(loginName, loginPassword, templateId, 0, Integer.MAX_VALUE);
-			ArrayList<String> allColIds = new ArrayList<String>();
-			for (List<String> list : fields) {
-				String col_id = list.get(0);
-				allColIds.add(col_id);
-			}
-
-			ByteArrayOutputStream ret = null;
-			ZipFile zf = new ZipFile(new File(absolutePath));
-			ZipEntry ze = zf.getEntry("meta.xml");
-			if (ze == null) {
-				Enumeration<? extends ZipEntry> e = zf.entries();
-				while (e.hasMoreElements()) {
-					ZipEntry ze1 = (ZipEntry) e.nextElement();
-					String name = ze1.getName();
-					if (name.equals("meta.xml")) {
-						// System.out.println("OOPS");
-						ze = ze1;
-						break;
-					}
-				}
-			}
-			InputStream is = zf.getInputStream(ze);
-
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			// factory.setNamespaceAware(true); // never forget this!
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(is);
-
-			XPathFactory xpathFac = XPathFactory.newInstance();
-			XPath xpath = xpathFac.newXPath();
-			xpath.setNamespaceContext(new OONamespaceContext());
-
-			// lets remove nodes that are not in col_ids
-			XPathExpression expr = xpath.compile("/document-meta/meta[1]/user-defined");
-			NodeList nodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-			for (int i = 0; i < nodes.getLength(); i++) {
-				Node n = nodes.item(i);
-				String attName = n.getAttributes().getNamedItem("meta:name").getNodeValue();
-				if (!allColIds.contains(attName)) {
-					n.getParentNode().removeChild(n);
-				}
-			}
-
-			// lets add nodes that are missing
-			for (String col_id : allColIds) {
-				XPathExpression expr1 = xpath.compile("/document-meta/meta[1]/user-defined[meta:name='" + col_id + "'");
-				NodeList nodes1 = (NodeList) expr1.evaluate(doc, XPathConstants.NODESET);
-				if (nodes1.getLength() == 0) {
-					Node newNode = nodes.item(0).cloneNode(true);
-					newNode.getAttributes().getNamedItem("meta:name").setNodeValue(col_id);
-					nodes.item(nodes.getLength()).getParentNode().appendChild(newNode);
-				}
-			}
-
-			is.close();
-
-			ret = new ByteArrayOutputStream();
-			// XERCES 1 or 2 additionnal classes.
-			OutputFormat of = new OutputFormat("XML", "UTF-8", false);
-			// of.setPreserveSpace(true);
-			// of.setIndent(1);
-			// of.setIndenting(true);
-
-			// of.setDoctype(null,"users.dtd");
-			XMLSerializer serializer = new XMLSerializer(ret, of);
-			// As a DOM Serializer
-
-			serializer.asDOMSerializer();
-			serializer.serialize(doc.getDocumentElement());
-			ret.close();
-
-			HashMap<String, byte[]> files = new HashMap<String, byte[]>();
-			files.put("meta.xml", ret.toByteArray());
-
-			saveZip(new File(absolutePath), absolutePath, files);
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Logger.getLogger(this.getClass()).error(e.getMessage());
-		}
-
-	}
-
-	private File saveZip(File tempFile, String newFileName, HashMap<String, byte[]> files) throws Exception {
-
-		File result = null;
-		ZipInputStream inZip = null;
-		ZipOutputStream outZip = null;
-		try {
-			result = new File(newFileName);
-			inZip = new ZipInputStream(new BufferedInputStream(new FileInputStream(tempFile)));
-			outZip = new ZipOutputStream(new FileOutputStream(result));
-
-			for (ZipEntry in; (in = inZip.getNextEntry()) != null;) {
-				ZipEntry out = null;
-				InputStream source = null;
-				for (String fileName : files.keySet()) {
-					if (in.getName().equals(fileName)) {
-						byte[] contentAsBytes = files.get(fileName);
-						out = new ZipEntry(in);
-
-						out.setMethod(ZipEntry.STORED);
-						out.setCompressedSize(contentAsBytes.length);
-						out.setSize(contentAsBytes.length);
-						CRC32 crc = new CRC32();
-						crc.update(contentAsBytes);
-						out.setCrc(crc.getValue());
-						source = new ByteArrayInputStream(contentAsBytes);
-						break;
-					}
-				}
-				if (out == null) {
-					out = in;
-					source = inZip;
-				}
-				outZip.putNextEntry(out);
-				IOUtils.copy(source, outZip); // Apache's Commons-IO
-			}
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			IOUtils.closeQuietly(inZip); // Apache's Commons-IO
-			outZip.flush();
-			IOUtils.closeQuietly(outZip); // Apache's Commons-IO
-			Logger.getLogger(this.getClass()).debug(tempFile + " delete suceeded?" + tempFile.delete());
-			inZip.close();
-			outZip.close();
-		}
-		tempFile = result;
-		return result;
-	}
 
 	private HashMap<String, List<String>> parseHm(String parameter) {
 		HashMap<String, List<String>> hm = new HashMap<String, List<String>>();

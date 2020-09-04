@@ -51,9 +51,9 @@ public class CatalogService
      * @return
      *     returns ICatalogService
      */
-    @WebEndpoint(name = "CatalogSoapBindingPort")
-    public ICatalogService getCatalogSoapBindingPort() {
-        return super.getPort(new QName("http://telekom.si/services/common/base/v1", "CatalogSoapBindingPort"), ICatalogService.class);
+    @WebEndpoint(name = "CatalogSoapBindingPort180")
+    public ICatalogService getCatalogSoapBindingPort180() {
+        return super.getPort(new QName("http://telekom.si/services/common/base/v1", "CatalogSoapBindingPort180"), ICatalogService.class);
     }
 
     /**
@@ -63,9 +63,9 @@ public class CatalogService
      * @return
      *     returns ICatalogService
      */
-    @WebEndpoint(name = "CatalogSoapBindingPort")
-    public ICatalogService getCatalogSoapBindingPort(WebServiceFeature... features) {
-        return super.getPort(new QName("http://telekom.si/services/common/base/v1", "CatalogSoapBindingPort"), ICatalogService.class, features);
+    @WebEndpoint(name = "CatalogSoapBindingPort180")
+    public ICatalogService getCatalogSoapBindingPort180(WebServiceFeature... features) {
+        return super.getPort(new QName("http://telekom.si/services/common/base/v1", "CatalogSoapBindingPort180"), ICatalogService.class, features);
     }
 
     private static URL __getWsdlLocation() {

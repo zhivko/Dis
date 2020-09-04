@@ -58,7 +58,7 @@ public class CatalogServiceClient {
 				CatalogService service;
 				URL serviceUrl = new URL(wsdlEndpoint);
 				service = new CatalogService(serviceUrl, qname);
-				ICatalogService client = service.getCatalogSoapBindingPort();
+				ICatalogService client = service.getCatalogSoapBindingPort180();
 
 				final Binding binding = ((BindingProvider) client).getBinding();
 				List<Handler> handlerList = binding.getHandlerChain();

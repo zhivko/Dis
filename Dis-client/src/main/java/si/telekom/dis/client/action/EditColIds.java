@@ -78,6 +78,8 @@ public class EditColIds extends WindowBox implements ClickHandler {
 
 						dataProvider = new MyDataProvider(templateId);
 						dataProvider.addDataDisplay(cellTable);
+						
+						
 
 						//AsyncHandler columnSortHandler = new AsyncHandler(cellTable);
 						//cellTable.addColumnSortHandler(columnSortHandler);
@@ -109,6 +111,7 @@ public class EditColIds extends WindowBox implements ClickHandler {
 								else
 									pos = pager.getPageStart() + pager.getPageSize();
 								rows.add(pos, new Row(Arrays.asList(rs)));
+								
 								dataProvider.updateRowData(pager.getPageStart(), rows);
 							}
 						});
