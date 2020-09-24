@@ -249,7 +249,6 @@
 				</groups>
 				<orderBys>
 					<orderBy name="r_creation_date"/>
-					<orderBy name="r_modify_date"/>
 				</orderBys>
 			</query>
 			<query name="Naročniški dokumenti danes">select
@@ -275,6 +274,9 @@
 				<groups>
 					<group name="world"/>
 				</groups>
+				<orderBys>
+					<orderBy name="r_creation_date"/>
+				</orderBys>
 			</query>
 			<query name="Današnji in včerajšnji ePero naročniški dokumenti po zvrsti mob_type_id">select
 				r_object_id from mob_subscriber_document where
@@ -286,6 +288,9 @@
 				<groups>
 					<group name="world"/>
 				</groups>
+				<orderBys>
+					<orderBy name="r_creation_date"/>
+				</orderBys>
 			</query>
 			<query name="Naročniški dokumenti z mob_nextstep='-1'">
 				select r_object_id from mob_subscriber_document where
@@ -351,14 +356,16 @@
 				</groups>
 			</query>
 			<query name="Prodajne ponudbe - PP">
-				select r_object_id from mob_form_template(all) where
+				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				mob_template_number like 'PP%'
-				ENABLE (RETURN_RANGE 1
-				10 'r_modify_date desc')
+				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				<groups>
 					<group name="world"/>
 				</groups>
+				<orderBys>
+					<orderBy direction="D" name="r_modify_date"/>
+				</orderBys>
 			</query>
 			<query name="Tiskovine VSE">
 				select r_object_id from mob_form_template where
@@ -381,6 +388,9 @@
 				<groups>
 					<group name="world"/>
 				</groups>
+				<orderBys>
+					<orderBy direction="D" name="r_modify_date"/>
+				</orderBys>
 			</query>
 			<query name="Tiskovine po komercialni oznaki">select
 				r_object_id from mob_form_template where
@@ -462,7 +472,7 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
       </query>
 			<query name="Pogodbe za soglasja">
 				select r_object_id from
-				mob_form_template(all) where
+				mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				(mob_template_number like 'SOG%')
 ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')

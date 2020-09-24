@@ -168,7 +168,7 @@ public class MainPanel extends Composite {
 				progressBar.setPercent(percent);
 				progressBar.setText(progr);
 			} else if (e.data.asString().startsWith("logout")) {
-				final String loginPageUrl = GWT.getHostPageBaseURL() + (GWT.getHostPageBaseURL().contains("127.0.0.1") ? "webui2/" : "") + "WebUi2.html";
+				final String loginPageUrl = GWT.getHostPageBaseURL() + (GWT.getHostPageBaseURL().contains("127.0.0.1") ? "webui2/" : "");
 
 				log("Logging out because of inactivity. Navigate to login page: " + loginPageUrl);
 				Timer timer = new Timer() {
@@ -177,7 +177,7 @@ public class MainPanel extends Composite {
 						Window.Location.replace(loginPageUrl);
 					}
 				};
-				timer.schedule(3000);
+				timer.schedule(4000);
 				// Window.open(loginPageUrl, "_self", "");
 			} else {
 				MainPanel.log(e.data.asString());
