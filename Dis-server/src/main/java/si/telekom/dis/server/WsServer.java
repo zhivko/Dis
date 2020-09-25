@@ -93,7 +93,7 @@ public class WsServer {
 	}
 
 	@OnOpen
-	public void onOpen(Session session) {
+	public synchronized void onOpen(Session session) {
 		session.setMaxIdleTimeout(0);
 		Map<String, List<String>> params = session.getRequestParameterMap();
 		Logger.getLogger(this.getClass()).info("WebSocket session onOpen::" + session.getId());
@@ -102,7 +102,7 @@ public class WsServer {
 	}
 
 	@OnClose
-	public void onClose(Session session) {
+	public synchronized void onClose(Session session) {
 		Map<String, List<String>> params = session.getRequestParameterMap();
 		Logger.getLogger(this.getClass()).info("WebSocket session for: " + params.get("loginName").toString() + " onClose::" + session.getId());
 
@@ -119,16 +119,16 @@ public class WsServer {
 	}
 
 	@OnMessage
-	public void onMessage(String message, Session session) {
+	public synchronized void onMessage(String message, Session session) {
 		Logger.getLogger(this.getClass()).info("Websocket sessionId: " + session.getId() + "!");
 	}
 
 	@OnError
-	public void onError(Throwable t) {
+	public synchronized void onError(Throwable t) {
 		Logger.getLogger(this.getClass()).error(t);
 	}
 
-	public static void log(String toUser, String message) {
+	public synchronized static void log(String toUser, String message) {
 		try {
 			if (toUser != null)
 				if (toUser.contentEquals("_all_")) {

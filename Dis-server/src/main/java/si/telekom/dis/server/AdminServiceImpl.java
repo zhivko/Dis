@@ -808,11 +808,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			Element nTab = (Element) profileTabs.item(i);
 			Tab tab = new Tab(nTab.getAttribute("id"), nTab.getAttribute("name"));
 			Logger.getLogger(AdminServiceImpl.class).info("tab id= " + tab.getId());
-			if (nTab.getAttribute("cols") != null && !nTab.getAttribute("cols").equals(""))
-				tab.col = Integer.valueOf(nTab.getAttribute("cols"));
+			String cols = nTab.getAttribute("cols");
+			String rows = nTab.getAttribute("rows");
+			if (cols != null && !cols.equals(""))
+				tab.col = Integer.valueOf(cols);
 
-			if (nTab.getAttribute("rows") != null && !nTab.getAttribute("rows").equals(""))
-				tab.row = Integer.valueOf(nTab.getAttribute("rows"));
+			if (rows != null && !rows.equals(""))
+				tab.row = Integer.valueOf(rows);
 
 			tabs.add(tab);
 		}
