@@ -1,5 +1,6 @@
 package si.telekom.dis.server.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,9 +60,14 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/getProfilesForClassSign")
-	public List<Profile> getProfilesForClassSign(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
+	public List<String> getProfilesForClassSign(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
 			@QueryParam("classSign") String classSign, @QueryParam("wizardType") String wizardType) {
-		return AdminServiceImpl.getInstance().getProfilesForClassSign(loginName, passwordEncrypted, classSign, wizardType);
+		List<Profile> profiles = AdminServiceImpl.getInstance().getProfilesForClassSign(loginName, passwordEncrypted, classSign, wizardType);
+		ArrayList<String> ret = new ArrayList<String>();
+		for (Profile prof : profiles) {
+			ret.add(prof.id);
+		}
+		return ret;
 	}
 
 	@GET
