@@ -27,7 +27,6 @@ public class DisRest {
 	@GET
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
-	// @Produces({ MediaType.APPLICATION_XML })
 	@Path("/dqlLookup")
 	public List<List<String>> dqlLookup(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
 			@QueryParam("dql") String dql) throws Exception {
@@ -58,7 +57,7 @@ public class DisRest {
 
 	@GET
 	@Consumes(MediaType.TEXT_HTML)
-	// @Produces({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/getProfilesForClassSign")
 	public List<Profile> getProfilesForClassSign(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
 			@QueryParam("classSign") String classSign, @QueryParam("wizardType") String wizardType) {
@@ -67,7 +66,7 @@ public class DisRest {
 
 	@GET
 	@Consumes(MediaType.TEXT_HTML)
-	// @Produces({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/promote")
 	public Void promote(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
 			@QueryParam("r_object_id") String r_object_id) throws Exception {
@@ -76,7 +75,7 @@ public class DisRest {
 
 	@GET
 	@Consumes(MediaType.TEXT_HTML)
-	// @Produces({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/demote")
 	public Void demote(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
 			@QueryParam("r_object_id") String r_object_id) throws Exception {
