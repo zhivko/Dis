@@ -183,6 +183,12 @@
 			<version>${jersey.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-multipart</artifactId>
+			<version>${jersey.version}</version> <!-- Make sure the Jersey version matches the one you are currently using -->
+		</dependency>
+
 		<!-- jersey dependencies END -->
 
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
