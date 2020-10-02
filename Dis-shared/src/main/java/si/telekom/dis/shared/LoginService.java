@@ -9,4 +9,6 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("login")
 public interface LoginService extends RemoteService {
 	String[] login(String loginName, String passwordHashed) throws ServerException;
+	UserSettings getUserSettings(String loginName, String passwordEncrypted) throws ServerException;
+	Void saveUserSettings(String loginName, String passwordEncrypted, UserSettings us) throws ServerException;
 }

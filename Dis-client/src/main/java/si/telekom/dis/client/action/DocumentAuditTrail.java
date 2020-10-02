@@ -8,6 +8,7 @@ import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
@@ -16,8 +17,10 @@ import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.AsyncDataProvider;
+import com.google.gwt.view.client.CellPreviewEvent;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.view.client.Range;
@@ -59,6 +62,25 @@ public class DocumentAuditTrail extends WindowBox {
 		int ordinaryColWidth = 150;
 
 		cellTable = new CellTable<Row>(Row.KEY_PROVIDER);
+		cellTable.addCellPreviewHandler(new CellPreviewEvent.Handler<Row>() {
+
+			@Override
+			public void onCellPreview(CellPreviewEvent<Row> event) {
+				// TODO Auto-generated method stub
+				if (event.getNativeEvent().getType().equals(BrowserEvents.CLICK)) {
+					int column = event.getContext().getColumn();
+					//if (event.getContext().getSubIndex() > 0) {
+					if(column==1)
+					{
+						
+						String r_object_id = event.getValue().getValues().get(column);
+						DocumentView view = new DocumentView(r_object_id);
+						view.show();
+					}
+				}
+			}
+
+		});
 		cellTable.setTableLayoutFixed(true);
 		cellTable.setWidth("100%");
 		pager.setDisplay(cellTable);
@@ -73,7 +95,6 @@ public class DocumentAuditTrail extends WindowBox {
 		cellTable.addColumn(r_obj_id, "r_object_id");
 		cellTable.setColumnWidth(r_obj_id, ordinaryColWidth, Unit.PX);
 
-		
 		Column<Row, String> col_audited_obj_id = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
@@ -83,8 +104,6 @@ public class DocumentAuditTrail extends WindowBox {
 		cellTable.addColumn(col_audited_obj_id, "audited_obj_id");
 		cellTable.setColumnWidth(col_audited_obj_id, ordinaryColWidth, Unit.PX);
 
-		
-		
 		Column<Row, String> r_version_label = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
@@ -94,8 +113,6 @@ public class DocumentAuditTrail extends WindowBox {
 		cellTable.addColumn(r_version_label, "r_version_label");
 		cellTable.setColumnWidth(r_version_label, ordinaryColWidth + 30, Unit.PX);
 
-		
-		
 		Column<Row, String> aclName = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
@@ -103,10 +120,8 @@ public class DocumentAuditTrail extends WindowBox {
 			}
 		};
 		cellTable.addColumn(aclName, "acl_name");
-		cellTable.setColumnWidth(aclName, ordinaryColWidth + 30, Unit.PX);		
-		
-		
-		
+		cellTable.setColumnWidth(aclName, ordinaryColWidth + 30, Unit.PX);
+
 		Column<Row, String> col_time_stamp = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
@@ -116,8 +131,6 @@ public class DocumentAuditTrail extends WindowBox {
 		cellTable.addColumn(col_time_stamp, "time_stamp");
 		cellTable.setColumnWidth(col_time_stamp, ordinaryColWidth, Unit.PX);
 
-		
-		
 		Column<Row, String> col_timestamp_utc = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
@@ -127,8 +140,6 @@ public class DocumentAuditTrail extends WindowBox {
 		cellTable.addColumn(col_timestamp_utc, "time_stamp_utc");
 		cellTable.setColumnWidth(col_timestamp_utc, ordinaryColWidth - 30, Unit.PX);
 
-		
-		
 		Column<Row, String> col_event_name = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
@@ -199,25 +210,22 @@ public class DocumentAuditTrail extends WindowBox {
 		MyDataProvider dataProvider = new MyDataProvider(r_object_id, rows, this.rowsPerPage);
 		dataProvider.addDataDisplay(cellTable);
 
+		ListHandler<Row> columnSortHandler = new ListHandler<Row>(rows);
+		columnSortHandler.setComparator(r_obj_id, new Comparator<Row>() {
+			public int compare(Row o1, Row o2) {
+				if (o1 == o2) {
+					return 0;
+				}
 
-    ListHandler<Row> columnSortHandler = new ListHandler<Row>(
-        rows);
-    columnSortHandler.setComparator(r_obj_id,
-        new Comparator<Row>() {
-          public int compare(Row o1, Row o2) {
-            if (o1 == o2) {
-              return 0;
-            }
+				// Compare the name columns.
+				if (o1 != null) {
+					return (o2 != null) ? o1.values.get(0).compareTo(o2.values.get(0)) : 0;
+				}
+				return -1;
+			}
+		});
+		cellTable.addColumnSortHandler(columnSortHandler);
 
-            // Compare the name columns.
-            if (o1 != null) {
-              return (o2 != null) ? o1.values.get(0).compareTo(o2.values.get(0)) : 0;
-            }
-            return -1;
-          }
-        });
-    cellTable.addColumnSortHandler(columnSortHandler);
-		
 		cellTable.getColumnSortList().push(r_obj_id);
 
 		DocumentAuditTrail.this.getContentPanel().setSize("900px", "600px");

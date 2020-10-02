@@ -34,11 +34,9 @@ public class DocumentDelete extends WindowBox {
 		allVersions.setText("Vse verzije");
 		getContentPanel().add(allVersions);
 
-		String toDeleteStr = "";
 		ArrayList<String> allChecked = new ArrayList<String>();
 		for (String r_object_ids_ : ExplorerPanel.getExplorerInstance().getCheckedObjects()) {
 			allChecked.add(r_object_ids_);
-			toDeleteStr = toDeleteStr + "," + r_object_ids_;
 		}
 
 		getOkButton().addClickHandler(new ClickHandler() {

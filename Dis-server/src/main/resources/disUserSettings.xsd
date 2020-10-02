@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified">
+
+    <xs:element name="config" type="configType" />
+
+    <xs:complexType name="configType">
+        <xs:sequence>
+            <xs:element name="module" type="moduleType" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="moduleType">
+        <xs:sequence>
+            <xs:element name="parameter" type="parameterType" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="description" type="xs:string" />
+        <xs:attribute name="version" type="xs:string" />
+    </xs:complexType>
+
+    <xs:complexType name="parameterType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="description" type="xs:string" />
+        <xs:attribute name="type" type="xs:string" use="required"/>
+        <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+
+</xs:schema>

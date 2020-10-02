@@ -27,7 +27,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		Void deleteObjects(String loginName, String password, List<String> r_object_ids, boolean allVersions) throws ServerException;
 		List<List<String>> dqlLookup(String loginName, String password, String dql) throws ServerException;
 		Void newFolder(String loginName, String password, String folderName, String pareFolderPath) throws ServerException;
-		Void setUsersForRoles(String loginName, String password, String r_object_id, Map<String,List<String>> rolesUsers) throws ServerException;
+		Void setUsersForRoles(String loginName, String password, List<String> r_object_id, Map<String,List<String>> rolesUsers) throws ServerException;
 		
 		Void checkout(String loginName, String password, String r_object_id) throws ServerException;
 		Void cancelCheckout(String loginName, String password, String r_object_id) throws ServerException;
@@ -38,8 +38,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		Void demote(String loginName, String password, String r_object_id) throws ServerException;
 		
 		List<List<String>> auditTrail(String loginName, String password, String r_object_id, int start, int length) throws ServerException;
-		Void addVersionLabel(String loginName, String password, String r_object_id, String labelVersion) throws ServerException;
-		Void removeVersionLabel(String loginName, String password, String r_object_id, String labelVersion) throws ServerException;
+		Void addVersionLabel(String loginName, String password, List<String> r_object_id, String labelVersion) throws ServerException;
+		Void removeVersionLabel(String loginName, String password, List<String> r_object_id, String labelVersion) throws ServerException;
 		
 		String newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String templateObjectName) throws ServerException;
 		Void classifyDocument(String loginName, String password, String r_object_id, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers) throws ServerException;

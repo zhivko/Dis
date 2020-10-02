@@ -308,9 +308,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						input.close();
 						buffer.close();
 
+						IDfSession adminSession = AdminServiceImpl.getAdminSession();
+						
 						Logger.getLogger(AdminServiceImpl.class)
 								.info("DIS Telekom started on: " + AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + " "
-										+ AdminServiceImpl.getAdminSession().getServerConfig().getString("r_server_version"));
+										+ adminSession.getServerConfig().getString("r_server_version"));
+						
+						adminSession.getSessionManager().release(adminSession);
 					} else {
 						syncProfiles();
 						// for (Profile prof : profiles.values()) {
@@ -494,7 +498,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		// TODO Auto-generated method stub
 		List<Action> ret = getActions("", "");
 		for (Action action : ret) {
-			if (action.id.equals(actionId))
+			if (action.getId().equals(actionId))
 				return action;
 		}
 		return null;
@@ -3664,7 +3668,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					for (UserGroup ug : role.defaultUserGroups) {
 						users.add(ug.id);
 					}
-					rolesUsers.put(role.id, users);
+					rolesUsers.put(role.getId(), users);
 				}
 				Map<String, List<String>> values = new HashMap<String, List<String>>();
 

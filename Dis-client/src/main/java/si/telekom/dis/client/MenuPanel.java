@@ -1,6 +1,5 @@
 package si.telekom.dis.client;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -42,9 +41,9 @@ import com.google.gwt.user.client.ui.ToggleButton;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 import si.telekom.dis.client.action.EditRegisteredTable;
+import si.telekom.dis.client.action.ExplorerSettings;
 import si.telekom.dis.client.action.ImportDocument;
 import si.telekom.dis.client.action.NewDocument;
 import si.telekom.dis.client.action.NewFolder;
@@ -494,6 +493,8 @@ public class MenuPanel extends Composite {
 		vp.add(NewDocument.getMenuItem());
 		vp.add(ImportDocument.getMenuItem());
 		vp.add(NewFolder.getMenuItem());
+		
+		vp.add(ExplorerSettings.getMenuItem());
 		return vp;
 	}
 
@@ -577,7 +578,7 @@ public class MenuPanel extends Composite {
 				String previousActionGroup = "";
 				TreeItem actionGroupItem = null;
 				for (Action action : result) {
-					hmActions.put(action.id, action);
+					hmActions.put(action.getId(), action);
 					String actionGroup = action.getId().split("\\.")[0];
 					if (!previousActionGroup.equals(actionGroup)) {
 						SafeHtmlBuilder itemHtml = new SafeHtmlBuilder();
@@ -591,7 +592,7 @@ public class MenuPanel extends Composite {
 					Image image = new Image(imageResource);
 					image.setPixelSize(16, image.getHeight() * 16 / imageResource.getWidth());
 					hpAction.add(image);
-					HTML lbl = new HTML(action.name);
+					HTML lbl = new HTML(action.getName());
 					lbl.getElement().setId(action.toString());
 					lbl.setStyleName("myLabel");
 

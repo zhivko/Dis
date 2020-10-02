@@ -1,7 +1,12 @@
 package si.telekom.dis.server;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
@@ -19,17 +24,26 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 
 import com.documentum.fc.client.IDfSession;
+import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.client.IDfUser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import si.telekom.dis.shared.LoginService;
 import si.telekom.dis.shared.ServerException;
+import si.telekom.dis.shared.UserSettings;
 
 /**
  * The server-side implementation of the RPC service.
@@ -42,12 +56,26 @@ import si.telekom.dis.shared.ServerException;
  *         unsuccesfull - return Exception
  *
  */
+/**
+ * @author klemen
+ *
+ */
+/**
+ * @author klemen
+ *
+ */
 @SuppressWarnings("serial")
 @RemoteServiceRelativePath("login")
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
 
 	public static List<String> admins = Arrays.asList(new String[] { "zivkovick", "kovacevicr", "shvalec", "dmadmin" });
 
+	/**
+	 * returns objects of following ret[0] ... loginName ret[1] ... password
+	 * entered by user ret[2] ... role of user ret[3] ... documentum UserName
+	 * ret[4] ... documentum repository name ret[5] ... documentum content server
+	 * version ret[6] ... UserSettings
+	 */
 	public String[] login(String loginName, String loginPassword) throws ServerException {
 		// Verify that the input is valid.
 		// if (!FieldVerifier.isValidName(loginName)) {
@@ -82,7 +110,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			String hostName = addr.getHostName();
 
 			if (hostName.equals("localhost") || ip.equals("127.0.0.1")) {
-		  //if (false) {
+				// if (false) {
 				WsServer.maxInactivityTimeSec = 1000;
 				ret[0] = "zivkovick";
 				ret[1] = Base64Utils.toBase64("Doitman789012".getBytes());
@@ -110,7 +138,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				 * adminSession.getSessionManager().release(adminSession); ret[3] =
 				 * dcmtUser.getUserName(); ret[4] = AdminServiceImpl.repositoryName;
 				 */
-				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>" + AdminServiceImpl.getAdminSession().getServerConfig().getString("r_server_version");
+				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>"
+						+ AdminServiceImpl.getAdminSession().getServerConfig().getString("r_server_version");
 
 				Logger.getLogger(this.getClass()).info(String.format("Logged user: %s, role: %s, documentumUser %s", ret[0], ret[2], ret[3]));
 
@@ -132,7 +161,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 			if (!ldapCheck) {
 				userSess = AdminServiceImpl.getSession(loginName, passwordHashed);
-				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>" + AdminServiceImpl.getAdminSession().getServerConfig().getString("r_server_version");
+				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>"
+						+ AdminServiceImpl.getAdminSession().getServerConfig().getString("r_server_version");
 				IDfUser dcmtUser = (IDfUser) userSess.getObjectByQualification("dm_user where user_login_name='" + loginName + "'");
 
 				if (dcmtUser != null) {
@@ -220,6 +250,47 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 	}
 
+	private UserSettings getUserSettings(IDfSession userSess) {
+		UserSettings us = null;
+		try {
+			IDfSysObject obj = (IDfSysObject) userSess
+					.getObjectByQualification("dm_document where folder('/" + userSess.getLoginUserName() + "') and objectName='disUserSettings'");
+
+			JacksonXmlModule xmlModule = new JacksonXmlModule();
+			xmlModule.setDefaultUseWrapper(false);
+			ObjectMapper objectMapper = new XmlMapper(xmlModule);
+			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+			if (obj == null) {
+				obj = (IDfSysObject) userSess.newObject("dm_document");
+				obj.link(userSess.getLoginUserName());
+
+				us = new UserSettings();
+				us.explorerReturnResultCount = 100;
+				us.searchReturnResultCount = 100;
+
+				String xml = objectMapper.writeValueAsString(us);
+
+				ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+				baOs.write(xml.getBytes());
+				obj.setContent(baOs);
+				obj.setContentType("xml");
+				obj.save();
+			}
+
+			ByteArrayInputStream baIs = obj.getContent();
+			us = objectMapper.readValue(baIs, UserSettings.class);
+
+		} catch (Exception e) {
+			ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+			e.printStackTrace(new java.io.PrintStream(baOs));
+
+			Logger.getLogger(this.getClass()).error(baOs.toString());
+
+		}
+		return us;
+	}
+
 	public static String queryLdap(String filter) throws NamingException {
 		String ret = null;
 		Hashtable env = new Hashtable();
@@ -273,6 +344,100 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			return null;
 		}
 		return html.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+	}
+
+	@Override
+	public UserSettings getUserSettings(String loginName, String passwordEncrypted) throws ServerException {
+		UserSettings us = null;
+
+		try {
+			StringWriter writer = new StringWriter();
+			JAXBContext context = JAXBContext.newInstance(UserSettings.class);
+
+			IDfSession userSess = AdminServiceImpl.getSession(loginName, passwordEncrypted);
+
+			String currentPrivateFolder = userSess.getUser(userSess.getLoginUserName()).getDefaultFolder();
+			String privateFolder = "/" + userSess.getLoginUserName();
+			if (!currentPrivateFolder.equals(privateFolder)) {
+				// not correct private folder change it on user!
+				IDfSession adminSession = AdminServiceImpl.getAdminSession();
+
+				IDfUser user = adminSession.getUser(userSess.getLoginUserName());
+				user.setDefaultFolder(privateFolder, true);
+				user.save();
+
+				adminSession.getSessionManager().release(adminSession);
+			}
+
+			IDfSysObject obj = (IDfSysObject) userSess
+					.getObjectByQualification("dm_document where folder('" + privateFolder + "') and object_name='disUserSettings'");
+
+			if (obj == null) {
+				obj = (IDfSysObject) userSess.newObject("dm_document");
+				obj.link(privateFolder);
+				obj.setObjectName("disUserSettings");
+
+				us = new UserSettings();
+				us.explorerReturnResultCount = 30;
+				us.searchReturnResultCount = 30;
+
+				Marshaller m = context.createMarshaller();
+				m.marshal(us, writer);
+
+				ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+				baOs.write(writer.toString().getBytes("UTF-8"));
+				obj.setContentType("xml");
+				obj.setContent(baOs);
+				obj.save();
+			}
+
+			ByteArrayInputStream baIs = obj.getContent();
+
+			Unmarshaller m = context.createUnmarshaller();
+			Reader reader = new InputStreamReader(baIs);
+			us = (UserSettings) m.unmarshal(reader);
+		} catch (Exception ex) {
+			throw new ServerException(ex.getMessage());
+		}
+		return us;
+	}
+
+	@Override
+	public Void saveUserSettings(String loginName, String passwordEncrypted, UserSettings us) throws ServerException {
+		// TODO Auto-generated method stub
+		IDfSession userSess = null;
+		try {
+			String privateFolder = "/" + userSess.getLoginUserName();
+			WsServer.log(loginName, "Saving user settings to xml disUserSettings in " + privateFolder + " ...");
+			
+			userSess = AdminServiceImpl.getSession(loginName, passwordEncrypted);
+
+
+			IDfSysObject obj = (IDfSysObject) userSess
+					.getObjectByQualification("dm_document where folder('" + privateFolder + "') and object_name='disUserSettings'");
+
+			JAXBContext context = JAXBContext.newInstance(UserSettings.class);
+
+			StringWriter writer = new StringWriter();
+			Marshaller m = context.createMarshaller();
+			m.marshal(us, writer);
+
+			ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+			baOs.write(writer.toString().getBytes("UTF-8"));
+			obj.setContentType("xml");
+			obj.setContent(baOs);
+			obj.save();
+
+			WsServer.log(loginName, "Saving user settings to xml disUserSettings in " + privateFolder + " ... Done.");
+
+		} catch (Exception ex) {
+
+		} finally {
+			if (userSess != null)
+				userSess.getSessionManager().release(userSess);
+		}
+		return null;
+
 	}
 
 }

@@ -31,6 +31,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.Grid;
@@ -98,6 +99,8 @@ public class ExplorerPanel extends Composite {
 	public String documentStateId;
 	public Document selectedDocument;
 
+	public CheckBox markAll;
+
 	public ExplorerPanel() {
 		hpActions = new HorizontalPanel();
 		fpProperties = new FocusPanel();
@@ -133,10 +136,31 @@ public class ExplorerPanel extends Composite {
 		txtFolderLb.addItem("/Temp/Jobs");
 		// txtFolderLb.setWidth("10em");
 
+		
+//		markAll = new CheckBox("Označi vse");
+//		markAll.addClickHandler(new ClickHandler() {
+//			@Override
+//			public void onClick(ClickEvent event) {
+//
+//				for (MyAsyncDataProvider dp : ExplorerPanel.this.model.allDataProviders) {
+//					for (Document doc : dp.documents) {
+//						if (markAll.getValue())
+//							CustomTreeModel.selectionModel.setSelected(doc.r_object_id, true);
+//						else
+//							CustomTreeModel.selectionModel.setSelected(doc.r_object_id, false);
+//					}
+//				}
+//
+//			}
+//		});
+		
 		hpFolder.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hpFolder.add(txtFolder);
 		hpFolder.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		hpFolder.add(txtFolderLb);
+//		hpFolder.add(markAll);		
+		
+
 
 		hpFolder.setWidth("100%");
 		hpFolder.setCellWidth(txtFolderLb, "18px");
@@ -246,10 +270,18 @@ public class ExplorerPanel extends Composite {
 		ExplorerPanel.instance.clearSelectedSet();
 
 		this.model = new CustomTreeModel(folderPath, this);
-		cellTree = new MyCellTree(this.model, null, r_object_id, this);
+
+		int size = 0;
+		String className = this.getClass().getName();
+		if (className.endsWith("ExplorerPanel"))
+			size = MainPanel.getInstance().us.explorerReturnResultCount;
+		else if (className.endsWith("SearchPanel"))
+			size = MainPanel.getInstance().us.searchReturnResultCount;
+
+		cellTree = new MyCellTree(this.model, null, r_object_id, this, size);
 
 		// TODO: get tree size from server
-		cellTree.setDefaultNodeSize(CustomTreeModel.length);
+		// cellTree.setDefaultNodeSize(this.model.length);
 
 		ExplorerPanel.getExplorerInstance().sinkEvents(Event.ONCONTEXTMENU);
 		cellTree.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.ENABLED);
@@ -518,12 +550,12 @@ public class ExplorerPanel extends Composite {
 					public void onSuccess(List<Action> result) {
 						if (result.size() > 0) {
 							for (Action action : result) {
-								Button butnAction = new Button(action.name);
+								Button butnAction = new Button(action.getName());
 								butnAction.addClickHandler(new ClickHandler() {
 									@Override
 									public void onClick(ClickEvent event) {
 										// TODO Auto-generated method stub
-										ExplorerPanel.this.runAction(action.id);
+										ExplorerPanel.this.runAction(action.getId());
 									}
 								});
 								ExplorerPanel.this.hpActions.add(butnAction);

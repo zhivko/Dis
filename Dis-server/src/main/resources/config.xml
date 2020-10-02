@@ -101,11 +101,13 @@
 				r_object_id from mob_subscriber_document where
 				mob_subscription_inet_id (Id obrazca v apostrof ločen z vejico) in (&lt;1&gt;)
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
-				<groups>
-					<group name="world"/>
-				</groups>
-				<orderBys/>
-			</query>
+				
+				
+			<groups>
+          <group name="world"/>
+        </groups>
+        <orderBys/>
+      </query>
 			<query name="Naročniški dokument - iskanje po SPP ID">select
 				r_object_id from mob_subscriber_document where
 				mob_subscriber_number (SPP ID stranke) ='&lt;1&gt;'

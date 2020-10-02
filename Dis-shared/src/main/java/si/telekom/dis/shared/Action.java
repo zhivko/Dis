@@ -6,8 +6,9 @@ import java.util.List;
 import si.telekom.dis.shared.ExtendedPermit.extPermit;
 
 public class Action implements HasIdName, com.google.gwt.user.client.rpc.IsSerializable, java.io.Serializable {
-	public String id;
-	public String name;
+	private String id;
+	private String name;
+
 	public Permit.permit permit;
 	public List<ExtendedPermit.extPermit> extPermits;
 
@@ -51,6 +52,10 @@ public class Action implements HasIdName, com.google.gwt.user.client.rpc.IsSeria
 		this.id = id_;
 	}
 
+	public String getName() {
+		return name;
+	}
+	
 	@Override
 	public void setName(String name_) {
 		// TODO Auto-generated method stub

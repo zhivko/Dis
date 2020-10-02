@@ -6,17 +6,20 @@ import java.util.Map;
 import javax.ws.rs.ApplicationPath;
 
 import org.glassfish.jersey.logging.LoggingFeature;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 //Deployment of a JAX-RS application using @ApplicationPath with Servlet 3.0
 //Descriptor-less deployment
 import org.glassfish.jersey.server.ResourceConfig;
+
+import si.telekom.dis.server.ExplorerServiceImpl;
 
 @ApplicationPath("resources")
 public class AppResourceConfig extends ResourceConfig {
 	public AppResourceConfig() {
 
 		register(new LoggingFeature(java.util.logging.Logger.getGlobal(), java.util.logging.Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 10000));
-		register(MultiPartFeature.class);
+		register(ExplorerServiceImpl.class);
+		
+		register(DisRest.class);
 		
     // Tracing properties (modification of the response HTTP headers)
     Map<String, Object> params = new HashMap<String, Object>();
@@ -25,6 +28,8 @@ public class AppResourceConfig extends ResourceConfig {
     addProperties(params);
     
 		packages("si.telekom.dis.server.rest");
+		packages("si.telekom.dis.shared");
+		//packages("si.telekom.dis.server");
 		ResourceConfig config = new ResourceConfig(DisRest.class);
 		config.register(LoggingFeature.class);
 		

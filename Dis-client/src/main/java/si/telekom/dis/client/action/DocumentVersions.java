@@ -10,6 +10,7 @@ import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.i18n.shared.DateTimeFormat;
@@ -22,6 +23,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.AsyncDataProvider;
+import com.google.gwt.view.client.CellPreviewEvent;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.view.client.Range;
@@ -29,6 +31,7 @@ import com.google.gwt.view.client.Range;
 import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MySimplePager;
 import si.telekom.dis.client.WindowBox;
+import si.telekom.dis.client.action.DocumentAuditTrail.Row;
 import si.telekom.dis.shared.Document;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
@@ -60,6 +63,25 @@ public class DocumentVersions extends WindowBox {
 		pager.setDisplay(cellTable);
 		pager.setPageSize(20);
 		pager.setWidth("100%");
+		
+		cellTable.addCellPreviewHandler(new CellPreviewEvent.Handler<Row>() {
+
+			@Override
+			public void onCellPreview(CellPreviewEvent<Row> event) {
+				// TODO Auto-generated method stub
+				if (event.getNativeEvent().getType().equals(BrowserEvents.CLICK)) {
+					int column = event.getContext().getColumn();
+					//if (event.getContext().getSubIndex() > 0) {
+					if(column==0)
+					{
+						String r_object_id = event.getValue().getValues().get(column);
+						DocumentView view = new DocumentView(r_object_id);
+						view.show();
+					}
+				}
+			}
+
+		});		
 
 		Column<Row, String> colRObjectId = new Column<Row, String>(new ClickableTextCell()) {
 			@Override
@@ -77,13 +99,8 @@ public class DocumentVersions extends WindowBox {
 			// }
 			// }
 
-			@Override
-			public void onBrowserEvent(Context context, Element elem, Row row, NativeEvent event) {
-				// TODO Auto-generated method stub
-				// super.onBrowserEvent(context, elem, object, event);
-				DocumentView v = new DocumentView(row.getValues().get(0));
-				v.show();
-			}
+
+
 
 			@Override
 			public void render(Context context, Row row, SafeHtmlBuilder sb) {

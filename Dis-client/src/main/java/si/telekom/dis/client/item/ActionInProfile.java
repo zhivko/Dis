@@ -24,7 +24,7 @@ public class ActionInProfile extends Composite {
 		HorizontalPanel hp = new HorizontalPanel();
 
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		HTML lbl = new HTML(item.name);
+		HTML lbl = new HTML(item.getName());
 		lbl.addDragStartHandler(new DragStartHandler() {
 			@Override
 			public void onDragStart(DragStartEvent event) {

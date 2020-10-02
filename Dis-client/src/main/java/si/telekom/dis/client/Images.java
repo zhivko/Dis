@@ -47,7 +47,9 @@ public interface Images extends Tree.Resources {
 
 	@Source("/content/webui/search.png")
 	ImageResource search();
-	
+
+	@Source("/content/webui/settings_16.png")
+	ImageResource settings();	
 	
 	@Source("/content/documentum/icons/type/t_dm_type_16.gif")
 	ImageResource doctype();

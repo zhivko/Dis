@@ -37,8 +37,8 @@ public class Role extends IsSelected {
 	{
 		this();
 		this.item = rol;
-		id.setText(rol.id);
-		name.setText(rol.name);
+		id.setText(rol.getId());
+		name.setText(rol.getName());
 		this.parentVertCont = parent;
 	}
 	

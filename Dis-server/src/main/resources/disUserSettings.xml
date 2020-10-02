@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<explorer>
+		<returnResultCount>100</returnResultCount>
+	</explorer>
+	<search>
+		<returnResultCount>100</returnResultCount>
+	</search>
+</settings>

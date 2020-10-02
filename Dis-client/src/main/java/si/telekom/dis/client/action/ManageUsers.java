@@ -20,6 +20,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import si.telekom.dis.client.ExplorerPanel;
 import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MenuPanel;
 import si.telekom.dis.client.MultiValueSelectBox;
@@ -39,7 +40,14 @@ public class ManageUsers extends WindowBox {
 	int defaultUserCountRespReceived = 0;
 
 	public ManageUsers(String r_object_id_) {
-		r_object_id = r_object_id_;
+		
+		ArrayList<String> allChecked = new ArrayList<String>();
+		for (String r_object_ids_ : ExplorerPanel.getExplorerInstance().getCheckedObjects()) {
+			allChecked.add(r_object_ids_);
+		}
+		if(allChecked.size()==0)
+			allChecked.add(this.r_object_id);
+		
 		setText("Vloge in uporabniki");
 		setGlassEnabled(true);
 
@@ -82,7 +90,7 @@ public class ManageUsers extends WindowBox {
 				}
 
 				explorerService.setUsersForRoles(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
-						r_object_id_, roleUsersHm, new AsyncCallback<Void>() {
+						allChecked, roleUsersHm, new AsyncCallback<Void>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								MainPanel.log(caught.getMessage());
@@ -118,7 +126,7 @@ public class ManageUsers extends WindowBox {
 
 		for (Role role : attAndValues.profile.roles) {
 
-			if (!role.id.equalsIgnoreCase("unclassified")) {
+			if (!role.getId().equalsIgnoreCase("unclassified")) {
 				String dqlUsers = "";
 				ArrayList<String> usersGroups = new ArrayList<String>();
 
@@ -134,8 +142,8 @@ public class ManageUsers extends WindowBox {
 							usersGroups.add(userGroupId);
 					}
 				} else {
-					if (attAndValues.rolesAndUsers.containsKey(role.id)) {
-						for (String userGroupName : attAndValues.rolesAndUsers.get(role.id)) {
+					if (attAndValues.rolesAndUsers.containsKey(role.getId())) {
+						for (String userGroupName : attAndValues.rolesAndUsers.get(role.getId())) {
 							dqlUsers = dqlUsers + "'" + userGroupName + "',";
 							if (userGroupName.equals("dm_world") || userGroupName.equals("dm_group"))
 								usersGroups.add(userGroupName);
@@ -171,8 +179,8 @@ public class ManageUsers extends WindowBox {
 				MultiValueSelectBox addUG = new MultiValueSelectBox(attUsers, lb);
 
 				vp.add(addUG);
-				tpUsers.add(vp, role.name);
-				rolesAndUsers.put(role.id, lb);
+				tpUsers.add(vp, role.getName());
+				rolesAndUsers.put(role.getId(), lb);
 
 				// @formatter:off
 				String fullDqlUg = "select user_name, description from dm_user where 1=1 and user_name in (" + dqlUsers

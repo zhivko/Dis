@@ -1244,10 +1244,10 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 						String className = w.getClass().getName();
 						if (className.endsWith("ActionInProfile")) {
 							ActionInProfile actInProf = (ActionInProfile) w;
-							actions.add(actInProf.item.id);
+							actions.add(actInProf.item.getId());
 						}
 					}
-					hmRoleActionsInState.put(role.id, actions);
+					hmRoleActionsInState.put(role.getId(), actions);
 				}
 			}
 			p.roleStateActions.put(state.id, hmRoleActionsInState);
@@ -1487,7 +1487,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 	public void removeRole(int itemNo) {
 		// TODO Auto-generated method stub
 		si.telekom.dis.shared.Role role = (si.telekom.dis.shared.Role) (roles.getItem(itemNo).item);
-		String roleId = role.id;
+		String roleId = role.getId();
 		for (AttributeRoleStateWizards arsw : attributeRolesStatesWizards) {
 			Iterator<String> stateIt = arsw.stateRole.keySet().iterator();
 			while (stateIt.hasNext()) {

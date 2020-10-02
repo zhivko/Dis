@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Role implements HasIdName, com.google.gwt.user.client.rpc.IsSerializable, java.io.Serializable {
-	public String id;
-	public String name;
+	private String id;
+	private String name;
 	public List<UserGroup> defaultUserGroups;
 
 	public Role() {
@@ -36,6 +36,11 @@ public class Role implements HasIdName, com.google.gwt.user.client.rpc.IsSeriali
 		this.id = id_;
 	}
 
+	public String getName() {
+		// TODO Auto-generated method stub
+		return this.name;
+	}	
+	
 	@Override
 	public void setName(String name_) {
 		// TODO Auto-generated method stub

@@ -1,5 +1,6 @@
 package si.telekom.dis.client.action;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.GWT;
@@ -28,7 +29,14 @@ public class DocumentAddVersionLabel extends WindowBox {
 	MyTxtBox customLabel = new MyTxtBox("Labela verzije");
 
 	public DocumentAddVersionLabel(String r_object_id_) {
-		r_object_id = r_object_id_;
+		
+		ArrayList<String> allChecked = new ArrayList<String>();
+		for (String r_object_ids_ : ExplorerPanel.getExplorerInstance().getCheckedObjects()) {
+			allChecked.add(r_object_ids_);
+		}
+		if(allChecked.size()==0)
+			allChecked.add(this.r_object_id);
+		
 		setText("Standardne labele verzije");
 		setGlassEnabled(true);
 
@@ -66,7 +74,7 @@ public class DocumentAddVersionLabel extends WindowBox {
 					labelVersion = customLabel.getValue();
 
 				if (labelVersion != null)
-					explorerService.addVersionLabel(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id_, labelVersion,
+					explorerService.addVersionLabel(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, allChecked, labelVersion,
 							new AsyncCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {

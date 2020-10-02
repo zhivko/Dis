@@ -373,7 +373,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				long milis3 = System.currentTimeMillis();
 				int duration = (int) ((milis3 - milis2) / 1000);
 				if (duration % 1 == 0 && prevLogOutputDuration != duration) {
-					String message = "still parsing, currently: " + ret.size() + " working for: " + duration + "s";
+					String message = "still parsing, currently: " + ret.size() + "/" + length + " working for: " + duration + "s";
 					Logger.getLogger(this.getClass()).info("\t" + message);
 					WsServer.log(loginName, message);
 					prevLogOutputDuration = duration;
@@ -1749,21 +1749,31 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	}
 
 	@Override
-	public Void setUsersForRoles(String loginName, String password, String r_object_id, Map<String, List<String>> rolesUsers) throws ServerException {
+	public Void setUsersForRoles(String loginName, String password, List<String> r_object_ids, Map<String, List<String>> rolesUsers)
+			throws ServerException {
+
+		Logger.getLogger(this.getClass()).info("setUsersForRoles started by user: " + loginName);
+
 		IDfSession userSession = null;
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			userSession.beginTrans();
 
-			IDfPersistentObject persObject = userSession.getObject(new DfId(r_object_id));
+			for (String r_object_id : r_object_ids) {
+				Logger.getLogger(this.getClass()).info("setUsersForRoles started for user: " + loginName + " r_object_id: " + r_object_id);
 
-			checkDocmanSExist(persObject, userSession, null);
-			setUsersForRoles(userSession, persObject, rolesUsers);
+				userSession.beginTrans();
 
-			if (userSession.isTransactionActive())
-				userSession.commitTrans();
-			Logger.getLogger(this.getClass()).info("setUsersForRoles completed. objectName: " + persObject.getString("object_name") + " r_object_id: "
-					+ persObject.getId("r_object_id").toString());
+				IDfPersistentObject persObject = userSession.getObject(new DfId(r_object_id));
+
+				checkDocmanSExist(persObject, userSession, null);
+				setUsersForRoles(userSession, persObject, rolesUsers);
+
+				if (userSession.isTransactionActive())
+					userSession.commitTrans();
+
+				Logger.getLogger(this.getClass()).info("setUsersForRoles completed. objectName: " + persObject.getString("object_name") + " r_object_id: "
+						+ persObject.getId("r_object_id").toString());
+			}
 
 		} catch (Throwable ex) {
 			StringWriter errorStringWriter = new StringWriter();
@@ -2577,8 +2587,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	}
 
 	@Override
-	public Void addVersionLabel(String loginName, String password, String r_object_id, String labelVersion) throws ServerException {
-		getLogger().info("Starting addVersionLabel for user " + loginName + " r_object_id: " + r_object_id);
+	public Void addVersionLabel(String loginName, String password, List<String> r_object_ids, String labelVersion) throws ServerException {
+		getLogger().info("Starting addVersionLabel by user: " + loginName);
 
 		IDfSession userSession = null;
 
@@ -2586,25 +2596,30 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
-			IDfPersistentObject persObject = userSession.getObject(new DfId(r_object_id));
-			if (persObject == null) {
-				throw new ServerException("Object specified by rObjectId=" + r_object_id + " doesn't exist.");
-			}
+			for (String r_object_id : r_object_ids) {
+				getLogger().info("Starting addVersionLabel for user " + loginName + " r_object_id: " + r_object_id);
 
-			IDfDocument dfDocument = (IDfDocument) persObject;
-
-			boolean ok = false;
-			for (int i = 0; i < dfDocument.getVersionLabelCount(); i++) {
-				if (dfDocument.getVersionLabel(i).equals("CURRENT")) {
-					ok = true;
+				IDfPersistentObject persObject = userSession.getObject(new DfId(r_object_id));
+				if (persObject == null) {
+					throw new ServerException("Object specified by rObjectId=" + r_object_id + " doesn't exist.");
 				}
-			}
 
-			if (ok) {
-				dfDocument.mark(labelVersion);
-				dfDocument.save();
-			} else {
-				throw new Exception("Object is not current, new version exists. Check SHOW Versions.");
+				IDfDocument dfDocument = (IDfDocument) persObject;
+
+				boolean ok = false;
+				for (int i = 0; i < dfDocument.getVersionLabelCount(); i++) {
+					if (dfDocument.getVersionLabel(i).equals("CURRENT")) {
+						ok = true;
+					}
+				}
+
+				if (ok) {
+					dfDocument.mark(labelVersion);
+					dfDocument.save();
+				} else {
+					throw new Exception("Object is not current, new version exists. Check SHOW Versions.");
+				}
+
 			}
 
 		} catch (Exception ex) {
@@ -2619,14 +2634,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			AdminServiceImpl.getInstance().releaseSession(userSession);
 
 		}
-		getLogger().info("addVersionLabel completed for rObjectid=" + r_object_id);
+		getLogger().info("addVersionLabel completed.");
 		return null;
 	}
 
 	@Override
-	public Void removeVersionLabel(String loginName, String password, String rObjectId, String labelVersion) throws ServerException {
+	public Void removeVersionLabel(String loginName, String password, List<String> rObjectIds, String labelVersion) throws ServerException {
 		// TODO Auto-generated method stub
-		getLogger().info("Starting removeVersionLabel for user " + loginName + " r_object_id: " + rObjectId);
+		getLogger().info("Starting removeVersionLabel by user " + loginName);
 
 		IDfSession userSession = null;
 
@@ -2634,25 +2649,30 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
-			IDfPersistentObject persObject = userSession.getObject(new DfId(rObjectId));
-			if (persObject == null) {
-				throw new ServerException("Object specified by rObjectId=" + rObjectId + " doesn't exist.");
-			}
+			for (String rObjectId : rObjectIds) {
+				getLogger().info("Starting removeVersionLabel for user " + loginName + " r_object_id: " + rObjectId);
 
-			IDfDocument dfDocument = (IDfDocument) persObject;
-
-			boolean ok = false;
-			for (int i = 0; i < dfDocument.getVersionLabelCount(); i++) {
-				if (dfDocument.getVersionLabel(i).equals("CURRENT")) {
-					ok = true;
+				IDfPersistentObject persObject = userSession.getObject(new DfId(rObjectId));
+				if (persObject == null) {
+					throw new ServerException("Object specified by rObjectId=" + rObjectId + " doesn't exist.");
 				}
-			}
 
-			if (ok) {
-				dfDocument.unmark(labelVersion);
-				dfDocument.save();
-			} else {
-				throw new ServerException("Object is not current, new version exists. Check SHOW Versions.");
+				IDfDocument dfDocument = (IDfDocument) persObject;
+
+				boolean ok = false;
+				for (int i = 0; i < dfDocument.getVersionLabelCount(); i++) {
+					if (dfDocument.getVersionLabel(i).equals("CURRENT")) {
+						ok = true;
+					}
+				}
+
+				if (ok) {
+					dfDocument.unmark(labelVersion);
+					dfDocument.save();
+				} else {
+					throw new ServerException("Object is not current, new version exists. Check SHOW Versions.");
+				}
+
 			}
 
 		} catch (Exception ex) {
@@ -2667,7 +2687,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			AdminServiceImpl.getInstance().releaseSession(userSession);
 
 		}
-		getLogger().info("removeVersionLabel completed for rObjectid=" + rObjectId);
+		getLogger().info("removeVersionLabel completed.");
 		return null;
 	}
 
@@ -2736,22 +2756,17 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						}
 					}
 				}
-				
-				
+
 				if (att.defaultValueIsCalculatedOnServer) {
 					if (att.defaultValueIsDql) {
 						// att.defaultValue
 						String value = ExplorerServiceImpl.getInstance().dqlLookup(loginName, password, att.defaultValue).get(0).get(0);
 						IDfValue val = new DfValue(value);
-						persObject.setValue(attName, val);						
+						persObject.setValue(attName, val);
 					}
 				}
-				
+
 			}
-			
-			
-			
-			
 
 			GregorianCalendar gcal = new GregorianCalendar();
 			gcal.setTime(new Date());
@@ -2926,10 +2941,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							// att.defaultValue
 							String value = ExplorerServiceImpl.getInstance().dqlLookup(loginName, password, att.defaultValue).get(0).get(0);
 							IDfValue val = new DfValue(value);
-							persObject.setValue(attName, val);						
+							persObject.setValue(attName, val);
 						}
 					}
-					
+
 				}
 
 				// copy attribute subject and title from template
@@ -3132,7 +3147,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				long milis3 = System.currentTimeMillis();
 				int duration = (int) ((milis3 - milis2) / 1000);
 				if (duration % 1 == 0 && prevLogOutputDuration != duration) {
-					String message = "still parsing, currently: " + ret.size() + " working for: " + duration + "s";
+					String message = "still parsing, currently: " + ret.size() + "/" + length + " working for: " + duration + "s";
 					Logger.getLogger(this.getClass()).info("\t" + message);
 					WsServer.log(loginName, message);
 					prevLogOutputDuration = duration;
@@ -3566,10 +3581,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					for (int i = 0; i < prof.roles.size(); i++) {
 						for (int k = 0; k < prof.roles.get(i).defaultUserGroups.size(); k++) {
 							UserGroup ug = prof.roles.get(i).defaultUserGroups.get(k);
-							if (!roleUserGroups.containsKey(prof.roles.get(i).id))
-								roleUserGroups.put(prof.roles.get(i).id, new ArrayList<String>());
+							if (!roleUserGroups.containsKey(prof.roles.get(i).getId()))
+								roleUserGroups.put(prof.roles.get(i).getId(), new ArrayList<String>());
 
-							roleUserGroups.get(prof.roles.get(i).id).add(ug.id);
+							roleUserGroups.get(prof.roles.get(i).getId()).add(ug.id);
 						}
 					}
 
@@ -3620,8 +3635,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		IDfCollection collection = null;
 		IDfSession sess = null;
 
+		File tempFile = null;
 		try {
-			File tempFile = File.createTempFile("recognize", ".new");
+			tempFile = File.createTempFile("recognize", ".new");
 
 			byte[] data = Base64.getDecoder().decode(base64Content.split(",")[1]);
 			try (OutputStream stream = new FileOutputStream(tempFile.getAbsolutePath())) {
@@ -3658,6 +3674,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Logger.getLogger(this.getClass()).error(ex);
 		} finally {
 			sess.getSessionManager().release(sess);
+			if (tempFile != null)
+				tempFile.delete();
 		}
 
 		return al;

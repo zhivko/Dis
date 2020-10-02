@@ -25,7 +25,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -38,6 +37,7 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.WebSocket;
 import si.telekom.dis.shared.AdminService;
 import si.telekom.dis.shared.AdminServiceAsync;
+import si.telekom.dis.shared.UserSettings;
 
 public class MainPanel extends Composite {
 	public String loginName;
@@ -58,6 +58,8 @@ public class MainPanel extends Composite {
 	private final AdminServiceAsync adminService = GWT.create(AdminService.class);
 
 	public SplitLayoutPanel splitLayoutPanel;
+	
+	public UserSettings us;
 
 	public ScrollPanel spLog;
 	
@@ -82,12 +84,12 @@ public class MainPanel extends Composite {
 	}
 
 	public MainPanel(String[] loginData) {
-		loginName = loginData[0];
-		loginPass = loginData[1];
-		loginRole = loginData[2];
-		dctmUserName = loginData[3];
-		repository = loginData[4];
-		contentServerVersion = loginData[5];		
+		loginName = (String)loginData[0];
+		loginPass = (String)loginData[1];
+		loginRole = (String)loginData[2];
+		dctmUserName = (String)loginData[3];
+		repository = (String)loginData[4];
+		contentServerVersion = (String)loginData[5];		
 		
 		progressBar = new ProgressBar();
 		progressBar.setType(ProgressBarType.INFO);

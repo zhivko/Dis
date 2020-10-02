@@ -7,4 +7,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public interface LoginServiceAsync {
 	void login(String loginName, String passwordHashed, AsyncCallback<String[]> callback) throws IllegalArgumentException;
+
+	void getUserSettings(String loginName, String passwordEncrypted, AsyncCallback<UserSettings> callback) throws IllegalArgumentException;
+
+	void saveUserSettings(String loginName, String passwordEncrypted, UserSettings us, AsyncCallback<Void> callback) throws IllegalArgumentException;
 }

@@ -235,7 +235,7 @@ public class NewDocument extends ActionDialogBox {
 		rolesAndUsers = new HashMap<String, ListBox>();
 		for (Role role : prof.roles) {
 
-			if (!role.id.equalsIgnoreCase("unclassified")) {
+			if (!role.getId().equalsIgnoreCase("unclassified")) {
 				final ListBox lb = new ListBox();
 				String dqlUsers = "";
 				ArrayList<String> usersGroups = new ArrayList<String>();
@@ -298,7 +298,7 @@ public class NewDocument extends ActionDialogBox {
 								vp.add(addUG);
 
 								tpUsers.add(vp, role.getParameter());
-								rolesAndUsers.put(role.id, lb);
+								rolesAndUsers.put(role.getId(), lb);
 
 								tpUsers.selectTab(0);
 							}

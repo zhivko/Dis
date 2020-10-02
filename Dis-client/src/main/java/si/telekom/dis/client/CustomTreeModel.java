@@ -27,7 +27,7 @@ import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
 
 public class CustomTreeModel implements TreeViewModel {
-	public static final int length = 20;
+	public int length = 20;
 	public String startFolder = "";
 	Images images = (Images) GWT.create(Images.class);
 	private final ExplorerServiceAsync explorerService = GWT.create(ExplorerService.class);
@@ -59,6 +59,12 @@ public class CustomTreeModel implements TreeViewModel {
 		this();
 		this.startFolder = startFolder_;
 		this.explorerOrSearch = explorerOrSearch_;
+		
+		if(explorerOrSearch_.getClass().getName().endsWith("SearchPanel"))
+			this.length = MainPanel.getInstance().us.searchReturnResultCount;
+
+		if(explorerOrSearch_.getClass().getName().endsWith("ExplorerPanel"))
+			this.length = MainPanel.getInstance().us.explorerReturnResultCount;
 	}
 
 	/**
@@ -207,6 +213,8 @@ public class CustomTreeModel implements TreeViewModel {
 						public void onSuccess(List<Document> result) {
 							// TODO Auto-generated method stub
 							// pd.hideit();
+							GWT.log("retrieved " + result.size() + " documents.");
+							
 							MyAsyncDataProvider myAsyncDataProvider = getDataProviderThatHandlesDoc(result.get(0).r_object_id, result.get(0).i_chronicle_id);
 
 							int i = 0;
@@ -304,7 +312,7 @@ public class CustomTreeModel implements TreeViewModel {
 								Scheduler.get().scheduleDeferred(new Command() {
 									@Override
 									public void execute() {
-										if (result.size() == CustomTreeModel.length) {
+										if (result.size() == CustomTreeModel.this.length) {
 											makeShowMoreVisible(whatId, ExplorerPanel.getExplorerInstance().cellTree);
 										} else
 											makeShowMoreInVisible(whatId, ExplorerPanel.getExplorerInstance().cellTree);
@@ -344,9 +352,9 @@ public class CustomTreeModel implements TreeViewModel {
 									@Override
 									public void execute() {
 										int resultSize = result.size();
-										int ctmLength = CustomTreeModel.length;
+										int ctmLength = CustomTreeModel.this.length;
 
-										if (result.size() == CustomTreeModel.length) {
+										if (result.size() == CustomTreeModel.this.length) {
 											makeShowMoreVisible(whatId, SearchPanel.getSearchPanelInstance().cellTree);
 										} else
 											makeShowMoreInVisible(whatId, SearchPanel.getSearchPanelInstance().cellTree);

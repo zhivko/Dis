@@ -31,6 +31,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import si.telekom.dis.shared.LoginService;
 import si.telekom.dis.shared.LoginServiceAsync;
+import si.telekom.dis.shared.UserSettings;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -63,24 +64,25 @@ public class WebUi2 implements EntryPoint {
 
 	public void forward(String[] loginData) {
 		if (authenticated) {
-			RootPanel.get("loginPanel").setVisible(false);
-			RootPanel.get().remove(RootPanel.get("loginPanel"));
-			MainPanel mp = new MainPanel(loginData);
+			loginService.getUserSettings(nameField.getValue(), passField.getValue(), new AsyncCallback<UserSettings>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					GWT.log(caught.getMessage());
+				}
 
-			ExplorerPanel.getExplorerInstance().refresh("");
+				public void onSuccess(UserSettings result) {
+					RootPanel.get("loginPanel").setVisible(false);
+					RootPanel.get().remove(RootPanel.get("loginPanel"));
+					MainPanel mp = new MainPanel(loginData);
+					mp.setVisible(true);
+					mp.us = result;
+					ExplorerPanel.getExplorerInstance().refresh("");
+					RootPanel.get("mainPanel").clear();
+					RootLayoutPanel rp = RootLayoutPanel.get();
+					rp.add(mp);
+				};
+			});
 
-			mp.setVisible(true);
-
-			// Attach the LayoutPanel to the RootLayoutPanel. The latter will listen
-			// for
-			// resize events on the window to ensure that its children are informed of
-			// possible size changes.
-
-			RootPanel.get("mainPanel").clear();
-			RootLayoutPanel rp = RootLayoutPanel.get();
-			rp.add(mp);
-
-			// RootPanel.get("mainPanel").add(mp);
 		} else {
 			RootPanel.get("mainPanel").setVisible(false);
 			RootPanel.get("loginPanel").setVisible(true);
@@ -230,8 +232,8 @@ public class WebUi2 implements EntryPoint {
 					}
 
 					public void onSuccess(String[] result) {
-						nameField.setText(result[0]);
-						passField.setText(result[1]);
+						nameField.setText((String) result[0]);
+						passField.setText((String) result[1]);
 						authenticated = true;
 						forward(result);
 					}
@@ -254,7 +256,6 @@ public class WebUi2 implements EntryPoint {
 			}
 		});
 		loginButton.addClickHandler(handler);
-
 
 		passField.addKeyUpHandler(handler);
 

@@ -1,5 +1,7 @@
 package si.telekom.dis.server.rest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,20 +44,34 @@ public class DisRest {
 		}
 	}
 
+
 	@GET
-	@Consumes(MediaType.APPLICATION_JSON)
+	@Consumes({"text/xml", "application/json"})
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/newDocument")
 	public String newDocument(@QueryParam("loginName") String loginName, @QueryParam("password") String password,
-			@QueryParam("profileId") String profileId, @QueryParam("attributes") Map<String, List<String>> attributes, Map<String, List<String>> rolesUsers,
+			@QueryParam("profileId") String profileId, @QueryParam("attributes") AttValueList attributes, @QueryParam("usersRoles") RoleValueList roles,
 			String templateObjectNameOrFolder) {
 		try {
-			return ExplorerServiceImpl.getInstance().newDocument(loginName, password, profileId, attributes, rolesUsers, templateObjectNameOrFolder);
+			
+			HashMap<String, List<String>> vals = new HashMap<String, List<String>>();
+			for (AttValue attValue : attributes.attValueList) {
+				vals.put(attValue.attName, attValue.values);
+			}
+			
+			HashMap<String, List<String>> rolesUsers = new HashMap<String, List<String>>();
+			for (RoleValue roleValue : roles.roleValueList) {
+				rolesUsers.put(roleValue.roleName, roleValue.values);
+			}
+			
+			return ExplorerServiceImpl.getInstance().newDocument(loginName, password, profileId, vals, rolesUsers, templateObjectNameOrFolder);
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
 		}
 	}
 
+	
+	/*
 	@GET
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -64,18 +80,15 @@ public class DisRest {
 			@QueryParam("folderRObjectId") String folderRObjectId, @QueryParam("profileId") String profileId,
 			@QueryParam("attributes") Map<String, List<String>> attributes, @QueryParam("rolesUsers") Map<String, List<String>> rolesUsers,
 			@QueryParam("base64Content") byte[] base64Content, @QueryParam("format") String format) {
-		// return ExplorerServiceImpl.getInstance().importDocument(loginName,
-		// password, folderRObjectId, profileId, attributes, rolesUsers,
-		// base64Content,
-		// format);
 		try {
 			return ExplorerServiceImpl.getInstance().importDocument(loginName, password, folderRObjectId, profileId, attributes, rolesUsers, base64Content,
 					format);
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
 		}
-
 	}
+	*/
+	
 
 	@GET
 	@Consumes(MediaType.TEXT_HTML)

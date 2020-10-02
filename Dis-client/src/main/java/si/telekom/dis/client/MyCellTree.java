@@ -9,6 +9,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.cellview.client.CellTree;
+import com.google.gwt.user.cellview.client.CellTree.CellTreeMessages;
+import com.google.gwt.user.cellview.client.CellTree.Resources;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
@@ -19,20 +21,25 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.TreeViewModel;
 
+
 import si.telekom.dis.client.CustomTreeModel.MyAsyncDataProvider;
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.Document;
 
 public class MyCellTree<T> extends CellTree {
 	private final static java.util.logging.Logger logger = java.util.logging.Logger.getLogger("mylogger");
+
 	String objectIdOrDql;
 	VerticalPanel vp1;
 	PopupPanel popupMenu;
 	ExplorerPanel explorerOrSearch;
 
-	public MyCellTree(TreeViewModel viewModel, T rootValue, String objectIdOrDql, ExplorerPanel explorerOrSearch_) {
-		super(viewModel, rootValue);
+	public MyCellTree(TreeViewModel viewModel, T rootValue, String objectIdOrDql, ExplorerPanel explorerOrSearch_, int size) {
+		super(viewModel, rootValue, GWT.create(CellTree.Resources.class), GWT.create(CellTree.CellTreeMessages.class), size);
+		//super(viewModel, rootValue);
+		this.setDefaultNodeSize(size);
 		this.objectIdOrDql = objectIdOrDql;
+		
 
 		popupMenu = new PopupPanel();
 		vp1 = new VerticalPanel();
@@ -70,7 +77,20 @@ public class MyCellTree<T> extends CellTree {
 			});
 			lblCheckAll.setStyleName("popUpItem");
 			
-
+			Label lblUnCheckAll = new Label("Odznači vse");
+			lblUnCheckAll.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					for (MyAsyncDataProvider dp : MenuPanel.activeExplorerInstance.model.allDataProviders) {
+						for (Document doc : dp.documents) {
+							CustomTreeModel.selectionModel.getSelectedSet().clear();
+						}
+						dp.updateRowData(0, dp.documents);
+					}
+				}
+			});
+			lblUnCheckAll.setStyleName("popUpItem");
+			
 			Label lblDownloadChecked = new Label("Prenesi izbrane dokumente");
 			lblDownloadChecked.setStyleName("popUpItem");
 			ClickHandler massExportClickHandler = new ClickHandler() {
@@ -103,7 +123,9 @@ public class MyCellTree<T> extends CellTree {
 			lblDownloadChecked.addClickHandler(massExportClickHandler);
 			lblDownloadChecked.setStyleName("popUpItem");
 			vp1.add(lblCheckAll);
+			vp1.add(lblUnCheckAll);			
 			vp1.add(lblDownloadChecked);
+			
 
 			ExplorerPanel.explorerService.getActionsForObject(loginName, loginPass, explorerOrSearch.r_object_id, new AsyncCallback<List<Action>>() {
 				@Override
@@ -116,24 +138,24 @@ public class MyCellTree<T> extends CellTree {
 				public void onSuccess(List<Action> result) {
 					if (result.size() > 0) {	
 						for (Action action : result) {
-							Label lbl = new Label(action.name);
+							Label lbl = new Label(action.getName());
 							lbl.setStyleName("popUpItem");
 							lbl.addClickHandler(new ClickHandler() {
 								@Override
 								public void onClick(ClickEvent event) {
 									// TODO Auto-generated method stub
 									popupMenu.hide();
-									ExplorerPanel.getExplorerInstance().runAction(action.id);
+									ExplorerPanel.getExplorerInstance().runAction(action.getId());
 								}
 							});
 							vp1.add(lbl);
 
-							Button butnAction = new Button(action.name);
+							Button butnAction = new Button(action.getName());
 							butnAction.addClickHandler(new ClickHandler() {
 								@Override
 								public void onClick(ClickEvent event) {
 									// TODO Auto-generated method stub
-									ExplorerPanel.getExplorerInstance().runAction(action.id);
+									ExplorerPanel.getExplorerInstance().runAction(action.getId());
 								}
 							});
 							explorerOrSearch.hpActions.add(butnAction);

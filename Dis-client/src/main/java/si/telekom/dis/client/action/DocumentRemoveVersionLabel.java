@@ -1,5 +1,6 @@
 package si.telekom.dis.client.action;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.GWT;
@@ -22,12 +23,20 @@ import si.telekom.dis.shared.ExplorerServiceAsync;
 public class DocumentRemoveVersionLabel extends WindowBox {
 	String r_object_id;
 	private final static ExplorerServiceAsync explorerService = GWT.create(ExplorerService.class);
-	private final static Logger logger = java.util.logging.Logger.getLogger("mylogger");
 
 	MyTxtBox versionLabel;
 
 	public DocumentRemoveVersionLabel(String r_object_id_) {
-		r_object_id = r_object_id_;
+
+		ArrayList<String> allChecked = new ArrayList<String>();
+		for (String r_object_ids_ : ExplorerPanel.getExplorerInstance().getCheckedObjects()) {
+			allChecked.add(r_object_ids_);
+		}
+		if(allChecked.size()==0)
+			allChecked.add(this.r_object_id);
+
+		
+		
 		setText("Odstrani labelo verzije");
 		setGlassEnabled(true);
 
@@ -41,7 +50,7 @@ public class DocumentRemoveVersionLabel extends WindowBox {
 			public void onClick(ClickEvent event) {
 				// TODO Auto-generated method stub
 				String labelVersion = versionLabel.getValue();
-				explorerService.removeVersionLabel(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id_, labelVersion,
+				explorerService.removeVersionLabel(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, allChecked, labelVersion,
 						new AsyncCallback<Void>() {
 							@Override
 							public void onSuccess(Void result) {

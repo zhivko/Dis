@@ -350,10 +350,10 @@ public class UploadServlet extends HttpServlet {
 													for (int i = 0; i < prof.roles.size(); i++) {
 														for (int k = 0; k < prof.roles.get(i).defaultUserGroups.size(); k++) {
 															UserGroup ug = prof.roles.get(i).defaultUserGroups.get(k);
-															if (!roleUserGroups.containsKey(prof.roles.get(i).id))
-																roleUserGroups.put(prof.roles.get(i).id, new ArrayList<String>());
+															if (!roleUserGroups.containsKey(prof.roles.get(i).getId()))
+																roleUserGroups.put(prof.roles.get(i).getId(), new ArrayList<String>());
 
-															roleUserGroups.get(prof.roles.get(i).id).add(ug.id);
+															roleUserGroups.get(prof.roles.get(i).getId()).add(ug.id);
 														}
 													}
 

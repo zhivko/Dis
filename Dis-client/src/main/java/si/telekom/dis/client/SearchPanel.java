@@ -7,7 +7,8 @@ import si.telekom.dis.shared.Document;
 
 public class SearchPanel extends ExplorerPanel {
 	static SearchPanel searchPanelInstance;
-//
+
+	//
 	public SearchPanel() {
 		super();
 		this.hideTxtFolder();
@@ -15,9 +16,11 @@ public class SearchPanel extends ExplorerPanel {
 
 	public void runReadDqlQuery(String dql) {
 		this.model = new CustomTreeModel(dql, this);
-		this.cellTree = new MyCellTree<Document>(this.model, null, dql, this);
 
-		cellTree.setDefaultNodeSize(CustomTreeModel.length);
+		int size = MainPanel.getInstance().us.searchReturnResultCount;
+		this.cellTree = new MyCellTree<Document>(this.model, null, dql, this, size);
+
+		cellTree.setDefaultNodeSize(this.model.length);
 
 		SearchPanel.getExplorerInstance().sinkEvents(Event.ONCONTEXTMENU);
 		cellTree.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.ENABLED);
