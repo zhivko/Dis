@@ -29,6 +29,7 @@ public class DocumentAddVersionLabel extends WindowBox {
 	MyTxtBox customLabel = new MyTxtBox("Labela verzije");
 
 	public DocumentAddVersionLabel(String r_object_id_) {
+		this.r_object_id = r_object_id_;
 		
 		ArrayList<String> allChecked = new ArrayList<String>();
 		for (String r_object_ids_ : ExplorerPanel.getExplorerInstance().getCheckedObjects()) {

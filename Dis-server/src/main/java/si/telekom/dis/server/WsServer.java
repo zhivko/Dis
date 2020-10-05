@@ -55,7 +55,11 @@ public class WsServer {
 							if (lastGetSession != null) {
 								Duration timeElapsed = Duration.between(lastGetSession, now);
 								if (timeElapsed.getSeconds() > maxInactivityTimeSec) {
-									session.getAsyncRemote().sendText("logout");
+									try {
+										session.getAsyncRemote().sendText("logout");
+									} catch (Exception ex) {
+
+									}
 									Logger.getLogger(this.getClass())
 											.warn(userLoginName + " inactivity time " + timeElapsed.getSeconds() + "s greater then: " + maxInactivityTimeSec + "s");
 									toremove.add(userLoginName);

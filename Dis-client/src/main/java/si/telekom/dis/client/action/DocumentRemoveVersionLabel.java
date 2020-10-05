@@ -28,6 +28,9 @@ public class DocumentRemoveVersionLabel extends WindowBox {
 
 	public DocumentRemoveVersionLabel(String r_object_id_) {
 
+		this.r_object_id = r_object_id_;
+		
+		
 		ArrayList<String> allChecked = new ArrayList<String>();
 		for (String r_object_ids_ : ExplorerPanel.getExplorerInstance().getCheckedObjects()) {
 			allChecked.add(r_object_ids_);
