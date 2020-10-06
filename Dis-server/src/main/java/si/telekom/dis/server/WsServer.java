@@ -103,6 +103,12 @@ public class WsServer {
 		Logger.getLogger(this.getClass()).info("WebSocket session onOpen::" + session.getId());
 		String loginName = params.get("loginName").get(0).toString();
 		sessions.put(loginName, session);
+		try {
+			sessions.get(loginName).getAsyncRemote().setBatchingAllowed(true);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}
 
 	@OnClose
@@ -140,11 +146,14 @@ public class WsServer {
 						sessions.get(user).getAsyncRemote().sendText(message);
 					}
 				} else {
-					if (sessions.get(toUser) != null)
+					if (sessions.get(toUser) != null && sessions.get(toUser).isOpen())
+					{
 						sessions.get(toUser).getAsyncRemote().sendText(message);
+					}
 				}
 		} catch (Exception ex) {
 			Logger.getLogger(WsServer.class).info("could not report log");
+			ex.printStackTrace();
 		}
 	}
 

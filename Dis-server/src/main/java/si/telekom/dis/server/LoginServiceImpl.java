@@ -109,7 +109,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			InetAddress addr = InetAddress.getByName(ip);
 			String hostName = addr.getHostName();
 
-			if (hostName.equals("localhost") || ip.equals("127.0.0.1")) {
+			if (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1")) {
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 1000;
 				ret[0] = "zivkovick";
@@ -118,26 +118,27 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				ret[3] = "ZivkovicK";
 				ret[4] = AdminServiceImpl.repositoryName;
 
-				/*
-				 * ret[0] = "dmadmin"; ret[1] =
-				 * Base64Utils.toBase64("tb25me81".getBytes()); ret[2] =
-				 * "administrator"; ret[3] = "dmadmin"; ret[4] =
-				 * AdminServiceImpl.repositoryName;
-				 * 
-				 * 
-				 * loginName = "e-kalapcievv"; loginName = "ikovacic";
-				 * 
-				 * ret[0] = loginName; IDfSession adminSession =
-				 * AdminServiceImpl.getInstance().getAdminSession(); IDfUser dcmtUser =
-				 * (IDfUser) adminSession.
-				 * getObjectByQualification("dm_user where user_login_name='" +
-				 * loginName + "'"); ret[1] = Base64Utils
-				 * .toBase64(AdminServiceImpl.getInstance().getAdminSession().
-				 * getLoginTicketForUser(AdminServiceImpl.userDomain + "\\" +
-				 * ret[0]).getBytes()); ret[2] = "user";
-				 * adminSession.getSessionManager().release(adminSession); ret[3] =
-				 * dcmtUser.getUserName(); ret[4] = AdminServiceImpl.repositoryName;
-				 */
+				ret[0] = "dmadmin";
+				ret[1] = Base64Utils.toBase64("tb25me81".getBytes());
+				ret[2] = "administrator";
+				ret[3] = "dmadmin";
+				ret[4] = AdminServiceImpl.repositoryName;
+
+				loginName = "e-kalapcievv";
+				loginName = "ikovacic";
+				loginName = "alzupan";
+				loginName = "zivkovick";
+
+				ret[0] = loginName;
+				IDfSession adminSession = AdminServiceImpl.getInstance().getAdminSession();
+				IDfUser dcmtUser = (IDfUser) adminSession.getObjectByQualification("dm_user where user_login_name='" + loginName + "'");
+				ret[1] = Base64Utils
+						.toBase64(AdminServiceImpl.getInstance().getAdminSession().getLoginTicketForUser(AdminServiceImpl.userDomain + "\\" + ret[0]).getBytes());
+				ret[2] = "user";
+				adminSession.getSessionManager().release(adminSession);
+				ret[3] = dcmtUser.getUserName();
+				ret[4] = AdminServiceImpl.repositoryName;
+
 				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>"
 						+ AdminServiceImpl.getAdminSession().getServerConfig().getString("r_server_version");
 
@@ -409,9 +410,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		try {
 			String privateFolder = "/" + userSess.getLoginUserName();
 			WsServer.log(loginName, "Saving user settings to xml disUserSettings in " + privateFolder + " ...");
-			
-			userSess = AdminServiceImpl.getSession(loginName, passwordEncrypted);
 
+			userSess = AdminServiceImpl.getSession(loginName, passwordEncrypted);
 
 			IDfSysObject obj = (IDfSysObject) userSess
 					.getObjectByQualification("dm_document where folder('" + privateFolder + "') and object_name='disUserSettings'");

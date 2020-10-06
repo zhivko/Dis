@@ -91,47 +91,47 @@ public class ParametrizedQueryPanel extends WindowBox {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				
+
 				try {
-					getAdminService().getParametrizedQueryByName(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, parametrizedQuery.name, new AsyncCallback<MyParametrizedQuery>() {
-						
-						@Override
-						public void onSuccess(MyParametrizedQuery result) {
-							ParametrizedQueryPanel.this.refresh(result);
-							
-							if (parametrizedQuery.formAttributes.size() == 0) {
-								lastParametrizedQuery = ParametrizedQueryPanel.this.parametrizedQuery;
-								SearchPanel.getSearchPanelInstance().runReadDqlQuery(prepareDql());
-								ParametrizedQueryPanel.this.hide();
-							} else {
-								ParametrizedQueryPanel.this.show();
-								Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-									@Override
-									public void execute() {
-										ParametrizedQueryPanel.this.center();
-										
-										if (ParametrizedQueryPanel.this.getContentPanel().getWidgetCount() > 0) {
-											((FormAttribute) (ParametrizedQueryPanel.this.getContentPanel().getWidget(0))).setFocus();
-										}
-										
+					getAdminService().getParametrizedQueryByName(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, parametrizedQuery.name,
+							new AsyncCallback<MyParametrizedQuery>() {
+
+								@Override
+								public void onSuccess(MyParametrizedQuery result) {
+									ParametrizedQueryPanel.this.refresh(result);
+
+									if (parametrizedQuery.formAttributes.size() == 0) {
+										lastParametrizedQuery = ParametrizedQueryPanel.this.parametrizedQuery;
+										SearchPanel.getSearchPanelInstance().runReadDqlQuery(prepareDql());
+										ParametrizedQueryPanel.this.hide();
+									} else {
+										ParametrizedQueryPanel.this.show();
+										Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+											@Override
+											public void execute() {
+												ParametrizedQueryPanel.this.center();
+
+												if (ParametrizedQueryPanel.this.getContentPanel().getWidgetCount() > 0) {
+													((FormAttribute) (ParametrizedQueryPanel.this.getContentPanel().getWidget(0))).setFocus();
+												}
+
+											}
+										});
 									}
-								});
-							}
-							MenuPanel.getInstance().resetSearchButtons();
-							b.setDown(true);
-							
-							
-						}
-						
-						@Override
-						public void onFailure(Throwable caught) {
-							MainPanel.log(caught.getMessage());
-						}
-					});
+									MenuPanel.getInstance().resetSearchButtons();
+									b.setDown(true);
+
+								}
+
+								@Override
+								public void onFailure(Throwable caught) {
+									MainPanel.log(caught.getMessage());
+								}
+							});
 				} catch (ServerException e) {
 					MainPanel.log(e.getMessage());
 				}
-				
+
 			}
 		});
 		hp.add(b);

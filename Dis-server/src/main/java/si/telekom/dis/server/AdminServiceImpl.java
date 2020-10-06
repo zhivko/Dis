@@ -8,11 +8,14 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.InetAddress;
@@ -77,6 +80,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.documentum.com.DfClientX;
@@ -309,11 +313,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						buffer.close();
 
 						IDfSession adminSession = AdminServiceImpl.getAdminSession();
-						
+
 						Logger.getLogger(AdminServiceImpl.class)
 								.info("DIS Telekom started on: " + AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + " "
 										+ adminSession.getServerConfig().getString("r_server_version"));
-						
+
 						adminSession.getSessionManager().release(adminSession);
 					} else {
 						syncProfiles();
@@ -407,8 +411,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				ecsStore = (IDfStore) adminSession.newObject("dm_ca_store");
 
 				ecsStore.setName(ecsstoreDisName);
-				List<List<String>> lookupResult = ExplorerServiceImpl.getInstance().dqlLookup(superUserName, Base64.getEncoder().encode(superUserPassword.getBytes()).toString(),
-						"select r_object_id from dm_plugin where object_name='CSEC Plugin'");
+				List<List<String>> lookupResult = ExplorerServiceImpl.getInstance().dqlLookup(superUserName,
+						Base64.getEncoder().encode(superUserPassword.getBytes()).toString(), "select r_object_id from dm_plugin where object_name='CSEC Plugin'");
 				String plugin_id = lookupResult.get(0).get(0);
 				ecsStore.setId("a_plugin_id", new DfId(plugin_id));
 
@@ -814,13 +818,18 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			Logger.getLogger(AdminServiceImpl.class).info("tab id= " + tab.getId());
 			String cols = nTab.getAttribute("cols");
 			String rows = nTab.getAttribute("rows");
-			if (cols != null && !cols.equals(""))
+			if (cols != null && !cols.equals("") && !cols.contentEquals("null")) {
 				tab.col = Integer.valueOf(cols);
+				if (rows != null && !rows.equals("") && !rows.contentEquals("null")) {
+					tab.row = Integer.valueOf(rows);
+					tabs.add(tab);
+				} else {
+					Logger.getLogger(AdminServiceImpl.class).error("tab id= " + tab.getId() + " rows value: " + rows + " cannot be parsed.");
+				}
 
-			if (rows != null && !rows.equals(""))
-				tab.row = Integer.valueOf(rows);
-
-			tabs.add(tab);
+			} else {
+				Logger.getLogger(AdminServiceImpl.class).error("tab id= " + tab.getId() + " cols value: " + cols + " cannot be parsed.");
+			}
 		}
 		retProfile.tabs = tabs;
 
@@ -2805,7 +2814,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						userShouldGetSearch = isMember(loginName, groupName);
 
 					if (userShouldGetSearch || LoginServiceImpl.admins.contains(loginName)) { // userShouldGetSearch
-						WsServer.log(loginName, el.getAttribute("name"));
+						WsServer.log(loginName, new String(el.getAttribute("name").getBytes(), "UTF-8"));
 						MyParametrizedQuery query = getParametrizedQuery(el, xpathFac, lazy);
 						queries.add(query);
 						break;
@@ -2827,10 +2836,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return queries;
 	}
 
-	private MyParametrizedQuery getParametrizedQuery(Element el, XPathFactory xpathFac, boolean lazy) throws XPathExpressionException {
+	private MyParametrizedQuery getParametrizedQuery(Element el, XPathFactory xpathFac, boolean lazy) throws XPathExpressionException, UnsupportedEncodingException {
 		String dqlQuery = getFirstLevelTextContent((Node) el);
 		String type = getObjecTypeFromDql(dqlQuery);
-		MyParametrizedQuery ret = new MyParametrizedQuery(el.getAttribute("name"), dqlQuery);
+		MyParametrizedQuery ret = new MyParametrizedQuery(new String(el.getAttribute("name").getBytes(), "UTF-8"), dqlQuery);
 
 		if (lazy)
 			return ret;
@@ -2908,7 +2917,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		if (docConfig == null) {
 			configPathFileName = WebappContext.getServletContext().getRealPath("/WEB-INF/classes/config.xml");
 
-			FileInputStream is = new FileInputStream(configPathFileName);
+			InputStream inputStream = new FileInputStream(configPathFileName);
+			Reader reader = new InputStreamReader(inputStream, "UTF-8");
+			InputSource is = new InputSource(reader);
+			is.setEncoding("UTF-8");
 
 			DocumentBuilderFactory factory;
 			DocumentBuilder builder;
@@ -2918,7 +2930,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			builder = factory.newDocumentBuilder();
 
 			docConfig = builder.parse(is);
-			is.close();
+			reader.close();
 		}
 		return docConfig;
 	}
@@ -3193,7 +3205,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			long t2 = System.currentTimeMillis();
 			String durationStr = String.format(Locale.ROOT, "%.3fs", (t2 - t1) / 1000.0);
 			Logger.getLogger(this.getClass()).info(String.format("[%s] sql query done in: %s", loginName, durationStr));
-			
 
 			int lineCount = 0;
 			while (rs.next()) {
@@ -3227,40 +3238,40 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	public synchronized static Connection getDbConnection() throws Exception {
-//		Connection connectionn = null;
-//		
-//		try {
-//			Class.forName("org.logicalcobwebs.proxool.ProxoolDriver");
-//			Class.forName("oracle.jdbc.OracleDriver");
-//		} catch (ClassNotFoundException e) {
-//			Logger.getLogger(AdminServiceImpl.class).error(e.getMessage());
-//		}
-//
-//		String alias = "OracleDb";
-//		String driverClass = "oracle.jdbc.OracleDriver";
-//		String driverUrl = "jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS=(PROTOCOL=TCP)(HOST=dbm02.ts.telekom.si)(PORT=1521))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=select)(METHOD=basic))(SERVER=dedicated)(SERVICE_NAME=tsbeta.ts.telekom.si)))";
-//		String url = "proxool." + alias + ":" + driverClass + ":" + driverUrl;
-//
-//		
-//		Properties info = new Properties();
-//		info.setProperty("proxool.maximum-connection-count", "5");
-//		info.setProperty("simultaneous-build-throttle", "5");
-//		info.setProperty("proxool.house-keeping-test-sql", "select * from dual");
-//		info.setProperty("user", "reports");
-//		info.setProperty("password", "ReportsPw01");
-//		info.setProperty("proxool.driver", driverClass);
-//		info.setProperty("proxool.url", url);
-//
-//		connectionn = DriverManager.getConnection("proxool." + alias, info);
-//		
-//		Logger.getLogger(AdminServiceImpl.class).log(Level.INFO, String.format("JDBC url: %s", driverUrl));
-//		return connectionn;
-		
-		
-		
+		// Connection connectionn = null;
+		//
+		// try {
+		// Class.forName("org.logicalcobwebs.proxool.ProxoolDriver");
+		// Class.forName("oracle.jdbc.OracleDriver");
+		// } catch (ClassNotFoundException e) {
+		// Logger.getLogger(AdminServiceImpl.class).error(e.getMessage());
+		// }
+		//
+		// String alias = "OracleDb";
+		// String driverClass = "oracle.jdbc.OracleDriver";
+		// String driverUrl =
+		// "jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS=(PROTOCOL=TCP)(HOST=dbm02.ts.telekom.si)(PORT=1521))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=select)(METHOD=basic))(SERVER=dedicated)(SERVICE_NAME=tsbeta.ts.telekom.si)))";
+		// String url = "proxool." + alias + ":" + driverClass + ":" + driverUrl;
+		//
+		//
+		// Properties info = new Properties();
+		// info.setProperty("proxool.maximum-connection-count", "5");
+		// info.setProperty("simultaneous-build-throttle", "5");
+		// info.setProperty("proxool.house-keeping-test-sql", "select * from dual");
+		// info.setProperty("user", "reports");
+		// info.setProperty("password", "ReportsPw01");
+		// info.setProperty("proxool.driver", driverClass);
+		// info.setProperty("proxool.url", url);
+		//
+		// connectionn = DriverManager.getConnection("proxool." + alias, info);
+		//
+		// Logger.getLogger(AdminServiceImpl.class).log(Level.INFO,
+		// String.format("JDBC url: %s", driverUrl));
+		// return connectionn;
+
 		String jdbcUser = "reports";
 		String jdbcPassword = "ReportsPw01";
-		
+
 		Properties proxoolProps = new Properties();
 		proxoolProps.setProperty("user", jdbcUser);
 		proxoolProps.setProperty("password", jdbcPassword);
@@ -3305,12 +3316,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				e.printStackTrace(pw);
 				Logger.getLogger(AdminServiceImpl.class).error(errorStringWriter.getBuffer().toString());
 			}
-		}		
+		}
 		return lconn;
-		
-		
-		
-		
+
 	}
 
 	public void updateCollId(String loginName, String loginPass, int templateId, String templateName, String col_id_old, String columnName,
