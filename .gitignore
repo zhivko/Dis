@@ -1,1 +1,4 @@
 /target/
+Dis-client/src/main/filters
+Dis-server/src/main/filters
+Dis-shared/src/main/filters
