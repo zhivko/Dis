@@ -1557,9 +1557,38 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			WsServer.log(loginName, "Executing delete...Done.");
 
 			WsServer.log(loginName, "Destroying...");
-			if (allVersions)
-				dfDocument.destroyAllVersions();
-			else
+			if (allVersions) {
+				IDfSession adminSession = AdminServiceImpl.getAdminSession();
+				// check permissions on all versions if there is no permission add
+				// permission
+				IDfCollection col2 = dfDocument.getVersions("r_object_id");
+				while (col2.next()) {
+					String r_object_id_ = col2.getString("r_object_id");
+					IDfPersistentObject doc = adminSession.getObject(new DfId(r_object_id_));
+					IDfList allPermissions = ((IDfSysObject) doc).getPermissions();
+					for (int i = 0; i < allPermissions.getCount(); i++) {
+						IDfPermit permit = (IDfPermit) allPermissions.get(i);
+						if (permit.getAccessorName().contentEquals(userSession.getLoginUserName())) {
+							if(permit.getPermitValueInt()<7)
+							{
+								WsServer.log(loginName, "Needed permit DELETE on version of object with r_object_id: " + r_object_id_);
+								
+								((IDfSysObject) doc).getACL().setDomain("dm_dbo");
+								((IDfSysObject) doc).getACL().save();
+								
+								((IDfSysObject) doc).setACLDomain("dm_dbo");
+								((IDfSysObject) doc).grant(loginName, 7, null);
+								doc.save();
+								break;
+							}
+						}
+					}
+					IDfPersistentObject docUser = userSession.getObject(new DfId(r_object_id_));
+					docUser.destroy();
+					WsServer.log(loginName, "Destroyed version of object: " + r_object_id_);
+				}
+				col2.close();
+			} else
 				dfDocument.destroy();
 			WsServer.log(loginName, "Destroying...Done.");
 

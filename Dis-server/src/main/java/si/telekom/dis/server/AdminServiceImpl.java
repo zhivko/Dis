@@ -1,10 +1,12 @@
 package si.telekom.dis.server;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,6 +90,7 @@ import com.documentum.com.IDfClientX;
 import com.documentum.fc.client.DfClient;
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.DfVersionPolicy;
+import com.documentum.fc.client.IDfACL;
 import com.documentum.fc.client.IDfClient;
 import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfFolder;
@@ -386,6 +389,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		});
 		t1.setName("SyncGroups");
 		t1.start();
+
+		//correctAcls();
 
 	}
 
@@ -2836,7 +2841,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return queries;
 	}
 
-	private MyParametrizedQuery getParametrizedQuery(Element el, XPathFactory xpathFac, boolean lazy) throws XPathExpressionException, UnsupportedEncodingException {
+	private MyParametrizedQuery getParametrizedQuery(Element el, XPathFactory xpathFac, boolean lazy)
+			throws XPathExpressionException, UnsupportedEncodingException {
 		String dqlQuery = getFirstLevelTextContent((Node) el);
 		String type = getObjecTypeFromDql(dqlQuery);
 		MyParametrizedQuery ret = new MyParametrizedQuery(new String(el.getAttribute("name").getBytes(), "UTF-8"), dqlQuery);
@@ -3637,9 +3643,49 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void correctAcls() {
 		// correctEffectiveDateOfProfiles();
 		// ClassifyAsDraft();
+
+		try {
+			IDfSession sess = getAdminSession();
+
+			File file = new File("c:\\Temp\\DcmtServiceLogs\\OUT.txt"); // creates a
+																																	// new file
+																																	// instance
+			FileReader fr = new FileReader(file); // reads the file
+			BufferedReader br = new BufferedReader(fr); // creates a buffering
+																									// character input stream
+			StringBuffer sb = new StringBuffer(); // constructs a string buffer with
+																						// no characters
+			String line;
+			int i = 0;
+			while ((line = br.readLine()) != null) {
+				String objectName = line.trim();
+				IDfSysObject dfSysObject = (IDfSysObject) sess.getObjectByQualification("dm_document where object_name='" + objectName + "'");
+				if (dfSysObject != null) {
+					if(!dfSysObject.getLockOwner().contentEquals(""))
+					{
+						IDfQuery query = new DfQuery();
+						query.setDQL("update dm_document object set acl_name='mob_AllDelete', set acl_domain='dm_dbo', set r_lock_owner='', set r_lock_machine='', set r_lock_date=date('nulldate') where r_object_id='"
+								+ dfSysObject.getId("r_object_id") + "'");
+						query.execute(sess, IDfQuery.DF_EXEC_QUERY);
+						dfSysObject.fetch("dm_document");
+					}
+					
+					dfSysObject.setACLName("mob_AllDelete");
+					dfSysObject.setACLDomain("dm_dbo");
+					dfSysObject.save();
+					System.out.println(i + "  " + objectName);
+				}
+				i++;
+			}
+			fr.close(); // closes the stream and release the resources
+			sess.getSessionManager().release(sess);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	private static void MassClassify() {

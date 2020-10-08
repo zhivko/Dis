@@ -103,12 +103,12 @@ public class WsServer {
 		Logger.getLogger(this.getClass()).info("WebSocket session onOpen::" + session.getId());
 		String loginName = params.get("loginName").get(0).toString();
 		sessions.put(loginName, session);
-		try {
-			sessions.get(loginName).getAsyncRemote().setBatchingAllowed(true);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+//		try {
+//			sessions.get(loginName).getAsyncRemote().setBatchingAllowed(true);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}		
 	}
 
 	@OnClose
