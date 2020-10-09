@@ -131,6 +131,7 @@ import si.telekom.dis.shared.ExtendedPermit;
 import si.telekom.dis.shared.MyParametrizedQuery;
 import si.telekom.dis.shared.Profile;
 import si.telekom.dis.shared.ProfileAttributesAndValues;
+import si.telekom.dis.shared.Role;
 import si.telekom.dis.shared.ServerException;
 import si.telekom.dis.shared.State;
 import si.telekom.dis.shared.UserGroup;
@@ -1569,13 +1570,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					for (int i = 0; i < allPermissions.getCount(); i++) {
 						IDfPermit permit = (IDfPermit) allPermissions.get(i);
 						if (permit.getAccessorName().contentEquals(userSession.getLoginUserName())) {
-							if(permit.getPermitValueInt()<7)
-							{
+							if (permit.getPermitValueInt() < 7) {
 								WsServer.log(loginName, "Needed permit DELETE on version of object with r_object_id: " + r_object_id_);
-								
+
 								((IDfSysObject) doc).getACL().setDomain("dm_dbo");
 								((IDfSysObject) doc).getACL().save();
-								
+
 								((IDfSysObject) doc).setACLDomain("dm_dbo");
 								((IDfSysObject) doc).grant(loginName, 7, null);
 								doc.save();
@@ -2226,12 +2226,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			return moveToState(userSession, r_object_id, stateId, profileAndRolesOfUserAndState, shouldSupersede);
-		} catch (Exception e) {
+		} catch (ServerException e) {
 			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(e);
 			Logger.getLogger(this.getClass()).error(e.getMessage());
 			Logger.getLogger(this.getClass()).error(stackTrace);
+			throw e;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			throw new ServerException(e.getMessage());
 		}
-		return null;
 	}
 
 	public Void moveToState(IDfSession userSession, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState, boolean shouldSupersede)
@@ -2265,6 +2268,33 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			String currentStateId = (String) profileAndRolesOfUserAndState[3];
 
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
+
+			// check all needed attributes are set
+			String mandatoryAttNamesNotSet = "";
+			boolean allMandatoryFilled = true;
+			IDfSysObject dfDocument = (IDfSysObject) persObj;
+			for (Role rol : prof.roles) {
+				AttributeRoleStateWizards arsw = AdminServiceImpl.getAttributesForStateAndRole(prof, stateId, rol.getId());
+				if (arsw != null) {
+					for (Attribute att : arsw.attributes) {
+						if (att.isMandatory) {
+							if (dfDocument.getValue(att.dcmtAttName).asString().contentEquals("")) {
+								WsServer.log(userSession.getLoginInfo().getUser(), att.dcmtAttName + " is not set.");
+								allMandatoryFilled = false;
+								if (!mandatoryAttNamesNotSet.contains(att.dcmtAttName))
+									mandatoryAttNamesNotSet = mandatoryAttNamesNotSet + att.dcmtAttName + ",";
+							}
+						}
+					}
+				}
+			}
+			if(mandatoryAttNamesNotSet.length()>0)
+				mandatoryAttNamesNotSet = mandatoryAttNamesNotSet.substring(0,mandatoryAttNamesNotSet.length()-1);
+			
+			if (!allMandatoryFilled) {
+				throw new ServerException("Obvezni atributi (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
+			}
+
 			query.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).id + "' where r_object_id='" + r_object_id + "'");
 			collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 			Map<String, List<String>> roleUserGroups = (Map<String, List<String>>) profileAndRolesOfUserAndState[4];

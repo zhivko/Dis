@@ -128,7 +128,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				loginName = "ikovacic";
 				loginName = "alzupan";
 				loginName = "zivkovick";
-				loginName = "lokart";
+				//loginName = "lokart";
 
 				ret[0] = loginName;
 				IDfSession adminSession = AdminServiceImpl.getInstance().getAdminSession();
@@ -413,10 +413,9 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		// TODO Auto-generated method stub
 		IDfSession userSess = null;
 		try {
+			userSess = AdminServiceImpl.getSession(loginName, passwordEncrypted);
 			String privateFolder = "/" + userSess.getLoginUserName();
 			WsServer.log(loginName, "Saving user settings to xml disUserSettings in " + privateFolder + " ...");
-
-			userSess = AdminServiceImpl.getSession(loginName, passwordEncrypted);
 
 			IDfSysObject obj = (IDfSysObject) userSess
 					.getObjectByQualification("dm_document where folder('" + privateFolder + "') and object_name='disUserSettings'");
@@ -436,7 +435,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			WsServer.log(loginName, "Saving user settings to xml disUserSettings in " + privateFolder + " ... Done.");
 
 		} catch (Exception ex) {
-
+			Logger.getLogger(this.getClass()).error(ex.getMessage());
 		} finally {
 			if (userSess != null)
 				userSess.getSessionManager().release(userSess);

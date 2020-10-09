@@ -103,12 +103,12 @@ public class WsServer {
 		Logger.getLogger(this.getClass()).info("WebSocket session onOpen::" + session.getId());
 		String loginName = params.get("loginName").get(0).toString();
 		sessions.put(loginName, session);
-//		try {
-//			sessions.get(loginName).getAsyncRemote().setBatchingAllowed(true);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}		
+		// try {
+		// sessions.get(loginName).getAsyncRemote().setBatchingAllowed(true);
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 	}
 
 	@OnClose
@@ -130,7 +130,7 @@ public class WsServer {
 
 	@OnMessage
 	public synchronized void onMessage(String message, Session session) {
-		Logger.getLogger(this.getClass()).info("Websocket sessionId: " + session.getId() + "!");
+		Logger.getLogger(this.getClass()).info("Websocket sessionId: " + session.getId() + " message: " + message);
 	}
 
 	@OnError
@@ -142,12 +142,13 @@ public class WsServer {
 		try {
 			if (toUser != null)
 				if (toUser.contentEquals("_all_")) {
-					for (String user : sessions.keySet()) {
-						sessions.get(user).getAsyncRemote().sendText(message);
+					synchronized (sessions) {
+						for (String user : sessions.keySet()) {
+							sessions.get(user).getAsyncRemote().sendText(message);
+						}
 					}
 				} else {
-					if (sessions.get(toUser) != null && sessions.get(toUser).isOpen())
-					{
+					if (sessions.get(toUser) != null && sessions.get(toUser).isOpen()) {
 						sessions.get(toUser).getAsyncRemote().sendText(message);
 					}
 				}
