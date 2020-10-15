@@ -3655,6 +3655,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				releaseNo = dfSysObject.getInt("mob_releaseno") + 1;
 				copiedObject.setInt("mob_releaseno", releaseNo);
 				copiedObject.setRepeatingString("mob_supersedes", 0, dfSysObject.getObjectName());
+				
+				copiedObject.setTime("mob_valid_from", DfTime.DF_NULLDATE);
 
 				ExplorerServiceImpl.getInstance().checkDocmanSExist(persObject, userSession, prof);
 				ExplorerServiceImpl.getInstance().setUsersForRoles(userSession, persObject, roleUserGroups);
