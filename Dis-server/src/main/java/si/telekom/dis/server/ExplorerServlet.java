@@ -1,7 +1,6 @@
 package si.telekom.dis.server;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -9,11 +8,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.StringWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +37,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -46,6 +54,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.hsmf.MAPIMessage;
+import org.apache.xml.utils.SystemIDResolver;
 import org.simplejavamail.outlookmessageparser.OutlookMessageParser;
 import org.simplejavamail.outlookmessageparser.model.OutlookAttachment;
 import org.simplejavamail.outlookmessageparser.model.OutlookFileAttachment;
@@ -53,6 +62,7 @@ import org.simplejavamail.outlookmessageparser.model.OutlookMessage;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import com.documentum.fc.client.IDfFormat;
 import com.documentum.fc.client.IDfPersistentObject;
@@ -93,6 +103,8 @@ public class ExplorerServlet extends HttpServlet {
 		String mimeType = "";
 		String fileName = "";
 		String dosExtension = "";
+
+		boolean transformedToHTML = false;
 
 		Logger.getLogger(this.getClass()).info("ExplorerServlet called.");
 		File tmpFile = null;
@@ -217,6 +229,69 @@ public class ExplorerServlet extends HttpServlet {
 				// make transformation odt fill in all custom fields
 				int id = Integer.valueOf(sysObj.getString("mob_template_id")).intValue();
 				bacontentStreamIs = makeSureAllFieldsExist(bacontentStreamIs, id);
+			} else if (rendition.equals("xml")) {
+				TransformerFactory factory = TransformerFactory.newInstance();
+				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+
+				DocumentBuilder builder = docBuilderFactory.newDocumentBuilder();
+				ByteArrayInputStream baIs = sysObj.getContentEx(format.getName(), 0);
+				Document document = builder.parse(baIs);
+				DOMSource domSource = new DOMSource(document);
+				MyTransformerErrorListener transfErrList = new MyTransformerErrorListener();
+				factory.setErrorListener(transfErrList);
+
+				Source xslSource = factory.getAssociatedStylesheet(domSource, null, null, null);
+				if (xslSource != null) {
+					Logger.getLogger(getClass()).info("stylesheet: " + xslSource.getSystemId());
+
+					URIResolver uriResolver = factory.getURIResolver();
+
+					String href = SystemIDResolver.getAbsoluteURI(xslSource.getSystemId(), null);
+
+					URL url = new URL(href);
+					URLConnection con = url.openConnection();
+					InputStream in = con.getInputStream();
+					String encoding = con.getContentEncoding();
+					encoding = encoding == null ? "UTF-8" : encoding;
+					String body = IOUtils.toString(in, encoding);
+
+					String fileHref = "/home/klemen/Downloads/SkupinaTelekom_2_0_vizualizacija.xslt";
+					SAXSource source = new SAXSource(new InputSource(new ByteArrayInputStream(body.getBytes())));
+
+					Transformer transformer = factory.newTransformer(source);
+
+					if (!transfErrList.getMsgs().equals("")) {
+						baOs.write(transfErrList.getMsgs().getBytes());
+						baOs.write("\n".getBytes());
+					}
+
+					if (transformer != null) {
+						baOs = new ByteArrayOutputStream();
+						StreamResult result = new StreamResult(baOs);
+						transformer.transform(domSource, result);
+						bacontentStreamIs = new ByteArrayInputStream(baOs.toByteArray());
+						transformedToHTML = true;
+					}
+				} else {
+
+					Transformer transformer = TransformerFactory.newInstance().newTransformer();
+					transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+					transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+					// initialize StreamResult with File object to save to file
+					StreamResult result = new StreamResult(new StringWriter());
+					DOMSource source = new DOMSource(document);
+					transformer.transform(source, result);
+					String xmlString = result.getWriter().toString();
+
+					// ByteArrayInputStream baIs2 = sysObj.getContentEx(format.getName(),
+					// 0);
+					// byte[] bytes = IOUtils.toByteArray(baIs2);
+					// String content = new String(bytes);
+					//xmlString = xmlString.replace("\n", "\n<br>");
+					//String newContent = escapeXml(xmlString);
+					bacontentStreamIs = new ByteArrayInputStream(xmlString.getBytes());
+				}
+				baIs.close();
 			}
 
 			baOs.write(IOUtils.toByteArray(bacontentStreamIs));
@@ -226,20 +301,20 @@ public class ExplorerServlet extends HttpServlet {
 			resp.setContentLength(baOs.size());
 			resp.setStatus(200);
 
-			if (DocumentViewFileTypes.couldDisplayFormats.contains(rendition) && !download) {
+			if ((transformedToHTML || DocumentViewFileTypes.couldDisplayFormats.contains(rendition)) && !download) {
 				resp.setContentType(mimeType);
 				resp.setHeader("Content-disposition", "inline; filename=content." + dosExtension);
-				resp.setHeader("fileName", "\"" + fileName + "\"");
+				resp.setHeader("fileName", "\"" + fileName + "." + dosExtension + "\"");
 			} else {
 				resp.setContentType("application/x-download");
-				resp.setHeader("Content-Disposition", "attachment; filename=" + "\"" + fileName + "\"");
+				resp.setHeader("Content-Disposition", "attachment; filename=" + "\"" + fileName + "." + dosExtension + "\"");
 			}
 
 			ServletOutputStream out = resp.getOutputStream();
 			baOs.writeTo(out);
 			out.flush();
 
-		} catch (Exception ex) {
+		} catch (Throwable ex) {
 			resp.setStatus(404);
 			resp.setContentType("text/html; charset=UTF-8");
 			baOs.write("Napaka pri pridobivanju vsebine.".getBytes("UTF-8"));
@@ -394,9 +469,8 @@ public class ExplorerServlet extends HttpServlet {
 					is.close();
 				}
 			}
-			
-			if (changed)
-			{
+
+			if (changed) {
 				zis.close();
 				baIs.reset();
 				ZipInputStream zis2 = new ZipInputStream(baIs);
@@ -406,7 +480,7 @@ public class ExplorerServlet extends HttpServlet {
 			}
 			zis.close();
 			baIs.close();
-				
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		} finally {
@@ -458,6 +532,10 @@ public class ExplorerServlet extends HttpServlet {
 			outZip.close();
 		}
 		return result;
+	}
+
+	public String escapeXml(String s) {
+		return s.replaceAll("&", "&amp;").replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
 	}
 
 }

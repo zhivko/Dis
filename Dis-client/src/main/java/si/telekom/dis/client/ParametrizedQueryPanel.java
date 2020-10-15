@@ -12,13 +12,18 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.ToggleButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import si.telekom.dis.client.action.SearchEdit;
 import si.telekom.dis.client.item.FormAttribute;
+import si.telekom.dis.shared.AdminService;
+import si.telekom.dis.shared.AdminServiceAsync;
 import si.telekom.dis.shared.Attribute;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
@@ -30,6 +35,7 @@ public class ParametrizedQueryPanel extends WindowBox {
 	private final static ExplorerServiceAsync explorerService = GWT.create(ExplorerService.class);
 	private final static Logger logger = Logger.getLogger("mylogger");
 	public static MyParametrizedQuery lastParametrizedQuery;
+	public Button duplicateSearch;
 
 	public MyParametrizedQuery parametrizedQuery;
 
@@ -51,6 +57,34 @@ public class ParametrizedQueryPanel extends WindowBox {
 				runQuery();
 			}
 		});
+
+		duplicateSearch = new Button();
+		duplicateSearch.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				// TODO Auto-generated method stub
+				try {
+					adminService.duplicateParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
+							ParametrizedQueryPanel.lastParametrizedQuery.name, new AsyncCallback<String>() {
+								@Override
+								public void onSuccess(String result) {
+									MenuPanel.getInstance().createSearchItems();
+									MainPanel.log("Search duplicated under name: " + result);
+								}
+
+								@Override
+								public void onFailure(Throwable caught) {
+									MainPanel.log("Error duplicating search: " + caught.getMessage());
+								}
+							});
+				} catch (ServerException e) {
+					MainPanel.log("Error duplicating search: " + e.getMessage());
+				}
+			}
+		});
+		
+		sp.add(duplicateSearch);
 
 		getContentPanel().add(sp);
 

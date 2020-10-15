@@ -90,7 +90,6 @@ import com.documentum.com.IDfClientX;
 import com.documentum.fc.client.DfClient;
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.DfVersionPolicy;
-import com.documentum.fc.client.IDfACL;
 import com.documentum.fc.client.IDfClient;
 import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfFolder;
@@ -390,7 +389,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		t1.setName("SyncGroups");
 		t1.start();
 
-		//correctAcls();
+		// correctAcls();
 
 	}
 
@@ -2799,7 +2798,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			// XPathExpression expr = xpath.compile("/config/docbase[@name='" +
 			// docBase + "']/queries/query");
-			XPathExpression expr = xpath.compile("/config/docbase/queries/query");
+			XPathExpression expr = xpath.compile("/config/docbase[1]/queries/query");
 			// NodeList nl = (NodeList) expr.evaluate( new InputSource(new
 			// StringReader(getDocConfig().toString())),
 			// XPathConstants.NODESET);
@@ -2847,9 +2846,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		String type = getObjecTypeFromDql(dqlQuery);
 		MyParametrizedQuery ret = new MyParametrizedQuery(new String(el.getAttribute("name").getBytes(), "UTF-8"), dqlQuery);
 
+		Logger.getLogger(AdminServiceImpl.class).info("lazy queryName: " + el.getAttribute("name"));
+
 		if (lazy)
 			return ret;
-		Logger.getLogger(AdminServiceImpl.class).info("queryName: " + el.getAttribute("name"));
 
 		XPath xpath = xpathFac.newXPath();
 		XPathExpression expr3 = xpath.compile(".//group");
@@ -2868,6 +2868,14 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				ret.orderBys.add(name);
 				ret.orderByDirections.add(orderBy.getAttribute("direction"));
 			}
+		}
+
+		expr3 = xpath.compile(".//filterClass");
+		NodeList filterByList = (NodeList) expr3.evaluate(el, XPathConstants.NODESET);
+		for (int k = 0; k < filterByList.getLength(); k++) {
+			Element filterBy = (Element) filterByList.item(k);
+			if (filterBy != null)
+				ret.filterClass = filterBy.getTextContent();
 		}
 
 		String patternToCompile = "[<][0-9].*?[>]";
@@ -3009,7 +3017,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
-			List<String> orderBys, List<String> orderBydirections) throws ServerException {
+			List<String> orderBys, List<String> orderBydirections, String filterClass) throws ServerException {
 
 		Logger.getLogger(this.getClass()).info("Saving search: " + oldName);
 		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
@@ -3020,70 +3028,71 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// xpath.setNamespaceContext();
 
 			// XPathExpression expr = xpath.compile("/config/docbase[@name='" +
-			// docBase + "']/queries/query");
-			XPathExpression expr = xpath.compile("/config/docbase/queries/query");
+			// AdminServiceImpl. docBase + "']/queries/query");
+			XPathExpression expr = xpath.compile("/config/docbase[1]/queries/query[@name='" + oldName + "']");
 			// NodeList nl = (NodeList) expr.evaluate( new InputSource(new
 			// StringReader(getDocConfig().toString())),
 			// XPathConstants.NODESET);
-			NodeList nl = (NodeList) expr.evaluate(getDocConfig(), XPathConstants.NODESET);
-			for (int i = 0; i < nl.getLength(); i++) {
-				Element el = (Element) nl.item(i);
-				if (el.getAttribute("name").equals(oldName)) {
-					el.setTextContent(newDql);
-					Element elGroups = getDocConfig().createElement("groups");
-					el.appendChild(elGroups);
-					for (String group : groups) {
-						String groupName = "";
-						if (group.split("\\|").length > 1)
-							groupName = group.split("\\|")[1];
-						else
-							groupName = group;
-						Element elGroup = getDocConfig().createElement("group");
-						elGroup.setAttribute("name", groupName);
-						elGroups.appendChild(elGroup);
-					}
-
-					Element elOrderBys = getDocConfig().createElement("orderBys");
-					el.appendChild(elOrderBys);
-					int j = 0;
-					for (String oBy : orderBys) {
-						Element elOrderBy = getDocConfig().createElement("orderBy");
-						String str = StringUtils.stripEnd(oBy, null);
-						str = StringUtils.stripStart(str, null);
-						elOrderBy.setAttribute("name", str);
-						elOrderBy.setAttribute("direction", orderBydirections.get(j));
-						elOrderBys.appendChild(elOrderBy);
-						j++;
-					}
-
-					break;
+			Element el = (Element) expr.evaluate(getDocConfig(), XPathConstants.NODE);
+			if (el != null) {
+				el.setTextContent(newDql);
+				Element elGroups = getDocConfig().createElement("groups");
+				el.appendChild(elGroups);
+				for (String group : groups) {
+					String groupName = "";
+					if (group.split("\\|").length > 1)
+						groupName = group.split("\\|")[1];
+					else
+						groupName = group;
+					Element elGroup = getDocConfig().createElement("group");
+					elGroup.setAttribute("name", groupName);
+					elGroups.appendChild(elGroup);
 				}
+
+				Element elOrderBys = getDocConfig().createElement("orderBys");
+				el.appendChild(elOrderBys);
+				int j = 0;
+				for (String oBy : orderBys) {
+					Element elOrderBy = getDocConfig().createElement("orderBy");
+					String str = StringUtils.stripEnd(oBy, null);
+					str = StringUtils.stripStart(str, null);
+					elOrderBy.setAttribute("name", str);
+					elOrderBy.setAttribute("direction", orderBydirections.get(j));
+					elOrderBys.appendChild(elOrderBy);
+					j++;
+				}
+
+				Element elFilterClass = getDocConfig().createElement("filterClass");
+				elFilterClass.setTextContent(filterClass);
+				el.appendChild(elFilterClass);
+
+				Transformer tr = TransformerFactory.newInstance().newTransformer();
+				tr.setOutputProperty(OutputKeys.INDENT, "yes");
+				tr.setOutputProperty(OutputKeys.METHOD, "xml");
+				tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+				// tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
+				tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+				// send DOM to file
+				tr.transform(new DOMSource(docConfig), new StreamResult(new FileOutputStream(configPathFileName)));
+
+				// check if it is ocalhost save it to development environment
+				final String ip = getThreadLocalRequest().getRemoteHost();
+				InetAddress addr = InetAddress.getByName(ip);
+				String hostName = addr.getHostName();
+				if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
+					File devConfig;
+					if (SystemUtils.IS_OS_LINUX) {
+						devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
+					} else {
+						devConfig = new File("c:\\git\\Dis\\Dis-server\\src\\main\\resources\\config.xml");
+					}
+					FileUtils.copyFile(new File(configPathFileName), devConfig);
+					Logger.getLogger(this.getClass()).info("Saved search to dev config file: " + devConfig.getAbsolutePath());
+				}
+
 			}
 
-			Transformer tr = TransformerFactory.newInstance().newTransformer();
-			tr.setOutputProperty(OutputKeys.INDENT, "yes");
-			tr.setOutputProperty(OutputKeys.METHOD, "xml");
-			tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-			// tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
-			tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-
-			// send DOM to file
-			tr.transform(new DOMSource(docConfig), new StreamResult(new FileOutputStream(configPathFileName)));
-
-			// check if it is ocalhost save it to development environment
-			final String ip = getThreadLocalRequest().getRemoteHost();
-			InetAddress addr = InetAddress.getByName(ip);
-			String hostName = addr.getHostName();
-			if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
-				File devConfig;
-				if (SystemUtils.IS_OS_LINUX) {
-					devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
-				} else {
-					devConfig = new File("c:\\git\\Dis\\Dis-server\\src\\main\\resources\\config.xml");
-				}
-				FileUtils.copyFile(new File(configPathFileName), devConfig);
-				Logger.getLogger(this.getClass()).info("Saved search to dev config file: " + devConfig.getAbsolutePath());
-			}
 		} catch (Throwable ex) {
 			ByteArrayOutputStream byteAOs = new ByteArrayOutputStream();
 			PrintWriter pw = new PrintWriter(byteAOs);
@@ -3664,15 +3673,15 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				String objectName = line.trim();
 				IDfSysObject dfSysObject = (IDfSysObject) sess.getObjectByQualification("dm_document where object_name='" + objectName + "'");
 				if (dfSysObject != null) {
-					if(!dfSysObject.getLockOwner().contentEquals(""))
-					{
+					if (!dfSysObject.getLockOwner().contentEquals("")) {
 						IDfQuery query = new DfQuery();
-						query.setDQL("update dm_document object set acl_name='mob_AllDelete', set acl_domain='dm_dbo', set r_lock_owner='', set r_lock_machine='', set r_lock_date=date('nulldate') where r_object_id='"
-								+ dfSysObject.getId("r_object_id") + "'");
+						query.setDQL(
+								"update dm_document object set acl_name='mob_AllDelete', set acl_domain='dm_dbo', set r_lock_owner='', set r_lock_machine='', set r_lock_date=date('nulldate') where r_object_id='"
+										+ dfSysObject.getId("r_object_id") + "'");
 						query.execute(sess, IDfQuery.DF_EXEC_QUERY);
 						dfSysObject.fetch("dm_document");
 					}
-					
+
 					dfSysObject.setACLName("mob_AllDelete");
 					dfSysObject.setACLDomain("dm_dbo");
 					dfSysObject.save();
@@ -3781,6 +3790,61 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			e.printStackTrace();
 		}
 
+	}
+
+	@Override
+	public String duplicateParametrizedQuery(String loginName, String loginPass, String name) throws ServerException {
+		String ret = null;
+		Logger.getLogger(this.getClass()).info("Duplicate search: " + name);
+		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
+
+		try {
+			XPathFactory xpathFac = XPathFactory.newInstance();
+			XPath xpath = xpathFac.newXPath();
+			// xpath.setNamespaceContext();
+
+			XPathExpression expr = xpath.compile("/config/docbase[1]/queries/query[@name='" + name + "']");
+			Element el = (Element) expr.evaluate(getDocConfig(), XPathConstants.NODE);
+			if (el != null) {
+				
+				Element el1 = (Element)el.cloneNode(true);
+				el1.setAttribute("name", name + " (copy of)");
+
+				Transformer tr = TransformerFactory.newInstance().newTransformer();
+				tr.setOutputProperty(OutputKeys.INDENT, "yes");
+				tr.setOutputProperty(OutputKeys.METHOD, "xml");
+				tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+				// tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
+				tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+				// send DOM to file
+				tr.transform(new DOMSource(docConfig), new StreamResult(new FileOutputStream(configPathFileName)));
+
+				// check if it is ocalhost save it to development environment
+				final String ip = getThreadLocalRequest().getRemoteHost();
+				InetAddress addr = InetAddress.getByName(ip);
+				String hostName = addr.getHostName();
+				if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
+					File devConfig;
+					if (SystemUtils.IS_OS_LINUX) {
+						devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
+					} else {
+						devConfig = new File("c:\\git\\Dis\\Dis-server\\src\\main\\resources\\config.xml");
+					}
+					FileUtils.copyFile(new File(configPathFileName), devConfig);
+					Logger.getLogger(this.getClass()).info("Saved search to dev config file: " + devConfig.getAbsolutePath());
+				}
+			}
+		} catch (Throwable ex) {
+			ByteArrayOutputStream byteAOs = new ByteArrayOutputStream();
+			PrintWriter pw = new PrintWriter(byteAOs);
+			ex.printStackTrace(pw);
+			pw.flush();
+			Logger.getLogger(AdminServiceImpl.class).error(byteAOs.toString());
+			throw new ServerException(ex.getMessage());
+		}
+
+		return ret;
 	}
 
 }

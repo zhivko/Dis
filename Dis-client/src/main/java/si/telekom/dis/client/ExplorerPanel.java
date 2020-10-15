@@ -136,31 +136,29 @@ public class ExplorerPanel extends Composite {
 		txtFolderLb.addItem("/Temp/Jobs");
 		// txtFolderLb.setWidth("10em");
 
-		
-//		markAll = new CheckBox("Označi vse");
-//		markAll.addClickHandler(new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//
-//				for (MyAsyncDataProvider dp : ExplorerPanel.this.model.allDataProviders) {
-//					for (Document doc : dp.documents) {
-//						if (markAll.getValue())
-//							CustomTreeModel.selectionModel.setSelected(doc.r_object_id, true);
-//						else
-//							CustomTreeModel.selectionModel.setSelected(doc.r_object_id, false);
-//					}
-//				}
-//
-//			}
-//		});
-		
+		// markAll = new CheckBox("Označi vse");
+		// markAll.addClickHandler(new ClickHandler() {
+		// @Override
+		// public void onClick(ClickEvent event) {
+		//
+		// for (MyAsyncDataProvider dp : ExplorerPanel.this.model.allDataProviders)
+		// {
+		// for (Document doc : dp.documents) {
+		// if (markAll.getValue())
+		// CustomTreeModel.selectionModel.setSelected(doc.r_object_id, true);
+		// else
+		// CustomTreeModel.selectionModel.setSelected(doc.r_object_id, false);
+		// }
+		// }
+		//
+		// }
+		// });
+
 		hpFolder.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hpFolder.add(txtFolder);
 		hpFolder.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		hpFolder.add(txtFolderLb);
-//		hpFolder.add(markAll);		
-		
-
+		// hpFolder.add(markAll);
 
 		hpFolder.setWidth("100%");
 		hpFolder.setCellWidth(txtFolderLb, "18px");
@@ -598,9 +596,12 @@ public class ExplorerPanel extends Composite {
 											fa.setValue(values);
 										else
 											fa.att.isReadOnly = true;
-										g.setWidget(att.row, att.col, fa);
+										try {
+											g.setWidget(att.row, att.col, fa);
+										} catch (Exception ex) {
+											MainPanel.log("Error putting attribute: " + att.dcmtAttName + " to tab: " + tab.getId() + " row:" + att.row + " col: " + att.col);
+										}
 										fa.setWidth("95%");
-
 									}
 								}
 								tpAtts.add(g, tab.getParameter());

@@ -118,7 +118,7 @@ public class MenuPanel extends Composite {
 					MainPanel.getPanel().add(activeExplorerInstance);
 				} else if (index == 1) {
 					CustomTreeModel.selectionModel.clear();
-					createSearchItems(images, spSearchItems);
+					createSearchItems();
 					MainPanel.clearPanel();
 					SearchPanel sp = SearchPanel.getSearchPanelInstance();
 					activeExplorerInstance = sp;
@@ -498,7 +498,12 @@ public class MenuPanel extends Composite {
 		return vp;
 	}
 
-	private void createSearchItems(Images images, ScrollPanel spSearchItems) {
+	public void createSearchItems() {
+		if (vpSearchButtons != null) {
+			vpSearchButtons.removeFromParent();
+			vpSearchButtons=null;
+		}
+		
 		if (vpSearchButtons == null) {
 			vpSearchButtons = new VerticalPanel();
 			spSearchItems.add(vpSearchButtons);

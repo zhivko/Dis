@@ -40,6 +40,7 @@ public class SearchEdit extends WindowBox {
 
 	MyTextArea dql;
 	MyTxtBox name;
+	MyTxtBox filterClass;
 
 	String oldName;
 
@@ -82,6 +83,12 @@ public class SearchEdit extends WindowBox {
 			dql.setIsEditable(false);
 			name.setIsEditable(false);
 		}
+		
+		filterClass = new MyTxtBox("Filter class name");
+		filterClass.setValue(this.pqp.parametrizedQuery.filterClass);
+		filterClass.setTextBoxWidth("700px");
+		filterClass.setValue(this.pqp.parametrizedQuery.filterClass);
+		getContentPanel().add(filterClass);		
 
 		Attribute aAtts = new Attribute();
 		aAtts.isRepeating = true;
@@ -200,7 +207,7 @@ public class SearchEdit extends WindowBox {
 					adminService.editParametrizedQuery(MainPanel.getInstance().loginName,
 							MainPanel.getInstance().loginPass, oldName, name.getTextBox().getValue(),
 							dql.getTextBox().getValue(), faGroups.getValues(), faSortAtts.getValues(true),
-							orderByDirections, new AsyncCallback<Void>() {
+							orderByDirections, filterClass.getValue(), new AsyncCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 									MainPanel.log("Saved search: <strong>" + name.getValue() + "</strong>");

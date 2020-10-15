@@ -99,6 +99,7 @@ public class WsServer {
 	@OnOpen
 	public synchronized void onOpen(Session session) {
 		session.setMaxIdleTimeout(0);
+		session.getAsyncRemote().setSendTimeout(1500);
 		Map<String, List<String>> params = session.getRequestParameterMap();
 		Logger.getLogger(this.getClass()).info("WebSocket session onOpen::" + session.getId());
 		String loginName = params.get("loginName").get(0).toString();
@@ -144,7 +145,9 @@ public class WsServer {
 				if (toUser.contentEquals("_all_")) {
 					synchronized (sessions) {
 						for (String user : sessions.keySet()) {
-							sessions.get(user).getAsyncRemote().sendText(message);
+							synchronized (sessions.get(user).getAsyncRemote()) {
+								sessions.get(user).getAsyncRemote().sendText(message);
+							}
 						}
 					}
 				} else {
@@ -152,7 +155,9 @@ public class WsServer {
 						sessions.get(toUser).getAsyncRemote().sendText(message);
 					}
 				}
-		} catch (Exception ex) {
+		} catch (
+
+		Exception ex) {
 			Logger.getLogger(WsServer.class).info("could not report log");
 			ex.printStackTrace();
 		}

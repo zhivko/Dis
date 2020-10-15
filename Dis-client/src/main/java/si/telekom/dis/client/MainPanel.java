@@ -170,16 +170,7 @@ public class MainPanel extends Composite {
 				progressBar.setPercent(percent);
 				progressBar.setText(progr);
 			} else if (e.data.asString().startsWith("logout")) {
-				final String loginPageUrl = GWT.getHostPageBaseURL() + (GWT.getHostPageBaseURL().contains("127.0.0.1") ? "webui2/" : "");
-
-				log("Logging out because of inactivity. Navigate to login page: " + loginPageUrl);
-				Timer timer = new Timer() {
-					@Override
-					public void run() {
-						Window.Location.replace(loginPageUrl);
-					}
-				};
-				timer.schedule(4000);
+				logout();
 				// Window.open(loginPageUrl, "_self", "");
 			} else {
 				MainPanel.log(e.data.asString());
@@ -188,7 +179,7 @@ public class MainPanel extends Composite {
 		socket.onclose = e -> {
 			if (e.wasClean) {
 				DomGlobal.console.log("[close] Connection closed cleanly, code=" + e.code + " reason=" + e.reason + "");
-				MainPanel.log("Connection closed, logging out.");
+				logout();
 			} else {
 				// e.g. server process killed or network down
 				// event.code is usually 1006 in this case
@@ -289,4 +280,17 @@ public class MainPanel extends Composite {
 		});
 	}
 
+	
+	public void logout()
+	{
+		final String loginPageUrl = GWT.getHostPageBaseURL() + (GWT.getHostPageBaseURL().contains("127.0.0.1") ? "webui2/" : "");
+		log("Logging out. Navigate to login page: " + loginPageUrl);
+		Timer timer = new Timer() {
+			@Override
+			public void run() {
+				Window.Location.replace(loginPageUrl);
+			}
+		};
+		timer.schedule(4000);		
+	}
 }

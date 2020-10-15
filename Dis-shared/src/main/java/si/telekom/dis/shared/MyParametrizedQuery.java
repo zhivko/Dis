@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyParametrizedQuery implements java.io.Serializable, com.google.gwt.user.client.rpc.IsSerializable {
-	/**
-	 * 
-	 */
 	public String name;
 	public String dql;
 	public List<Attribute> formAttributes;
@@ -17,6 +14,7 @@ public class MyParametrizedQuery implements java.io.Serializable, com.google.gwt
 	public List<String> orderBys;
 	public List<String> orderByDirections;
 	
+	public String filterClass;
 
 	public MyParametrizedQuery() {
 		formAttributes = new ArrayList<Attribute>();
@@ -26,6 +24,7 @@ public class MyParametrizedQuery implements java.io.Serializable, com.google.gwt
 		groups = new ArrayList<String>();
 		orderBys = new ArrayList<String>();
 		orderByDirections = new ArrayList<String>();
+		filterClass = null;
 	}
 
 	public MyParametrizedQuery(String name, String dql) {
@@ -33,5 +32,4 @@ public class MyParametrizedQuery implements java.io.Serializable, com.google.gwt
 		this.name = name;
 		this.dql = dql;
 	}
-
 }

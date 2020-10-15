@@ -17,6 +17,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -29,7 +30,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
 
-import si.telekom.dis.client.ExplorerPanel;
 import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MenuPanel;
 import si.telekom.dis.client.WindowBox;
@@ -193,7 +193,10 @@ public class DocumentView extends WindowBox {
 
 								if (sp.getWidget() != null)
 									sp.remove(sp.getWidget());
-								HTML html = new HTML(response.getText());
+								
+								HTML html = new HTML(new SafeHtmlBuilder().appendEscapedLines(response.getText()).toSafeHtml());
+								
+								//HTML html = new HTML(response.getText());
 								sp.add(html);
 								DocumentView.this.center();
 							} else {

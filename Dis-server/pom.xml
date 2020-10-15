@@ -355,6 +355,7 @@
 					<include>log4j.properties</include>
 					<include>logging.properties</include>
 					<include>config.xml</include>
+					<include>profile-template.xml</include>
 				</includes>
 			</resource>
 		</resources>
@@ -452,6 +453,7 @@
 									<include>**/log4j.properties</include>
 									<include>**/logging.properties</include>
 									<include>**/config.xml</include>
+									<include>**/profile-template.xml</include>
 								</includes>
 								<filtering>true</filtering>
 							</resource>
@@ -466,9 +468,6 @@
 						</webResources>
 					</configuration>
 				</plugin>
-
-
-
 
 				<plugin>
 					<groupId>org.eclipse.jetty</groupId>

@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URI;
@@ -120,6 +121,7 @@ import com.documentum.operations.IDfOperationError;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.itextpdf.text.pdf.PdfReader;
 
+import si.telekom.dis.server.reports.IIncludeInReport;
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.Attribute;
 import si.telekom.dis.shared.AttributeRoleStateWizards;
@@ -1047,9 +1049,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				WsServer.log(loginName, message);
 			}
 
-		} catch (
-
-		Throwable ex) {
+		} catch (Throwable ex) {
 			StringWriter errorStringWriter = new StringWriter();
 			PrintWriter pw = new PrintWriter(errorStringWriter);
 			ex.printStackTrace(pw);
@@ -1061,7 +1061,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 		}
 		String durationStr = String.format(Locale.ROOT, "%.3fs.", (System.currentTimeMillis() - t1) / 1000.0);
-		String msg = "getProfileAttributesAndValues ended for r_object_id=" + r_object_id + " in " + durationStr;
+		String msg = "getProfileAttributesAndValues ended. Returned: " + ret.attributes.size() + " attributes with values for r_object_id=" + r_object_id
+				+ " in " + durationStr;
 		Logger.getLogger(this.getClass()).info(msg);
 
 		return ret;
@@ -2288,9 +2289,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					}
 				}
 			}
-			if(mandatoryAttNamesNotSet.length()>0)
-				mandatoryAttNamesNotSet = mandatoryAttNamesNotSet.substring(0,mandatoryAttNamesNotSet.length()-1);
-			
+			if (mandatoryAttNamesNotSet.length() > 0)
+				mandatoryAttNamesNotSet = mandatoryAttNamesNotSet.substring(0, mandatoryAttNamesNotSet.length() - 1);
+
 			if (!allMandatoryFilled) {
 				throw new ServerException("Obvezni atributi (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
 			}
@@ -3195,14 +3196,31 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			WsServer.log(loginName, msg);
 			int prevLogOutputDuration = 0;
 			int resultCount = 0;
+
+			IIncludeInReport filter = null;
+			if (pQuery.filterClass != null && !pQuery.filterClass.equals("")) {
+				// si.telekom.dis.server.reports.FilterSapObjects
+				Logger.getLogger(this.getClass()).info("filtering by filter class: '" + pQuery.filterClass + "'");
+
+				final Class<?> aClass = WebappContext.servletContext.getClassLoader().loadClass(pQuery.filterClass);
+				final Constructor<IIncludeInReport> constr = (Constructor<IIncludeInReport>) aClass.getConstructor();
+				filter = constr.newInstance();
+			}
+
 			while (collection.next()) {
 				String r_object_id = collection.getId("r_object_id").toString();
 				IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
-				Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
-				// if (!alRObjectIds.contains(r_object_id)) {
-				ret.add(doc);
-				// alRObjectIds.add(r_object_id);
-				// }
+				if (filter != null) {
+					Logger.getLogger(this.getClass()).info("filtering r_object_id: " + r_object_id);
+					if (filter.shouldInclude((IDfSysObject) persObj, userSession)) {
+						Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
+						ret.add(doc);
+					}
+				} else {
+					Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
+					ret.add(doc);
+				}
+
 				long milis3 = System.currentTimeMillis();
 				int duration = (int) ((milis3 - milis2) / 1000);
 				if (duration % 1 == 0 && prevLogOutputDuration != duration) {
@@ -3655,8 +3673,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				releaseNo = dfSysObject.getInt("mob_releaseno") + 1;
 				copiedObject.setInt("mob_releaseno", releaseNo);
 				copiedObject.setRepeatingString("mob_supersedes", 0, dfSysObject.getObjectName());
-				
-				copiedObject.setTime("mob_valid_from", DfTime.DF_NULLDATE);
+
+				try {
+					copiedObject.setTime("mob_valid_from", DfTime.DF_NULLDATE);
+				} catch (Exception ex) {
+					WsServer.log(loginName, "Object doesn't suppor mob_valid_from attribute (" + ex.getMessage() + ")");
+				}
 
 				ExplorerServiceImpl.getInstance().checkDocmanSExist(persObject, userSession, prof);
 				ExplorerServiceImpl.getInstance().setUsersForRoles(userSession, persObject, roleUserGroups);

@@ -21,9 +21,9 @@ import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
 
 public class WindowBox extends PopupPanel implements SupportsShow {
-	private final static AdminServiceAsync adminService = GWT.create(AdminService.class);
-	private final static ExplorerServiceAsync explorerService = GWT.create(ExplorerService.class);
-	private final static Logger logger = java.util.logging.Logger.getLogger("mylogger");
+	public final static AdminServiceAsync adminService = GWT.create(AdminService.class);
+	public final static ExplorerServiceAsync explorerService = GWT.create(ExplorerService.class);
+	public final static Logger logger = java.util.logging.Logger.getLogger("mylogger");
 	
 	
 	private String r_object_id;

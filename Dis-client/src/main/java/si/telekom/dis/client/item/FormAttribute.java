@@ -31,6 +31,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 
+import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MultiValueSelectBox;
 import si.telekom.dis.client.MyDateTime;
 import si.telekom.dis.shared.Attribute;
@@ -82,7 +83,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 				FormAttribute.this.valueDeleted(values.getSelectedIndex());
 			}
 		});
-		
+
 		GWT.log("name: " + att.dcmtAttName + " " + att.type);
 
 		if (att.getType().equals(Attribute.types.TEXTBOX.type)) {
@@ -178,7 +179,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 			if (this.att.isReadOnly) {
 				sb.setEnabled(false);
 			}
-			
+
 			vp.add(sb);
 			vp.setCellWidth(sb, "100%");
 			vp.setCellVerticalAlignment(sb, HasVerticalAlignment.ALIGN_BOTTOM);
@@ -255,7 +256,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 					tb.setValue(values.getSelectedItemText());
 				}
 			});
-			
+
 			vp.add(values);
 		}
 
@@ -337,43 +338,51 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 
 	public void setValue(List<String> values) {
 		// TODO Auto-generated method stub
-		if (!att.isRepeating()) {
-			if (values.size() > 0) {
-				if (values.get(0) != null) {
-					if (att.getType().equals(Attribute.types.TEXTBOX.type)) {
-						tb.setValue(values.get(0));
-					} else if (att.getType().equals(Attribute.types.TEXTAREA.type)) {
-						ta.setValue(values.get(0));
-					} else if (att.getType().equals(Attribute.types.CHECKBOX.type)) {
-						cb.setValue(Boolean.valueOf(values.get(0)));
-					} else if (att.getType().equals(Attribute.types.DROPDOWN.type)) {
+		String value = null;
+		try {
+			if (!att.isRepeating()) {
+				if (values.size() > 0) {
+					value = values.get(0);
+					if (values.get(0) != null) {
+						if (att.getType().equals(Attribute.types.TEXTBOX.type)) {
+							tb.setValue(values.get(0));
+						} else if (att.getType().equals(Attribute.types.TEXTAREA.type)) {
+							ta.setValue(values.get(0));
+						} else if (att.getType().equals(Attribute.types.CHECKBOX.type)) {
+							cb.setValue(Boolean.valueOf(values.get(0)));
+						} else if (att.getType().equals(Attribute.types.DROPDOWN.type)) {
+							sb.setValue(values);
+						} else if (att.getType().equals(Attribute.types.CALENDAR.type)) {
+							// milliseconds since January 1, 1970, 00:00:00 GMT
+							Date date = new Date(Long.valueOf(values.get(0)));
+							dp.setValue(date);
+						} else if (att.getType().equals(Attribute.types.DATETIME.type)) {
+							// milliseconds since January 1, 1970, 00:00:00 GMT
+							myDateTime.setValue(new Date(Long.valueOf(values.get(0))));
+						} else if (att.getType().equals(Attribute.types.DATE.type)) {
+							// milliseconds since January 1, 1970, 00:00:00 GMT
+							dateBox.setValue(new Date(Long.valueOf(values.get(0))));
+						} else if (att.getType().equals(Attribute.types.TIME.type)) {
+							// milliseconds since January 1, 1970, 00:00:00 GMT
+							dateBox.setValue(new Date(Long.valueOf(values.get(0))));
+						}
+					}
+				}
+			} else {
+				if (values != null && values.size() > 0) {
+					if (att.getType().equals(Attribute.types.DROPDOWN.type)) {
+						value = values.toString();
 						sb.setValue(values);
-					} else if (att.getType().equals(Attribute.types.CALENDAR.type)) {
-						// milliseconds since January 1, 1970, 00:00:00 GMT
-						Date date = new Date(Long.valueOf(values.get(0)));
-						dp.setValue(date);
-					} else if (att.getType().equals(Attribute.types.DATETIME.type)) {
-						// milliseconds since January 1, 1970, 00:00:00 GMT
-						myDateTime.setValue(new Date(Long.valueOf(values.get(0))));
-					} else if (att.getType().equals(Attribute.types.DATE.type)) {
-						// milliseconds since January 1, 1970, 00:00:00 GMT
-						dateBox.setValue(new Date(Long.valueOf(values.get(0))));
-					} else if (att.getType().equals(Attribute.types.TIME.type)) {
-						// milliseconds since January 1, 1970, 00:00:00 GMT
-						dateBox.setValue(new Date(Long.valueOf(values.get(0))));
+					} else {
+						for (String value1 : values) {
+							value = values.get(0);
+							this.values.addItem(value);
+						}
 					}
 				}
 			}
-		} else {
-			if (values != null && values.size() > 0) {
-				if (att.getType().equals(Attribute.types.DROPDOWN.type)) {
-					sb.setValue(values);
-				} else {
-					for (String value : values) {
-						this.values.addItem(value);
-					}
-				}
-			}
+		} catch (Exception ex) {
+			MainPanel.log("error while parsing value for <strong>"+att.dcmtAttName+"</strong> att type: " + att.getType() + " value: " + value);
 		}
 
 	}

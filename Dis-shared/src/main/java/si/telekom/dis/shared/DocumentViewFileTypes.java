@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DocumentViewFileTypes {
-	static String[] couldDisplayFormatsArr = { "acroformpdf", "pdf", "odt", "ods", "msg", "html", "htm", "pub_html", "crtext" };
+	static String[] couldDisplayFormatsArr = { "acroformpdf", "pdf", "odt", "ods", "msg", "html", "htm", "pub_html", "crtext", "xml" };
 	static String[] viewerJSFormatsArr = { "acroformpdf", "pdf", "ods", "odt" };
 	static String[] imageHtmlFormatsArr = { "png", "tiff", "jpeg", "jpg" };
 	static String[] odfFormatsArr = { };

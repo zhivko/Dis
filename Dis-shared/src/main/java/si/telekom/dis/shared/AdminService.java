@@ -47,7 +47,9 @@ public interface AdminService extends RemoteService {
 	
 	MyParametrizedQuery getParametrizedQueryByName(String loginName, String loginPass, String name) throws ServerException;
 
-	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups, List<String> orderBy, List<String> orderBydirections) throws ServerException;
+	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups, List<String> orderBy, List<String> orderBydirections, String filterClass) throws ServerException;
+
+	String duplicateParametrizedQuery(String loginName, String loginPass, String name) throws ServerException;
 	
 	DocType getDocTypeFromDql(String loginName, String loginPass, String dql) throws ServerException;
 	
