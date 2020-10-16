@@ -3022,14 +3022,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				IDfSysObject sysObjTemplate = (IDfSysObject) objTemplate;
 				ByteArrayInputStream baIs = sysObjTemplate.getContent();
-				byte[] bytes;
+				byte[] bytes = {};
 				try {
 					HashMap<String, String> hm = new HashMap<>();
 					hm.put("IPv4", "1");
 					hm.put("IPv6", "1");
 					Logger.getLogger(this.getClass()).info("\tGenerating docx from template...");
 					WsServer.log(loginName, "Generating docx from template");
-					bytes = DocxGenerator.generateDocxFileFromTemplate(hm, baIs);
+					//bytes = DocxGenerator.generateDocxFileFromTemplate(hm, baIs);
 				} catch (Exception ex) {
 					bytes = IOUtils.toByteArray(baIs);
 				}
