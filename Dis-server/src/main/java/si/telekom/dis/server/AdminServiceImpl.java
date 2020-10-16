@@ -2807,23 +2807,28 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				Element el = (Element) nl.item(i);
 				String searchName = el.getAttribute("name");
 
+				boolean userShouldGetSearch=false;
 				XPathExpression expr2 = xpath.compile(".//group");
 				NodeList groupList = (NodeList) expr2.evaluate(el, XPathConstants.NODESET);
 				for (int j = 0; j < groupList.getLength(); j++) {
 					Element el1 = (Element) groupList.item(j);
 					String groupName = el1.getAttribute("name");
 
-					boolean userShouldGetSearch = groupName.equalsIgnoreCase("world");
+					userShouldGetSearch = groupName.equalsIgnoreCase("world");
 					if (!userShouldGetSearch)
+					{
 						userShouldGetSearch = isMember(loginName, groupName);
-
-					if (userShouldGetSearch || LoginServiceImpl.admins.contains(loginName)) { // userShouldGetSearch
-						WsServer.log(loginName, new String(el.getAttribute("name").getBytes(), "UTF-8"));
-						MyParametrizedQuery query = getParametrizedQuery(el, xpathFac, lazy);
-						queries.add(query);
 						break;
 					}
+
 				}
+				
+				if (userShouldGetSearch || LoginServiceImpl.admins.contains(loginName)) { // userShouldGetSearch
+					WsServer.log(loginName, new String(el.getAttribute("name").getBytes(), "UTF-8"));
+					MyParametrizedQuery query = getParametrizedQuery(el, xpathFac, lazy);
+					queries.add(query);
+				}
+				
 			}
 
 		} catch (Throwable ex) {
@@ -3810,6 +3815,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				Element el1 = (Element)el.cloneNode(true);
 				el1.setAttribute("name", name + " (copy of)");
 
+				el.getParentNode().appendChild(el1);
+				
 				Transformer tr = TransformerFactory.newInstance().newTransformer();
 				tr.setOutputProperty(OutputKeys.INDENT, "yes");
 				tr.setOutputProperty(OutputKeys.METHOD, "xml");

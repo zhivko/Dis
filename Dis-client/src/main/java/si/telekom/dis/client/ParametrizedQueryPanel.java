@@ -35,7 +35,6 @@ public class ParametrizedQueryPanel extends WindowBox {
 	private final static ExplorerServiceAsync explorerService = GWT.create(ExplorerService.class);
 	private final static Logger logger = Logger.getLogger("mylogger");
 	public static MyParametrizedQuery lastParametrizedQuery;
-	public Button duplicateSearch;
 
 	public MyParametrizedQuery parametrizedQuery;
 
@@ -51,43 +50,12 @@ public class ParametrizedQueryPanel extends WindowBox {
 		refresh(parametrizedQuery);
 
 		getOkButton().addClickHandler(new ClickHandler() {
-
 			@Override
 			public void onClick(ClickEvent event) {
 				runQuery();
 			}
 		});
-
-		duplicateSearch = new Button();
-		duplicateSearch.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				// TODO Auto-generated method stub
-				try {
-					adminService.duplicateParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
-							ParametrizedQueryPanel.lastParametrizedQuery.name, new AsyncCallback<String>() {
-								@Override
-								public void onSuccess(String result) {
-									MenuPanel.getInstance().createSearchItems();
-									MainPanel.log("Search duplicated under name: " + result);
-								}
-
-								@Override
-								public void onFailure(Throwable caught) {
-									MainPanel.log("Error duplicating search: " + caught.getMessage());
-								}
-							});
-				} catch (ServerException e) {
-					MainPanel.log("Error duplicating search: " + e.getMessage());
-				}
-			}
-		});
-		
-		sp.add(duplicateSearch);
-
 		getContentPanel().add(sp);
-
 	}
 
 	protected void runQuery() {

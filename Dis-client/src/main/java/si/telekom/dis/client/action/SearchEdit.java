@@ -14,6 +14,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
@@ -21,6 +22,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import si.telekom.dis.client.MainPanel;
+import si.telekom.dis.client.MenuPanel;
 import si.telekom.dis.client.MyTextArea;
 import si.telekom.dis.client.MyTxtBox;
 import si.telekom.dis.client.ParametrizedQueryPanel;
@@ -56,6 +58,8 @@ public class SearchEdit extends WindowBox {
 
 	ArrayList<String> orderByDirections;
 
+	public Button duplicateSearch;
+
 	public SearchEdit(ParametrizedQueryPanel parametrizedQueryPanel) {
 		orderByDirections = new ArrayList<String>();
 		hp = new HorizontalPanel();
@@ -83,12 +87,12 @@ public class SearchEdit extends WindowBox {
 			dql.setIsEditable(false);
 			name.setIsEditable(false);
 		}
-		
+
 		filterClass = new MyTxtBox("Filter class name");
 		filterClass.setValue(this.pqp.parametrizedQuery.filterClass);
 		filterClass.setTextBoxWidth("700px");
 		filterClass.setValue(this.pqp.parametrizedQuery.filterClass);
-		getContentPanel().add(filterClass);		
+		getContentPanel().add(filterClass);
 
 		Attribute aAtts = new Attribute();
 		aAtts.isRepeating = true;
@@ -162,8 +166,8 @@ public class SearchEdit extends WindowBox {
 		hp.add(vp2);
 
 		try {
-			adminService.getDocTypeFromDql(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
-					dql.getValue(), new AsyncCallback<DocType>() {
+			adminService.getDocTypeFromDql(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, dql.getValue(),
+					new AsyncCallback<DocType>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							MainPanel.log(caught.getMessage());
@@ -193,31 +197,58 @@ public class SearchEdit extends WindowBox {
 		aGroup.type = Attribute.types.DROPDOWN.type;
 		aGroup.dropDownCol = 1;
 		aGroup.isLimitedToValueList = false;
-		if (MainPanel.getInstance().loginRole.toLowerCase().equals("administrator")) {
+		if (!MainPanel.getInstance().loginRole.toLowerCase().equals("administrator")) {
 			aGroup.isReadOnly = true;
 		}
 		faGroups = new FormAttribute(aGroup);
 		faGroups.setValue(this.pqp.parametrizedQuery.groups);
 		getContentPanel().add(faGroups);
 
+		duplicateSearch = new Button("Duplicate search");
+		duplicateSearch.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				// TODO Auto-generated method stub
+				try {
+					adminService.duplicateParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
+							ParametrizedQueryPanel.lastParametrizedQuery.name, new AsyncCallback<String>() {
+								@Override
+								public void onSuccess(String result) {
+									MenuPanel.getInstance().createSearchItems();
+									MainPanel.log("Search duplicated under name: " + result);
+								}
+
+								@Override
+								public void onFailure(Throwable caught) {
+									MainPanel.log("Error duplicating search: " + caught.getMessage());
+								}
+							});
+				} catch (ServerException e) {
+					MainPanel.log("Error duplicating search: " + e.getMessage());
+				}
+			}
+		});
+		getButtonPanel().add(duplicateSearch);
+		if (!MainPanel.getInstance().loginRole.toLowerCase().equals("administrator")) {
+			duplicateSearch.setEnabled(false);
+		}
+
 		getOkButton().addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				try {
-					adminService.editParametrizedQuery(MainPanel.getInstance().loginName,
-							MainPanel.getInstance().loginPass, oldName, name.getTextBox().getValue(),
-							dql.getTextBox().getValue(), faGroups.getValues(), faSortAtts.getValues(true),
-							orderByDirections, filterClass.getValue(), new AsyncCallback<Void>() {
+					adminService.editParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, oldName,
+							name.getTextBox().getValue(), dql.getTextBox().getValue(), faGroups.getValues(), faSortAtts.getValues(true), orderByDirections,
+							filterClass.getValue(), new AsyncCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 									MainPanel.log("Saved search: <strong>" + name.getValue() + "</strong>");
 									try {
-										adminService.getParametrizedQueryByName(MainPanel.getInstance().loginName,
-												MainPanel.getInstance().loginPass, name.getValue(),
+										adminService.getParametrizedQueryByName(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, name.getValue(),
 												new AsyncCallback<MyParametrizedQuery>() {
 													public void onSuccess(MyParametrizedQuery result) {
-														MainPanel.log("Retrieved search: <strong>" + name.getValue()
-																+ "</strong>");
+														MainPanel.log("Retrieved search: <strong>" + name.getValue() + "</strong>");
 														SearchEdit.this.pqp.refresh(result);
 													};
 

@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -68,7 +67,7 @@ import si.telekom.dis.shared.UserSettings;
 @RemoteServiceRelativePath("login")
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
 
-	public static List<String> admins = Arrays.asList(new String[] { "zivkovick", "kovacevicr", "shvalec", "dmadmin" });
+	public static List<String> admins = Arrays.asList(new String[] { "zivkovick", "kovacevicr", "shvalec", "dmadmin", "sjakic", "lokart" });
 
 	/**
 	 * returns objects of following ret[0] ... loginName ret[1] ... password

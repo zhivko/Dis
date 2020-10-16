@@ -17,9 +17,6 @@ public class AppResourceConfig extends ResourceConfig {
 	public AppResourceConfig() {
 
 		register(new LoggingFeature(java.util.logging.Logger.getGlobal(), java.util.logging.Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 10000));
-		register(ExplorerServiceImpl.class);
-		
-		register(DisRest.class);
 		
     // Tracing properties (modification of the response HTTP headers)
     Map<String, Object> params = new HashMap<String, Object>();
@@ -30,7 +27,13 @@ public class AppResourceConfig extends ResourceConfig {
 		packages("si.telekom.dis.server.rest");
 		packages("si.telekom.dis.shared");
 		//packages("si.telekom.dis.server");
-		ResourceConfig config = new ResourceConfig(DisRest.class);
+
+		ResourceConfig config = new ResourceConfig(CustomerSearch.class, CatalogServiceClient.class);
+		//¸ DisRest.class);
+		//register(CustomerSearch.class);
+		//register(CatalogServiceClient.class);		
+		
+		
 		config.register(LoggingFeature.class);
 		
 

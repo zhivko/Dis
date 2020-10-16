@@ -261,18 +261,29 @@
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.docx4j/docx4j -->
-		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j</artifactId>
-			<version>6.1.2</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.docx4j/docx4j-JAXB-ReferenceImpl -->
-		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j-JAXB-Internal</artifactId>
-			<version>8.1.4</version>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.docx4j</groupId> -->
+		<!-- <artifactId>docx4j</artifactId> -->
+		<!-- <version>6.1.2</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.docx4j</groupId> -->
+		<!-- <artifactId>docx4j-JAXB-Internal</artifactId> -->
+		<!-- <version>8.1.4</version> -->
+		<!-- </dependency> -->
 
+		<!-- https://mvnrepository.com/artifact/org.apache.bcel/bcel -->
+		<dependency>
+			<groupId>org.apache.bcel</groupId>
+			<artifactId>bcel</artifactId>
+			<version>6.5.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-xml -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+			<version>2.11.3</version>
+		</dependency>
 
 
 

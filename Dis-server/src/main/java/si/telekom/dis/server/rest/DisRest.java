@@ -44,7 +44,7 @@ public class DisRest {
 		}
 	}
 
-
+/*
 	@GET
 	@Consumes({"text/xml", "application/json"})
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -70,6 +70,7 @@ public class DisRest {
 		}
 	}
 
+	*/
 	
 	/*
 	@GET
