@@ -38,8 +38,7 @@
 			<groupId>com.documentum</groupId>
 			<artifactId>Documentum</artifactId>
 			<version>7.3.0090.0047</version>
-			<classifier>windows</classifier>
-			<scope>provided</scope>
+			<classifier>centos</classifier>
 		</dependency>
 
 
@@ -47,16 +46,14 @@
 			<groupId>com.documentum</groupId>
 			<artifactId>DocumentumDms-client-api</artifactId>
 			<version>7.3.0090.0047</version>
-			<classifier>windows</classifier>
-			<scope>provided</scope>
+			<classifier>centos</classifier>
 		</dependency>
 
 		<dependency>
 			<groupId>com.documentum.services</groupId>
 			<artifactId>configservice-api</artifactId>
 			<version>7.3.0090.0047</version>
-			<classifier>windows</classifier>
-			<scope>provided</scope>
+			<classifier>centos</classifier>
 		</dependency>
 
 		<dependency>
