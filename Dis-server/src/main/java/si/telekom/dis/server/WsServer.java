@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.websocket.CloseReason;
 import javax.websocket.CloseReason.CloseCodes;
@@ -34,6 +36,8 @@ public class WsServer {
 	static HashMap<String, Session> sessions = new HashMap<String, Session>();
 	static HashMap<String, Instant> lastGetSessionTime = new HashMap<String, Instant>();
 	static int maxInactivityTimeSec = 10 * 60;
+
+	private static Future<Void> _lastFuture = null;
 
 	static {
 		timer.scheduleAtFixedRate(new TimerTask() {
@@ -56,7 +60,9 @@ public class WsServer {
 								Duration timeElapsed = Duration.between(lastGetSession, now);
 								if (timeElapsed.getSeconds() > maxInactivityTimeSec) {
 									try {
-										session.getAsyncRemote().sendText("logout");
+										checkLastSendComplete();
+										_lastFuture = session.getAsyncRemote().sendText("logout");
+
 									} catch (Exception ex) {
 
 									}
@@ -104,12 +110,7 @@ public class WsServer {
 		Logger.getLogger(this.getClass()).info("WebSocket session onOpen::" + session.getId());
 		String loginName = params.get("loginName").get(0).toString();
 		sessions.put(loginName, session);
-		// try {
-		// sessions.get(loginName).getAsyncRemote().setBatchingAllowed(true);
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+
 	}
 
 	@OnClose
@@ -143,21 +144,19 @@ public class WsServer {
 		try {
 			if (toUser != null)
 				if (toUser.contentEquals("_all_")) {
-					synchronized (sessions) {
-						for (String user : sessions.keySet()) {
-							synchronized (sessions.get(user).getAsyncRemote()) {
-								sessions.get(user).getAsyncRemote().sendText(message);
-							}
+					for (String user : sessions.keySet()) {
+						if (sessions.get(toUser) != null && sessions.get(toUser).isOpen()) {
+							checkLastSendComplete();
+							_lastFuture = sessions.get(user).getAsyncRemote().sendText(message);
 						}
 					}
 				} else {
 					if (sessions.get(toUser) != null && sessions.get(toUser).isOpen()) {
-						sessions.get(toUser).getAsyncRemote().sendText(message);
+						checkLastSendComplete();
+						_lastFuture = sessions.get(toUser).getAsyncRemote().sendText(message);
 					}
 				}
-		} catch (
-
-		Exception ex) {
+		} catch (Exception ex) {
 			Logger.getLogger(WsServer.class).info("could not report log");
 			ex.printStackTrace();
 		}
@@ -170,5 +169,26 @@ public class WsServer {
 	public static void setLastGetSessionTime(String userName) {
 		Instant now = Instant.now();
 		lastGetSessionTime.put(userName, now);
+	}
+
+	protected static synchronized void checkLastSendComplete() {
+		if (_lastFuture != null) {
+			try {
+				if (!_lastFuture.isDone()) {
+					// Only one write to the websocket can happen at a time, so we need to
+					// make sure the last one completed
+					// else we get ...
+					// java.lang.IllegalStateException: The remote endpoint was in state
+					// [TEXT_FULL_WRITING] which is an invalid state for called method
+					do {
+						Thread.sleep(1);
+					} while (!_lastFuture.isDone());
+				}
+				// Get the result to ensure
+				Void ignore = _lastFuture.get();
+			} catch (InterruptedException ie) {
+			} catch (ExecutionException ee) {
+			}
+		}
 	}
 }

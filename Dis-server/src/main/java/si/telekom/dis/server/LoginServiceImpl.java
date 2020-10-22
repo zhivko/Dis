@@ -32,10 +32,6 @@ import org.apache.log4j.Logger;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.client.IDfUser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -260,46 +256,47 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 	}
 
-	private UserSettings getUserSettings(IDfSession userSess) {
-		UserSettings us = null;
-		try {
-			IDfSysObject obj = (IDfSysObject) userSess
-					.getObjectByQualification("dm_document where folder('/" + userSess.getLoginUserName() + "') and objectName='disUserSettings'");
-
-			JacksonXmlModule xmlModule = new JacksonXmlModule();
-			xmlModule.setDefaultUseWrapper(false);
-			ObjectMapper objectMapper = new XmlMapper(xmlModule);
-			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-			if (obj == null) {
-				obj = (IDfSysObject) userSess.newObject("dm_document");
-				obj.link(userSess.getLoginUserName());
-
-				us = new UserSettings();
-				us.explorerReturnResultCount = 100;
-				us.searchReturnResultCount = 100;
-
-				String xml = objectMapper.writeValueAsString(us);
-
-				ByteArrayOutputStream baOs = new ByteArrayOutputStream();
-				baOs.write(xml.getBytes());
-				obj.setContent(baOs);
-				obj.setContentType("xml");
-				obj.save();
-			}
-
-			ByteArrayInputStream baIs = obj.getContent();
-			us = objectMapper.readValue(baIs, UserSettings.class);
-
-		} catch (Exception e) {
-			ByteArrayOutputStream baOs = new ByteArrayOutputStream();
-			e.printStackTrace(new java.io.PrintStream(baOs));
-
-			Logger.getLogger(this.getClass()).error(baOs.toString());
-
-		}
-		return us;
-	}
+	// private UserSettings getUserSettings(IDfSession userSess) {
+	// UserSettings us = null;
+	// try {
+	// IDfSysObject obj = (IDfSysObject) userSess
+	// .getObjectByQualification("dm_document where folder('/" +
+	// userSess.getLoginUserName() + "') and objectName='disUserSettings'");
+	//
+	// JacksonXmlModule xmlModule = new JacksonXmlModule();
+	// xmlModule.setDefaultUseWrapper(false);
+	// ObjectMapper objectMapper = new XmlMapper(xmlModule);
+	// objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+	//
+	// if (obj == null) {
+	// obj = (IDfSysObject) userSess.newObject("dm_document");
+	// obj.link(userSess.getLoginUserName());
+	//
+	// us = new UserSettings();
+	// us.explorerReturnResultCount = 100;
+	// us.searchReturnResultCount = 100;
+	//
+	// String xml = objectMapper.writeValueAsString(us);
+	//
+	// ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+	// baOs.write(xml.getBytes());
+	// obj.setContent(baOs);
+	// obj.setContentType("xml");
+	// obj.save();
+	// }
+	//
+	// ByteArrayInputStream baIs = obj.getContent();
+	// us = objectMapper.readValue(baIs, UserSettings.class);
+	//
+	// } catch (Exception e) {
+	// ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+	// e.printStackTrace(new java.io.PrintStream(baOs));
+	//
+	// Logger.getLogger(this.getClass()).error(baOs.toString());
+	//
+	// }
+	// return us;
+	// }
 
 	public static String queryLdap(String filter) throws NamingException {
 		String ret = null;
