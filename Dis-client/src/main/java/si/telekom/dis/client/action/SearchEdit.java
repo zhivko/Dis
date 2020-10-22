@@ -190,17 +190,21 @@ public class SearchEdit extends WindowBox {
 		}
 		getContentPanel().add(hp);
 
-		Attribute aGroup = new Attribute();
-		aGroup.isRepeating = true;
-		aGroup.label = "Groups";
-		aGroup.dqlValueListDefinition = "select r_object_id, group_name from dm_group where 1=1 order by group_name ENABLE(RETURN_TOP 20)";
-		aGroup.type = Attribute.types.DROPDOWN.type;
-		aGroup.dropDownCol = 1;
-		aGroup.isLimitedToValueList = false;
+		Attribute aGroupUser = new Attribute();
+		aGroupUser.isRepeating = true;
+		aGroupUser.label = "Grupe in uporabniki";
+		aGroupUser.dqlValueListDefinition = 
+				"select user_name, description from dm_user where 1=1 " +
+						"union " +
+						"select group_name, description from dm_group where 1=1 " + 
+						"fixedValues(dm_world, vsi;dm_owner, lastnik; dm_group, skupina)";				
+		aGroupUser.type = Attribute.types.DROPDOWN.type;
+		aGroupUser.dropDownCol = 1;
+		aGroupUser.isLimitedToValueList = false;
 		if (!MainPanel.getInstance().loginRole.toLowerCase().equals("administrator")) {
-			aGroup.isReadOnly = true;
+			aGroupUser.isReadOnly = true;
 		}
-		faGroups = new FormAttribute(aGroup);
+		faGroups = new FormAttribute(aGroupUser);
 		faGroups.setValue(this.pqp.parametrizedQuery.groups);
 		getContentPanel().add(faGroups);
 

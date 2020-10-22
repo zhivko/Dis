@@ -400,7 +400,7 @@ public class UploadServlet extends HttpServlet {
 									}
 								}
 							} else {
-								String msg = "Unknown format in dctm for contentType: " + contentType;
+								String msg = "Unknown format <strong>" + format + "</strong> in dctm for contentType: " + contentType;
 								WsServer.log(loginName, msg);
 								throw new ServerException(msg);
 							}
@@ -432,7 +432,6 @@ public class UploadServlet extends HttpServlet {
 		}
 
 	}
-
 
 	private HashMap<String, List<String>> parseHm(String parameter) {
 		HashMap<String, List<String>> hm = new HashMap<String, List<String>>();

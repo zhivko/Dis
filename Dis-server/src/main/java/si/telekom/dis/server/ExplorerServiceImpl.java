@@ -116,7 +116,9 @@ import com.documentum.fc.common.IDfList;
 import com.documentum.fc.common.IDfLoginInfo;
 import com.documentum.fc.common.IDfTime;
 import com.documentum.fc.common.IDfValue;
+import com.documentum.operations.DfFormatRecognizer;
 import com.documentum.operations.IDfCopyOperation;
+import com.documentum.operations.IDfFormatRecognizer;
 import com.documentum.operations.IDfOperationError;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.itextpdf.text.pdf.PdfReader;
@@ -3742,15 +3744,19 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			collection.close();
 			Logger.getLogger(this.getClass()).info("Recognizing format...Done.");
 
-			// IDfFormatRecognizer formatRecognizer=new
-			// DfFormatRecognizer(sess,tempFile.getAbsolutePath(),"");
-			// String format=formatRecognizer.getDefaultSuggestedFileFormat();
-			//
-			// if(format!=null)
-			// al.add(format);
+			IDfFormatRecognizer formatRecognizer = new DfFormatRecognizer(sess, tempFile.getAbsolutePath(), "");
+			String format = formatRecognizer.getDefaultSuggestedFileFormat();
+
+			if (format != null)
+				al.add(format);
 
 			if (mimeType == null || (al.size() == 0 && mimeType.equals("application/zip"))) {
 				al.addAll(Arrays.asList("msw12", "excel12book", "odt", "ods"));
+			}
+			
+			if(mimeType.equals("application/xhtml+xml"))
+			{
+				al.addAll(Arrays.asList("html"));
 			}
 
 		} catch (Throwable ex) {

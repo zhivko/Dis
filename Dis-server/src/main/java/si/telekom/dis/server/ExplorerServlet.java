@@ -255,22 +255,29 @@ public class ExplorerServlet extends HttpServlet {
 					encoding = encoding == null ? "UTF-8" : encoding;
 					String body = IOUtils.toString(in, encoding);
 
-					String fileHref = "/home/klemen/Downloads/SkupinaTelekom_2_0_vizualizacija.xslt";
+					//String fileHref = "/home/klemen/Downloads/SkupinaTelekom_2_0_vizualizacija.xslt";
 					SAXSource source = new SAXSource(new InputSource(new ByteArrayInputStream(body.getBytes())));
 
 					Transformer transformer = factory.newTransformer(source);
 
 					if (!transfErrList.getMsgs().equals("")) {
+						String msg = "Unsucesfull transforming xml with stlyesheet: " + xslSource.getSystemId() + "\n" + transfErrList.getMsgs();
+						Logger.getLogger(getClass()).info(msg);
+						WsServer.log(loginName, msg);
 						baOs.write(transfErrList.getMsgs().getBytes());
 						baOs.write("\n".getBytes());
 					}
 
 					if (transformer != null) {
+						String msg = "Succesfully transformed xml with stlyesheet: " + xslSource.getSystemId();
 						baOs = new ByteArrayOutputStream();
 						StreamResult result = new StreamResult(baOs);
 						transformer.transform(domSource, result);
 						bacontentStreamIs = new ByteArrayInputStream(baOs.toByteArray());
 						transformedToHTML = true;
+						WsServer.log(loginName, msg);
+						Logger.getLogger(getClass()).info(msg);
+
 					}
 				} else {
 

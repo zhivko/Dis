@@ -367,7 +367,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			public void run() {
 				try {
 					while (true) {
-						Logger.getLogger(AdminServiceImpl.class).error("Syncing groups...");
+						Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...");
 						IDfSession adminSession = getAdminSession();
 						IDfQuery qry = new DfQuery("select r_object_id, group_name from dm_group");
 						IDfCollection coll = qry.execute(adminSession, IDfQuery.DF_READ_QUERY);
@@ -2807,7 +2807,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				Element el = (Element) nl.item(i);
 				String searchName = el.getAttribute("name");
 
-				boolean userShouldGetSearch=false;
+				boolean userShouldGetSearch = false;
 				XPathExpression expr2 = xpath.compile(".//group");
 				NodeList groupList = (NodeList) expr2.evaluate(el, XPathConstants.NODESET);
 				for (int j = 0; j < groupList.getLength(); j++) {
@@ -2815,20 +2815,19 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					String groupName = el1.getAttribute("name");
 
 					userShouldGetSearch = groupName.equalsIgnoreCase("world");
-					if (!userShouldGetSearch)
-					{
+					if (!userShouldGetSearch) {
 						userShouldGetSearch = isMember(loginName, groupName);
 						break;
 					}
 
 				}
-				
+
 				if (userShouldGetSearch || LoginServiceImpl.admins.contains(loginName)) { // userShouldGetSearch
 					WsServer.log(loginName, new String(el.getAttribute("name").getBytes(), "UTF-8"));
 					MyParametrizedQuery query = getParametrizedQuery(el, xpathFac, lazy);
 					queries.add(query);
 				}
-				
+
 			}
 
 		} catch (Throwable ex) {
@@ -3040,7 +3039,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// XPathConstants.NODESET);
 			Element el = (Element) expr.evaluate(getDocConfig(), XPathConstants.NODE);
 			if (el != null) {
+				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " with newName: " + newName);
 				el.setTextContent(newDql);
+				el.setAttribute("name", newName);
 				Element elGroups = getDocConfig().createElement("groups");
 				el.appendChild(elGroups);
 				for (String group : groups) {
@@ -3053,6 +3054,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					elGroup.setAttribute("name", groupName);
 					elGroups.appendChild(elGroup);
 				}
+				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " groups.");
 
 				Element elOrderBys = getDocConfig().createElement("orderBys");
 				el.appendChild(elOrderBys);
@@ -3066,10 +3068,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					elOrderBys.appendChild(elOrderBy);
 					j++;
 				}
+				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " orderBys.");
 
 				Element elFilterClass = getDocConfig().createElement("filterClass");
 				elFilterClass.setTextContent(filterClass);
 				el.appendChild(elFilterClass);
+				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " filterClass.");
 
 				Transformer tr = TransformerFactory.newInstance().newTransformer();
 				tr.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -3080,8 +3084,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 				// send DOM to file
 				tr.transform(new DOMSource(docConfig), new StreamResult(new FileOutputStream(configPathFileName)));
+				Logger.getLogger(this.getClass()).info("User " + loginName + " saved search with newName:" + newName + " to " + configPathFileName);
 
-				// check if it is ocalhost save it to development environment
+				// check if it is localhost save it to development environment
 				final String ip = getThreadLocalRequest().getRemoteHost();
 				InetAddress addr = InetAddress.getByName(ip);
 				String hostName = addr.getHostName();
@@ -3811,12 +3816,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			XPathExpression expr = xpath.compile("/config/docbase[1]/queries/query[@name='" + name + "']");
 			Element el = (Element) expr.evaluate(getDocConfig(), XPathConstants.NODE);
 			if (el != null) {
-				
-				Element el1 = (Element)el.cloneNode(true);
+
+				Element el1 = (Element) el.cloneNode(true);
 				el1.setAttribute("name", name + " (copy of)");
 
 				el.getParentNode().appendChild(el1);
-				
+
 				Transformer tr = TransformerFactory.newInstance().newTransformer();
 				tr.setOutputProperty(OutputKeys.INDENT, "yes");
 				tr.setOutputProperty(OutputKeys.METHOD, "xml");
