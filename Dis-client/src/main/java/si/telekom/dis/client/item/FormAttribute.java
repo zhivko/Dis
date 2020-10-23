@@ -375,8 +375,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 						sb.setValue(values);
 					} else {
 						for (String value1 : values) {
-							value = values.get(0);
-							this.values.addItem(value);
+							this.values.addItem(value1);
 						}
 					}
 				}

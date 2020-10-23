@@ -373,7 +373,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
 
-				ret.add(doc);
+				//if (!ret.contains(doc))
+					ret.add(doc);
 
 				long milis3 = System.currentTimeMillis();
 				int duration = (int) ((milis3 - milis2) / 1000);
@@ -3031,7 +3032,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					hm.put("IPv6", "1");
 					Logger.getLogger(this.getClass()).info("\tGenerating docx from template...");
 					WsServer.log(loginName, "Generating docx from template");
-					//bytes = DocxGenerator.generateDocxFileFromTemplate(hm, baIs);
+					// bytes = DocxGenerator.generateDocxFileFromTemplate(hm, baIs);
 				} catch (Exception ex) {
 					bytes = IOUtils.toByteArray(baIs);
 				}
@@ -3216,11 +3217,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					Logger.getLogger(this.getClass()).info("filtering r_object_id: " + r_object_id);
 					if (filter.shouldInclude((IDfSysObject) persObj, userSession)) {
 						Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
-						ret.add(doc);
+//						if (!ret.contains(doc))
+							ret.add(doc);
 					}
 				} else {
 					Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
-					ret.add(doc);
+//					if (!ret.contains(doc))
+						ret.add(doc);
 				}
 
 				long milis3 = System.currentTimeMillis();
@@ -3753,9 +3756,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			if (mimeType == null || (al.size() == 0 && mimeType.equals("application/zip"))) {
 				al.addAll(Arrays.asList("msw12", "excel12book", "odt", "ods"));
 			}
-			
-			if(mimeType.equals("application/xhtml+xml"))
-			{
+
+			if (mimeType.equals("application/xhtml+xml")) {
 				al.addAll(Arrays.asList("html"));
 			}
 

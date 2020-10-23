@@ -1650,6 +1650,14 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
             <orderBys/>
             <filterClass/>
          </query>
+         <query name="predloge ki so effective in niso sb1">select r_object_id from mob_form_template doc where any r_version_label='effective' and doc.r_object_id not in (select r_object_id from mob_form_template where any r_version_label in ('sb1')) ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
+
+            
+            
+         <groups/>
+            <orderBys/>
+            <filterClass/>
+         </query>
       </queries>
    </docbase>
 </config>

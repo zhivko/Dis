@@ -72,5 +72,18 @@ public class Document implements com.google.gwt.user.client.rpc.IsSerializable, 
 		return this.object_name.compareTo(o.object_name);
 	}
 
+	public boolean equals(Object obj)
+	{
+		if(this==obj)
+			return true;
+		if(obj==null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+		Document doc1 = (Document)obj;
+		if(this.r_object_id.equals(doc1.r_object_id))
+			return true;
+		return false;
+	}
 
 }
