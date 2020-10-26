@@ -15,7 +15,7 @@
 
 	<properties>
 		<tomcat.version>7.0.86</tomcat.version>
-		<jersey.version>2.30.1</jersey.version>
+		<version.jersey>2.15</version.jersey>
 	</properties>
 
 	<dependencies>
@@ -146,40 +146,47 @@
 		</dependency>
 
 
-		<!-- jersey dependencies start -->
-
-		<dependency>
-			<groupId>org.glassfish.jersey.containers</groupId>
-			<artifactId>jersey-container-servlet</artifactId>
-			<version>${jersey.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.glassfish.jersey.media</groupId>
-					<artifactId>jersey-media-jaxb</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.inject</groupId>
-			<artifactId>jersey-hk2</artifactId>
-			<version>${jersey.version}</version>
-
-		</dependency>
-
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-json-jackson</artifactId>
-			<version>${jersey.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.module</groupId>
-					<artifactId>
-						jackson-module-jaxb-annotations
-					</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
+        <!-- Jersey -->       
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <version>${version.jersey}</version>
+        </dependency>
+        <!-- do not use jettison, prefer jackson
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jettison</artifactId>
+            <version>${version.jersey}</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${version.jersey}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-processing</artifactId>
+            <version>${version.jersey}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>${version.jersey}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-sse</artifactId>
+            <version>${version.jersey}</version>
+        </dependency>
+        <!-- if you are using Jersey client specific features -->
+        <!--
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${version.jersey}</version>
+        </dependency>
+        -->        
 
 
 		<!-- jersey dependencies END -->

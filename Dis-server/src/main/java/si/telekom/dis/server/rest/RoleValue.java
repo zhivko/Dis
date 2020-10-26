@@ -1,11 +1,12 @@
 package si.telekom.dis.server.rest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import javax.ws.rs.ext.ParamConverter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+@JsonInclude(Include.NON_EMPTY)
 public class RoleValue {
 		public String roleName;
 		public List<String> values;

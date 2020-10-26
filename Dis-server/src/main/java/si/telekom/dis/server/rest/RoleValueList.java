@@ -7,6 +7,10 @@ import java.util.List;
 
 import javax.ws.rs.ext.ParamConverter;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(Include.NON_EMPTY)
 public class RoleValueList implements javax.ws.rs.ext.ParamConverterProvider {
 	public List<RoleValue> roleValueList;
 

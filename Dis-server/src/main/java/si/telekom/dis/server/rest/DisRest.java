@@ -1,11 +1,11 @@
 package si.telekom.dis.server.rest;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Named;
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -44,52 +44,58 @@ public class DisRest {
 		}
 	}
 
-/*
 	@GET
-	@Consumes({"text/xml", "application/json"})
+	@Consumes({ "text/xml", "application/json" })
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/newDocument")
 	public String newDocument(@QueryParam("loginName") String loginName, @QueryParam("password") String password,
-			@QueryParam("profileId") String profileId, @QueryParam("attributes") AttValueList attributes, @QueryParam("usersRoles") RoleValueList roles,
+			@QueryParam("profileId") String profileId, @BeanParam AttValueList attributes, @BeanParam RoleValueList roles,
 			String templateObjectNameOrFolder) {
 		try {
-			
+
 			HashMap<String, List<String>> vals = new HashMap<String, List<String>>();
 			for (AttValue attValue : attributes.attValueList) {
 				vals.put(attValue.attName, attValue.values);
 			}
-			
+
 			HashMap<String, List<String>> rolesUsers = new HashMap<String, List<String>>();
 			for (RoleValue roleValue : roles.roleValueList) {
 				rolesUsers.put(roleValue.roleName, roleValue.values);
 			}
-			
+
 			return ExplorerServiceImpl.getInstance().newDocument(loginName, password, profileId, vals, rolesUsers, templateObjectNameOrFolder);
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
 		}
 	}
 
-	*/
-	
-	/*
 	@GET
+
 	@Consumes(MediaType.TEXT_HTML)
+
 	@Produces({ MediaType.APPLICATION_JSON })
+
 	@Path("/importDocument")
 	public String importDocument(@QueryParam("loginName") String loginName, @QueryParam("password") String password,
-			@QueryParam("folderRObjectId") String folderRObjectId, @QueryParam("profileId") String profileId,
-			@QueryParam("attributes") Map<String, List<String>> attributes, @QueryParam("rolesUsers") Map<String, List<String>> rolesUsers,
-			@QueryParam("base64Content") byte[] base64Content, @QueryParam("format") String format) {
+			@QueryParam("folderRObjectId") String folderRObjectId, @QueryParam("profileId") String profileId, @BeanParam AttValueList attributes,
+			@BeanParam RoleValueList roles, @QueryParam("base64Content") String base64Content, @QueryParam("format") String format) {
 		try {
-			return ExplorerServiceImpl.getInstance().importDocument(loginName, password, folderRObjectId, profileId, attributes, rolesUsers, base64Content,
+			HashMap<String, List<String>> vals_ = new HashMap<String, List<String>>();
+			for (AttValue attValue : attributes.attValueList) {
+				vals_.put(attValue.attName, attValue.values);
+			}
+
+			HashMap<String, List<String>> rolesUsers_ = new HashMap<String, List<String>>();
+			for (RoleValue roleValue : roles.roleValueList) {
+				rolesUsers_.put(roleValue.roleName, roleValue.values);
+			}
+			byte[] base64Content_ = base64Content.getBytes();
+			return ExplorerServiceImpl.getInstance().importDocument(loginName, password, folderRObjectId, profileId, vals_, rolesUsers_, base64Content_,
 					format);
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
 		}
 	}
-	*/
-	
 
 	@GET
 	@Consumes(MediaType.TEXT_HTML)
