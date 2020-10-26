@@ -3859,4 +3859,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return ret;
 	}
 
+	public static void beginTransaction(IDfSession userSession) throws Exception {
+		userSession.beginTrans();
+	}
+
 }

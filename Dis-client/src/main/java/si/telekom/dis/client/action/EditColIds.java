@@ -6,11 +6,14 @@ import java.util.List;
 
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.TextInputCell;
+import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
@@ -78,26 +81,24 @@ public class EditColIds extends WindowBox implements ClickHandler {
 
 						dataProvider = new MyDataProvider(templateId);
 						dataProvider.addDataDisplay(cellTable);
-						
-						
 
-						//AsyncHandler columnSortHandler = new AsyncHandler(cellTable);
-						//cellTable.addColumnSortHandler(columnSortHandler);
+						// AsyncHandler columnSortHandler = new AsyncHandler(cellTable);
+						// cellTable.addColumnSortHandler(columnSortHandler);
 						cellTable.setWidth("700px");
 						cellTable.setHeight("700px");
 
 						selectionModel = new SingleSelectionModel<Row>(Row.KEY_PROVIDER);
-						//cellTable.setSelectionModel(selectionModel, DefaultSelectionEventManager.<Row> createCheckboxManager());
+						// cellTable.setSelectionModel(selectionModel,
+						// DefaultSelectionEventManager.<Row> createCheckboxManager());
 						cellTable.setSelectionModel(selectionModel);
 						selectionModel.addSelectionChangeHandler(new Handler() {
-							
+
 							@Override
 							public void onSelectionChange(SelectionChangeEvent arg0) {
 								MainPanel.log(selectionModel.getSelectedObject().values.get(0));
 							}
 						});
-						
-						
+
 						getPanel().add(cellTable);
 
 						Button addButton = new Button("Dodaj vrstico");
@@ -111,7 +112,7 @@ public class EditColIds extends WindowBox implements ClickHandler {
 								else
 									pos = pager.getPageStart() + pager.getPageSize();
 								rows.add(pos, new Row(Arrays.asList(rs)));
-								
+
 								dataProvider.updateRowData(pager.getPageStart(), rows);
 							}
 						});
@@ -135,9 +136,9 @@ public class EditColIds extends WindowBox implements ClickHandler {
 													public void onSuccess(Void result) {
 														MainPanel.log("delete of coll_id " + col_id + " done.");
 														selectionModel.clear();
-														cellTable.setVisibleRangeAndClearData(cellTable.getVisibleRange(), true); 
-														
-														//refreshTable();
+														cellTable.setVisibleRangeAndClearData(cellTable.getVisibleRange(), true);
+
+														// refreshTable();
 													}
 												});
 									} catch (ServerException ex1) {
@@ -192,8 +193,8 @@ public class EditColIds extends WindowBox implements ClickHandler {
 	}
 
 	public static final native String[] split(String string, String separator) /*-{
-																																							return string.split(separator);
-																																							}-*/;
+		return string.split(separator);
+	}-*/;
 
 	@Override
 	public void onClick(ClickEvent event) {
@@ -246,9 +247,8 @@ public class EditColIds extends WindowBox implements ClickHandler {
 		}
 
 	}
-	
-	public void refreshTable()
-	{
+
+	public void refreshTable() {
 		selectionModel.clear();
 		dataProvider.removeDataDisplay(cellTable);
 		dataProvider.addDataDisplay(cellTable);
@@ -275,15 +275,14 @@ public class EditColIds extends WindowBox implements ClickHandler {
 		 * {@link #updateRowData(int, List)}.
 		 */
 		int templateId;
-		public static MyDataProvider instance;  
+		public static MyDataProvider instance;
 
 		public MyDataProvider(int tempId) {
 			this.templateId = tempId;
 			instance = this;
 		}
-		
-		public void refresh()
-		{
+
+		public void refresh() {
 			onRangeChanged(EditColIds.instance.cellTable);
 		}
 
@@ -335,8 +334,8 @@ public class EditColIds extends WindowBox implements ClickHandler {
 
 	private void updateRow(int index, Row object, int colNo, String columnName, String value) {
 		if (!object.getValues().get(colNo).equals(value))
-			adminService.updateCollId(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, templateId, templateName, object.values.get(0), columnName,
-					value, new AsyncCallback<Void>() {
+			adminService.updateCollId(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, templateId, templateName, object.values.get(0),
+					columnName, value, new AsyncCallback<Void>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							// TODO Auto-generated method stub
@@ -351,7 +350,13 @@ public class EditColIds extends WindowBox implements ClickHandler {
 	}
 
 	public Column<Row, String> addColumn(final int colNo, String fieldName) {
-		Column<Row, String> col = new Column<Row, String>(new EditTextCell()) {
+		Column<Row, String> col = new Column<Row, String>(new TextInputCell()) {
+			@Override
+			public void render(Context context, Row object, SafeHtmlBuilder sb) {
+				// TODO Auto-generated method stub
+				super.render(context, object, sb);
+			}
+
 			@Override
 			public String getValue(Row row) {
 				return row.values.get(colNo);

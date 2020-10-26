@@ -88,6 +88,7 @@ import org.logicalcobwebs.proxool.ProxoolFacade;
 import com.documentum.com.DfClientX;
 import com.documentum.com.IDfClientX;
 import com.documentum.fc.client.DfClient;
+import com.documentum.fc.client.DfPermit;
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.IDfACL;
 import com.documentum.fc.client.IDfAuditTrailManager;
@@ -373,8 +374,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
 
-				//if (!ret.contains(doc))
-					ret.add(doc);
+				// if (!ret.contains(doc))
+				ret.add(doc);
 
 				long milis3 = System.currentTimeMillis();
 				int duration = (int) ((milis3 - milis2) / 1000);
@@ -1501,7 +1502,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		Logger.getLogger(this.getClass()).info(String.format("[%s] deleteObject started for %s", loginName, r_object_id));
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			userSession.beginTrans();
+			AdminServiceImpl.beginTransaction(userSession);
 
 			IDfPersistentObject persObject = userSession.getObject(new DfId(r_object_id));
 			if (persObject == null) {
@@ -1638,7 +1639,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
-			userSession.beginTrans();
+			AdminServiceImpl.beginTransaction(userSession);
 			for (String r_object_id : r_object_ids) {
 				WsServer.log(loginName, "Deleting " + r_object_id + " ...");
 				IDfPersistentObject persObject = userSession.getObject(new DfId(r_object_id));
@@ -1794,7 +1795,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			for (String r_object_id : r_object_ids) {
 				Logger.getLogger(this.getClass()).info("setUsersForRoles started for user: " + loginName + " r_object_id: " + r_object_id);
 
-				userSession.beginTrans();
+				AdminServiceImpl.beginTransaction(userSession);
 
 				IDfPersistentObject persObject = userSession.getObject(new DfId(r_object_id));
 
@@ -1841,31 +1842,32 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	void setUsersForRoles(IDfSession userSession, IDfPersistentObject persObject, Map<String, List<String>> roleUserGroups) throws Throwable {
 
 		// persObject.save();
-		if (userSession.isTransactionActive())
-			userSession.commitTrans();
-
-		IDfSession adminSession = AdminServiceImpl.getAdminSession();
-		adminSession.beginTrans();
+		//IDfSession adminSession = AdminServiceImpl.getAdminSession();
+		//adminSession.beginTrans();
 		try {
 			String r_object_id = persObject.getString("r_object_id");
-			persObject = adminSession.getObject(new DfId(r_object_id));
+			persObject = userSession.getObject(new DfId(r_object_id));
+			
+			IDfSysObject sysObj = (IDfSysObject) persObject;
+			
+			
 			String deleteDql = "delete from dm_dbo.T_DOCMAN_R where r_object_id='" + r_object_id + "'";
 			IDfQuery queryDelete = new DfQuery(deleteDql);
 			IDfCollection coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 			coll.close();
 
-			// create new ACL
-			IDfACL objAcl = (IDfACL) adminSession.newObject("dm_acl");
-			objAcl.setObjectName("docman_Acl_" + System.currentTimeMillis());
-			objAcl.setDomain("dm_dbo");
-			((IDfSysObject) persObject).setACL(objAcl);
-			((IDfSysObject) persObject).setACLDomain("dm_dbo");
+			// create new if needed
+			IDfACL objAcl = (IDfACL) sysObj.getACL();
+			
+			if(objAcl==null)
+				objAcl = (IDfACL) userSession.newObject("dm_acl");
+			
 
 			IDfList permits = null;
 			if (objAcl != null)
 				permits = objAcl.getPermissions();
 
-			((IDfSysObject) persObject).grant("dm_world", 1, "");
+			objAcl.grant("dm_world", 1, "");
 
 			for (String roleId : roleUserGroups.keySet()) {
 				for (String userGroup : roleUserGroups.get(roleId)) {
@@ -1909,24 +1911,33 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					if (allExtPermissions.length() > 0)
 						allExtPermissions = allExtPermissions.substring(0, allExtPermissions.length() - 1);
 
-					IDfUser user = adminSession.getUser(userGroup);
+					IDfUser user = userSession.getUser(userGroup);
 					if (user != null || userGroup.equals("dm_world") || userGroup.equals("dm_group") || userGroup.equals("dm_owner"))
-						((IDfSysObject) persObject).grant(userGroup, maxGrant, allExtPermissions);
+					{
+						//((IDfSysObject) persObject).grant(userGroup, maxGrant, allExtPermissions);
+						objAcl.grant(userGroup, maxGrant, allExtPermissions);
+					}
 					else
 						Logger.getLogger(this.getClass().getName()).info("No such user: " + userGroup);
 
 				}
 			}
 
+			objAcl.setDomain("dm_dbo");
 			objAcl.save();
-			persObject.save();
-			adminSession.commitTrans();
 
-		} catch (Exception ex) {
-			if (adminSession != null) {
-				if (adminSession.isTransactionActive())
-					adminSession.abortTrans();
-			}
+			sysObj.setACLDomain("dm_dbo");
+			sysObj.setACLName(objAcl.getObjectName());
+			sysObj.save();
+			sysObj.fetch("dm_document");
+
+			if (userSession.isTransactionActive())
+				userSession.commitTrans();			
+			
+			Logger.getLogger(this.getClass()).info("Acl name:   " + sysObj.getACLName());
+			Logger.getLogger(this.getClass()).info("Acl domain: " + sysObj.getACLDomain());
+
+		} catch (Throwable ex) {
 			// StringWriter errorStringWriter = new StringWriter();
 			// PrintWriter pw = new PrintWriter(errorStringWriter);
 			// ex.printStackTrace(pw);
@@ -1934,7 +1945,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			WsServer.log(userSession.getLoginUserName(), ex.getMessage());
 			throw new ServerException(ex.getMessage());
 		} finally {
-			adminSession.getSessionManager().release(adminSession);
 		}
 	}
 
@@ -2249,7 +2259,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			Logger.getLogger(this.getClass()).info("Promote for " + userSession.getLoginInfo().getUser() + " for: " + r_object_id + " toState: " + stateId);
 
-			userSession.beginTrans();
+			AdminServiceImpl.beginTransaction(userSession);
 			IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 
 			Profile prof = (Profile) profileAndRolesOfUserAndState[1];
@@ -2773,7 +2783,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				throw new Exception("Password should not be null");
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			userSession.beginTrans();
+			AdminServiceImpl.beginTransaction(userSession);
 
 			Profile prof = AdminServiceImpl.profiles.get(profileId);
 
@@ -2895,6 +2905,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			if (userSession.isTransactionActive())
 				userSession.commitTrans();
+
 			String msg = "ImportDocument completed. objectName: <strong>" + persObject.getString("object_name") + "</strong> r_object_id: <strong>"
 					+ destObject.getId("r_object_id") + "</strong>";
 			Logger.getLogger(this.getClass()).info(msg);
@@ -2942,7 +2953,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				throw new Exception("Password should not be null");
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			userSession.beginTrans();
+			AdminServiceImpl.beginTransaction(userSession);
 
 			String dqlOfObjects = "";
 			if (!templateObjectNameOrFolder.startsWith("/")) {
@@ -3217,13 +3228,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					Logger.getLogger(this.getClass()).info("filtering r_object_id: " + r_object_id);
 					if (filter.shouldInclude((IDfSysObject) persObj, userSession)) {
 						Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
-//						if (!ret.contains(doc))
-							ret.add(doc);
+						// if (!ret.contains(doc))
+						ret.add(doc);
 					}
 				} else {
 					Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
-//					if (!ret.contains(doc))
-						ret.add(doc);
+					// if (!ret.contains(doc))
+					ret.add(doc);
 				}
 
 				long milis3 = System.currentTimeMillis();
@@ -3610,7 +3621,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		IDfSession userSession = null;
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			userSession.beginTrans();
+			AdminServiceImpl.beginTransaction(userSession);
 
 			IDfSysObject dfSysObject = (IDfSysObject) userSession.getObject(new DfId(r_object_id));
 
@@ -3754,7 +3765,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				al.add(format);
 
 			if (mimeType == null || (al.size() == 0 && mimeType.equals("application/zip"))) {
-				al.addAll(Arrays.asList("msw12", "excel12book", "odt", "ods"));
+				al.addAll(Arrays.asList("msw12", "excel12book", "odt", "ods", "pdf"));
 			}
 
 			if (mimeType.equals("application/xhtml+xml")) {
@@ -3819,7 +3830,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				throw new Exception("Password should not be null");
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			userSession.beginTrans();
+			AdminServiceImpl.beginTransaction(userSession);
 
 			Profile prof = AdminServiceImpl.profiles.get(profileId);
 
