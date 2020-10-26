@@ -33,8 +33,8 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/dqlLookup")
-	public List<List<String>> dqlLookup(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
-			@QueryParam("dql") String dql) throws Exception {
+	public List<List<String>> dqlLookup(@BeanParam String loginName, @BeanParam String passwordEncrypted,
+			@BeanParam String dql) throws Exception {
 		// return ExplorerServiceImpl.getInstance().dqlLookup(loginName,
 		// passwordEncrypted, dql);
 		try {
@@ -48,8 +48,8 @@ public class DisRest {
 	@Consumes({ "text/xml", "application/json" })
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/newDocument")
-	public String newDocument(@QueryParam("loginName") String loginName, @QueryParam("password") String password,
-			@QueryParam("profileId") String profileId, @BeanParam AttValueList attributes, @BeanParam RoleValueList roles,
+	public String newDocument(@BeanParam String loginName, @BeanParam String password,
+			@BeanParam String profileId, @BeanParam AttValueList attributes, @BeanParam RoleValueList roles,
 			String templateObjectNameOrFolder) {
 		try {
 
@@ -76,9 +76,9 @@ public class DisRest {
 	@Produces({ MediaType.APPLICATION_JSON })
 
 	@Path("/importDocument")
-	public String importDocument(@QueryParam("loginName") String loginName, @QueryParam("password") String password,
-			@QueryParam("folderRObjectId") String folderRObjectId, @QueryParam("profileId") String profileId, @BeanParam AttValueList attributes,
-			@BeanParam RoleValueList roles, @QueryParam("base64Content") String base64Content, @QueryParam("format") String format) {
+	public String importDocument(@BeanParam String loginName, @BeanParam String encryptedPassword,
+			@BeanParam String folderRObjectId, @BeanParam String profileId, @BeanParam AttValueList attributes,
+			@BeanParam RoleValueList roles, @BeanParam String base64Content, @BeanParam String format) {
 		try {
 			HashMap<String, List<String>> vals_ = new HashMap<String, List<String>>();
 			for (AttValue attValue : attributes.attValueList) {
@@ -90,7 +90,7 @@ public class DisRest {
 				rolesUsers_.put(roleValue.roleName, roleValue.values);
 			}
 			byte[] base64Content_ = base64Content.getBytes();
-			return ExplorerServiceImpl.getInstance().importDocument(loginName, password, folderRObjectId, profileId, vals_, rolesUsers_, base64Content_,
+			return ExplorerServiceImpl.getInstance().importDocument(loginName, encryptedPassword, folderRObjectId, profileId, vals_, rolesUsers_, base64Content_,
 					format);
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
@@ -101,8 +101,8 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/getProfilesForClassSign")
-	public List<Profile> getProfilesForClassSign(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
-			@QueryParam("classSign") String classSign, @QueryParam("wizardType") String wizardType) {
+	public List<Profile> getProfilesForClassSign(@BeanParam String loginName, @BeanParam String passwordEncrypted,
+			@BeanParam String classSign,@BeanParam String wizardType) {
 		List<Profile> profiles = AdminServiceImpl.getInstance().getProfilesForClassSign(loginName, passwordEncrypted, classSign, wizardType);
 		return profiles;
 	}
@@ -111,7 +111,7 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/promote")
-	public Void promote(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
+	public Void promote(@BeanParam String loginName, @BeanParam String passwordEncrypted,
 			@QueryParam("r_object_id") String r_object_id) throws Exception {
 		return ExplorerServiceImpl.getInstance().promote(loginName, passwordEncrypted, r_object_id);
 	}
@@ -120,8 +120,8 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/demote")
-	public Void demote(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
-			@QueryParam("r_object_id") String r_object_id) throws Exception {
+	public Void demote(@BeanParam String loginName, @BeanParam String passwordEncrypted,
+			@BeanParam String r_object_id) throws Exception {
 		return ExplorerServiceImpl.getInstance().demote(loginName, passwordEncrypted, r_object_id);
 	}
 
