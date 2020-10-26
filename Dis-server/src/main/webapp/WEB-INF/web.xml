@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5" metadata-complete="false">
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5" metadata-complete="false">
 
 	<!-- Servlets -->
 	<servlet>
@@ -65,50 +67,6 @@
 		<servlet-name>uploadServ</servlet-name>
 		<url-pattern>/WebUi2/uploadServlet</url-pattern>
 	</servlet-mapping>
-
-	<servlet>
-		<servlet-name>Jersey REST Service</servlet-name>
-		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-		
-        <init-param>
-            <param-name>javax.ws.rs.Application</param-name>
-            <param-value>si.telekom.dis.server.rest.AppResourceConfig</param-value>
-        </init-param>		
-		
-		
-		<init-param>
-			<param-name>jersey.config.server.provider.packages</param-name>
-			<param-value>si.telekom.dis.server.rest</param-value>
-		</init-param>
-		<!-- <init-param> -->
-		<!-- <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name> -->
-		<!-- <param-value>true</param-value> -->
-		<!-- </init-param> -->
-		<!-- <init-param> -->
-		<!-- <param-name>com.sun.jersey.config.feature.DisableWADL</param-name> -->
-		<!-- <param-value>true</param-value> -->
-		<!-- </init-param> -->
-
-		<init-param>
-			<param-name>jersey.config.server.tracing</param-name>
-			<param-value>true</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>jersey.config.server.provider.classnames</param-name>
-			<param-value>org.glassfish.jersey.media.multipart.MultiPartFeature,si.telekom.dis.server.rest.DisRest</param-value>
-		</init-param>
-
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>Jersey REST Service</servlet-name>
-		<url-pattern>/rest/*</url-pattern>
-	</servlet-mapping>
-
-
-
-
 
 	<!-- Default page to serve -->
 	<welcome-file-list>
@@ -188,7 +146,5 @@
 		<param-name>configPath</param-name>
 		<param-value>${configPath}</param-value>
 	</context-param>
-
-
 
 </web-app>
