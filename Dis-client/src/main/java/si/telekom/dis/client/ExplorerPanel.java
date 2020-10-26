@@ -597,9 +597,9 @@ public class ExplorerPanel extends Composite {
 										else
 											fa.att.isReadOnly = true;
 										try {
-											g.setWidget(att.getRow(), att.getCol(), fa);
+											g.setWidget(att.row, att.col, fa);
 										} catch (Exception ex) {
-											MainPanel.log("Error putting attribute: " + att.dcmtAttName + " to tab: " + tab.getId() + " row:" + att.getRow() + " col: " + att.getCol());
+											MainPanel.log("Error putting attribute: " + att.dcmtAttName + " to tab: " + tab.getId() + " row:" + att.row + " col: " + att.col);
 										}
 										fa.setWidth("95%");
 									}

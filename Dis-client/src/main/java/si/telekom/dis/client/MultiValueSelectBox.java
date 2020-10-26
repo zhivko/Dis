@@ -150,7 +150,7 @@ public class MultiValueSelectBox extends Composite implements HasValue<List<Stri
 		sb.setAutoSelectEnabled(true);
 
 		vp.add(sb);
-		if (att.isRepeating()) {
+		if (att.isRepeating) {
 			vp.add(lb);
 			lb.setVisibleItemCount(5);
 		}
@@ -407,7 +407,7 @@ public class MultiValueSelectBox extends Composite implements HasValue<List<Stri
 		for (String strValue : alValue) {
 			lb.addItem(strValue);
 		}
-		if (alValue.size() > 0 && !this.att.isRepeating())
+		if (alValue.size() > 0 && !this.att.isRepeating)
 			tb.setText(alValue.get(0));
 	}
 

@@ -380,7 +380,7 @@ public class ImportDocument extends WindowBox {
 		hp.add(new Label("Izberi klasifikacijski znak:"));
 
 		si.telekom.dis.shared.Attribute att = new si.telekom.dis.shared.Attribute();
-		att.setDqlValueListDefinition(
+		att.dqlValueListDefinition = 
 //@formatter:off	
 				"SELECT tc.\"code\", tc.\"name\" FROM dbo.T_CLASSIFICATION_PLAN tcp, dbo.T_CLASSIFICATION tc " +
 				"WHERE "
@@ -388,7 +388,7 @@ public class ImportDocument extends WindowBox {
 					+ "tcp.\"name\" = 'KNTS' AND "
 					+ "DATE(TODAY) >= tcp.valid_from AND "
 				+ "( DATE(TODAY) <= tcp.valid_to OR tcp.valid_to = '') "
-				+ "order by tc.\"code\"");
+				+ "order by tc.\"code\"";
 //@formatter:on
 		att.isRepeating = false;
 
@@ -476,7 +476,7 @@ public class ImportDocument extends WindowBox {
 					for (si.telekom.dis.shared.Attribute att : arsw.attributes) {
 						if (tab.getId().equals(att.tabId)) {
 							FormAttribute fa = new FormAttribute(att);
-							g.setWidget(att.getRow(), att.getCol(), fa);
+							g.setWidget(att.row, att.col, fa);
 							fa.setWidth("90%");
 							if (att.dcmtAttName.equals("mob_classification_id")) {
 								ArrayList<String> values = new ArrayList<String>();
@@ -505,7 +505,7 @@ public class ImportDocument extends WindowBox {
 									if (checkMandatoryAttributes())
 										nextB.setEnabled(true);
 
-									fillDependendAttributes(fa.att.getDcmtAttName());
+									fillDependendAttributes(fa.att.dcmtAttName);
 								};
 							});
 

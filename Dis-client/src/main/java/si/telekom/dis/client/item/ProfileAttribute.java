@@ -107,7 +107,7 @@ public class ProfileAttribute extends IsSelected {
 
 		labelTextBox = new MyTxtBox("labela") {
 			public void valueChanged() {
-				ProfileAttribute.this.attr.setLabel(labelTextBox.getValue());
+				ProfileAttribute.this.attr.label = labelTextBox.getValue();
 			};
 		};
 		labelTextBox.setStyleName(styleName);
@@ -118,7 +118,7 @@ public class ProfileAttribute extends IsSelected {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
 				// TODO Auto-generated method stub
-				ProfileAttribute.this.attr.setIsReadOnly(isReadOnly.getValue());
+				ProfileAttribute.this.attr.isReadOnly = isReadOnly.getValue();
 			}
 		});
 
@@ -128,7 +128,7 @@ public class ProfileAttribute extends IsSelected {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
 				// TODO Auto-generated method stub
-				ProfileAttribute.this.attr.setRepeating(isRepeating.getValue());
+				ProfileAttribute.this.attr.isRepeating = (isRepeating.getValue());
 			}
 		});
 
@@ -138,7 +138,7 @@ public class ProfileAttribute extends IsSelected {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
 				// TODO Auto-generated method stub
-				ProfileAttribute.this.attr.setMandatory(isMandatory.getValue());
+				ProfileAttribute.this.attr.isMandatory = (isMandatory.getValue());
 			}
 		});
 
@@ -168,7 +168,7 @@ public class ProfileAttribute extends IsSelected {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
 				// TODO Auto-generated method stub
-				ProfileAttribute.this.attr.setLimitedToValueList(isLimitedToValueList.getValue());
+				ProfileAttribute.this.attr.isLimitedToValueList = (isLimitedToValueList.getValue());
 			}
 		});
 		hp1.add(isLimitedToValueList);
@@ -418,7 +418,7 @@ public class ProfileAttribute extends IsSelected {
 		this.labelAttName.setStyleName("font-weight: bold;");
 
 		for (int i = 0; i < this.typeLb.getItemCount(); i++) {
-			if (this.typeLb.getItemText(i).equals(attr.type)) {
+			if (this.typeLb.getItemText(i).equals(attr.getType())) {
 				this.typeLb.setSelectedIndex(i);
 				break;
 			}
@@ -452,7 +452,7 @@ public class ProfileAttribute extends IsSelected {
 		rbDefaultValueIsDql.setValue(attr.defaultValueIsDql);
 		rbDefaultValueIsSql.setValue(attr.defaultValueIsSql);
 
-		vp.getElement().setId("profileAttribute:" + attr.tabId + "~" + attr.tabId + "~" + attr.dcmtAttName + "~" + attr.getRow() + "~" + attr.getCol());
+		vp.getElement().setId("profileAttribute:" + attr.tabId + "~" + attr.tabId + "~" + attr.dcmtAttName + "~" + attr.row + "~" + attr.col);
 	}
 
 	protected void setIsSelected(boolean b) {
@@ -464,7 +464,7 @@ public class ProfileAttribute extends IsSelected {
 	}
 
 	public String getDctmAttName() {
-		return attr.getDcmtAttName();
+		return attr.dcmtAttName;
 	}
 
 	@Override
@@ -474,7 +474,7 @@ public class ProfileAttribute extends IsSelected {
 	}
 
 	public String getName() {
-		return attr.getDcmtAttName();
+		return attr.dcmtAttName;
 	}
 
 }

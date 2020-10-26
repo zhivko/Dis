@@ -305,8 +305,8 @@ String fullDqlUg =
 		hp.add(new Label("Izberi klasifikacijski znak: "));
 
 		si.telekom.dis.shared.Attribute att = new si.telekom.dis.shared.Attribute();
-		att.setDqlValueListDefinition(
-				"SELECT tc.\"code\", tc.\"name\" FROM dbo.T_CLASSIFICATION_PLAN tcp, dbo.T_CLASSIFICATION tc WHERE tc.\"classification_plan_id\" = tcp.\"id\" AND tcp.\"name\" = 'KNTS' AND DATE(TODAY) >= valid_from AND ( DATE(TODAY) <= valid_to OR valid_to = '' ) order by tc.code enable (return_top 20)");
+		att.dqlValueListDefinition=
+				"SELECT tc.\"code\", tc.\"name\" FROM dbo.T_CLASSIFICATION_PLAN tcp, dbo.T_CLASSIFICATION tc WHERE tc.\"classification_plan_id\" = tcp.\"id\" AND tcp.\"name\" = 'KNTS' AND DATE(TODAY) >= valid_from AND ( DATE(TODAY) <= valid_to OR valid_to = '' ) order by tc.code enable (return_top 20)";
 		att.isRepeating = false;
 
 		lbStates = new ListBox();
@@ -439,7 +439,7 @@ String fullDqlUg =
 											if (checkMandatoryAttributes())
 												getOkButton().setEnabled(true);
 
-											fillDependendAttributes(fa.att.getDcmtAttName());
+											fillDependendAttributes(fa.att.dcmtAttName);
 										};
 									});
 									List<String> values = result.values.get(att.dcmtAttName);
@@ -449,7 +449,7 @@ String fullDqlUg =
 										MainPanel.log("Attribute value for attribute <strong>" + att.dcmtAttName + "</strong> not received from server.");
 										fa.att.isReadOnly = true;
 									}
-									g.setWidget(att.getRow(), att.getCol(), fa);
+									g.setWidget(att.row, att.col, fa);
 									allFaAl.add(fa);
 									// logger.info("\tadded to row:" + att.row + " col:" +
 									// att.col);

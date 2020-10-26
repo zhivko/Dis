@@ -98,7 +98,7 @@ public class SearchEdit extends WindowBox {
 		aAtts.isRepeating = true;
 		aAtts.label = "Razvrstitev";
 		aAtts.isLimitedToValueList = true;
-		aAtts.type = Attribute.types.DROPDOWN.type;
+		aAtts.setType(Attribute.types.DROPDOWN.type);
 		faSortAtts = new FormAttribute(aAtts) {
 			@Override
 			public void valueDeleted(int selectedIndex) {
@@ -198,7 +198,7 @@ public class SearchEdit extends WindowBox {
 						"union " +
 						"select group_name, description from dm_group where 1=1 " + 
 						"fixedValues(dm_world, vsi;dm_owner, lastnik; dm_group, skupina)";				
-		aGroupUser.type = Attribute.types.DROPDOWN.type;
+		aGroupUser.setType(Attribute.types.DROPDOWN.type);
 		aGroupUser.dropDownCol = 1;
 		aGroupUser.isLimitedToValueList = false;
 		if (!MainPanel.getInstance().loginRole.toLowerCase().equals("administrator")) {

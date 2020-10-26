@@ -985,37 +985,37 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 									if (!dcmtAttribute.attr_repeating) {
 										String value = null;
 										if (dcmtAttribute.domain_type.equals("0"))
-											value = String.valueOf(persObj.getBoolean(attr.getDcmtAttName()));
+											value = String.valueOf(persObj.getBoolean(attr.dcmtAttName));
 										else if (dcmtAttribute.domain_type.equals("1"))
-											value = String.valueOf(persObj.getInt(attr.getDcmtAttName()));
+											value = String.valueOf(persObj.getInt(attr.dcmtAttName));
 										else if (dcmtAttribute.domain_type.equals("2"))
-											value = String.valueOf(persObj.getString(attr.getDcmtAttName()));
+											value = String.valueOf(persObj.getString(attr.dcmtAttName));
 										else if (dcmtAttribute.domain_type.equals("3"))
-											value = String.valueOf(persObj.getId(attr.getDcmtAttName()));
+											value = String.valueOf(persObj.getId(attr.dcmtAttName));
 										else if (dcmtAttribute.domain_type.equals("4")) {
 											Calendar c = new GregorianCalendar();
-											if (persObj.getTime(attr.getDcmtAttName()).getDate() != null) {
-												c.setTime(persObj.getTime(attr.getDcmtAttName()).getDate());
+											if (persObj.getTime(attr.dcmtAttName).getDate() != null) {
+												c.setTime(persObj.getTime(attr.dcmtAttName).getDate());
 												value = String.valueOf(c.getTimeInMillis());
 											}
 										}
 										values.add(value);
 									} else {
-										int valueCount = persObj.getValueCount(attr.getDcmtAttName());
+										int valueCount = persObj.getValueCount(attr.dcmtAttName);
 										for (int i = 0; i < valueCount; i++) {
 											String value = null;
 											if (dcmtAttribute.domain_type.equals("0"))
-												value = String.valueOf(persObj.getRepeatingBoolean(attr.getDcmtAttName(), i));
+												value = String.valueOf(persObj.getRepeatingBoolean(attr.dcmtAttName, i));
 											else if (dcmtAttribute.domain_type.equals("1"))
-												value = String.valueOf(persObj.getRepeatingInt(attr.getDcmtAttName(), i));
+												value = String.valueOf(persObj.getRepeatingInt(attr.dcmtAttName, i));
 											else if (dcmtAttribute.domain_type.equals("2"))
-												value = String.valueOf(persObj.getRepeatingString(attr.getDcmtAttName(), i));
+												value = String.valueOf(persObj.getRepeatingString(attr.dcmtAttName, i));
 											else if (dcmtAttribute.domain_type.equals("3"))
-												value = String.valueOf(persObj.getRepeatingId(attr.getDcmtAttName(), i));
+												value = String.valueOf(persObj.getRepeatingId(attr.dcmtAttName, i));
 											else if (dcmtAttribute.domain_type.equals("4")) {
-												if (persObj.getRepeatingTime(attr.getDcmtAttName(), i).getDate() != null) {
+												if (persObj.getRepeatingTime(attr.dcmtAttName, i).getDate() != null) {
 													Calendar c = new GregorianCalendar();
-													c.setTime(persObj.getRepeatingTime(attr.getDcmtAttName(), i).getDate());
+													c.setTime(persObj.getRepeatingTime(attr.dcmtAttName, i).getDate());
 													value = String.valueOf(c.getTimeInMillis());
 												}
 											}
@@ -1025,7 +1025,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 									// Logger.getLogger(this.getClass()).info("\t\t\tvalue: " +
 									// values.toString());
 
-									ret.values.put(attr.getDcmtAttName(), values);
+									ret.values.put(attr.dcmtAttName, values);
 								} else {
 									WsServer.log(loginName,
 											"attribute <strong>" + attr.dcmtAttName + "</strong> missing on type: <strong>" + attr.dcmtType + "</strong>");

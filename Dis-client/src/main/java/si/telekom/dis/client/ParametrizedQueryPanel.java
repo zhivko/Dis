@@ -74,7 +74,7 @@ public class ParametrizedQueryPanel extends WindowBox {
 		MainPanel.log(dql);
 		for (String argument : parametrizedQuery.arguments) {
 			FormAttribute a = (FormAttribute) getContentPanel().getWidget(i);
-			if (a.att.type.equals("datetime")) {
+			if (a.att.getType().equals("datetime")) {
 				dql = dql.replaceAll(parametrizedQuery.arguments.get(i), a.getDateTime());
 			} else
 				dql = dql.replaceAll(parametrizedQuery.arguments.get(i), a.getValue());

@@ -84,7 +84,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 			}
 		});
 
-		GWT.log("name: " + att.dcmtAttName + " " + att.type);
+		GWT.log("name: " + att.dcmtAttName + " " + att.getType());
 
 		if (att.getType().equals(Attribute.types.TEXTBOX.type)) {
 			tb = new TextBox();
@@ -98,7 +98,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 				public void onKeyUp(KeyUpEvent event) {
 					if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
 						values.addItem(tb.getText());
-						if (att.isRepeating())
+						if (att.isRepeating)
 							tb.setText("");
 					}
 				}
@@ -249,7 +249,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 			vp.setCellHeight(dateBox, "100%");
 		}
 
-		if (att.isRepeating()) {
+		if (att.isRepeating) {
 			values.addDoubleClickHandler(new DoubleClickHandler() {
 				@Override
 				public void onDoubleClick(DoubleClickEvent event) {
@@ -265,7 +265,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 		space.setHeight("10px");
 
 		lb = new Label();
-		lb.setText(att.getLabel());
+		lb.setText(att.label);
 		if (att.isMandatory)
 			lb.setStyleName("font-weight:bold;");
 		vp.add(lb);
@@ -313,7 +313,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 		// TODO Auto-generated method stub
 
 		ArrayList<String> values = new ArrayList<String>();
-		if (att.isRepeating())
+		if (att.isRepeating)
 			for (int i = 0; i < this.values.getItemCount(); i++) {
 				String val = this.values.getValue(i);
 				values.add(val);
@@ -340,7 +340,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 		// TODO Auto-generated method stub
 		String value = null;
 		try {
-			if (!att.isRepeating()) {
+			if (!att.isRepeating) {
 				if (values.size() > 0) {
 					value = values.get(0);
 					if (values.get(0) != null) {

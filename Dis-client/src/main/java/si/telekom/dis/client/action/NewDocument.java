@@ -417,8 +417,8 @@ public class NewDocument extends ActionDialogBox {
 		hp.add(new Label("Izberi klasifikacijski znak:"));
 
 		si.telekom.dis.shared.Attribute att = new si.telekom.dis.shared.Attribute();
-		att.setDqlValueListDefinition(
-				"SELECT tc.\"code\", tc.\"name\" FROM dbo.T_CLASSIFICATION_PLAN tcp, dbo.T_CLASSIFICATION tc WHERE tc.\"classification_plan_id\" = tcp.\"id\" AND tcp.\"name\" = 'KNTS' AND DATE(TODAY) >= valid_from AND ( DATE(TODAY) <= valid_to OR valid_to = '' ) order by tc.code enable (return_top 20)");
+		att.dqlValueListDefinition =
+				"SELECT tc.\"code\", tc.\"name\" FROM dbo.T_CLASSIFICATION_PLAN tcp, dbo.T_CLASSIFICATION tc WHERE tc.\"classification_plan_id\" = tcp.\"id\" AND tcp.\"name\" = 'KNTS' AND DATE(TODAY) >= valid_from AND ( DATE(TODAY) <= valid_to OR valid_to = '' ) order by tc.code enable (return_top 20)";
 		att.isRepeating = false;
 
 		profiles = new ListBox();
@@ -507,7 +507,7 @@ public class NewDocument extends ActionDialogBox {
 							FormAttribute fa = new FormAttribute(att);
 							fa.setWidth("90%");
 							
-							g.setWidget(att.getRow(), att.getCol(), fa);
+							g.setWidget(att.row, att.col, fa);
 							if (att.dcmtAttName.equals("mob_classification_id")) {
 								ArrayList<String> values = new ArrayList<String>();
 								values.add(classification_id);
@@ -518,7 +518,7 @@ public class NewDocument extends ActionDialogBox {
 									if (checkMandatoryAttributes())
 										nextB.setEnabled(true);
 
-									fillDependendAttributes(fa.att.getDcmtAttName());
+									fillDependendAttributes(fa.att.dcmtAttName);
 								};
 							});
 

@@ -1334,7 +1334,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		for (Attribute a : prof.detailAttributes) {
 			Element elAtt = (Element) elDetailAttributes.appendChild(doc.createElement("attribute"));
-			elAtt.setAttribute("id", a.getDcmtAttName());
+			elAtt.setAttribute("id", a.dcmtAttName);
 		}
 
 		Instant instant = Instant.now();
@@ -2908,15 +2908,15 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						a.label = (label.equals("") ? attName : label);
 						a.dcmtAttName = dcmtAtt.attr_name;
 						if (dcmtAtt.domain_type.equals("0")) {
-							a.type = "checkBox";
+							a.setType("checkBox");
 						} else if (dcmtAtt.domain_type.equals("1")) {
-							a.type = "textbox";
+							a.setType("textbox");
 						} else if (dcmtAtt.domain_type.equals("2")) {
-							a.type = "textbox";
+							a.setType("textbox");
 						} else if (dcmtAtt.domain_type.equals("3")) {
-							a.type = "textbox";
+							a.setType("textbox");
 						} else if (dcmtAtt.domain_type.equals("4")) {
-							a.type = "datetime";
+							a.setType("datetime");
 						}
 						ret.formAttributes.add(a);
 						ret.dqlParts.add(partOfDql);

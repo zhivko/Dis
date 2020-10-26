@@ -77,7 +77,7 @@ public class DocumentProperties extends WindowBox {
 											if (checkMandatoryAttributes())
 												getOkButton().setEnabled(true);
 
-											fillDependendAttributes(fa.att.getDcmtAttName());
+											fillDependendAttributes(fa.att.dcmtAttName);
 										};
 									});
 									List<String> values = result.values.get(att.dcmtAttName);
@@ -88,7 +88,7 @@ public class DocumentProperties extends WindowBox {
 												+ "</strong> not received from server.");
 										fa.att.isReadOnly = true;
 									}
-									g.setWidget(att.getRow(), att.getCol(), fa);
+									g.setWidget(att.row, att.col, fa);
 									allFaAl.add(fa);
 									// logger.info("\tadded to row:" + att.row + " col:" + att.col);
 								}
@@ -190,8 +190,8 @@ public class DocumentProperties extends WindowBox {
 				for (int k = 0; k < g.getColumnCount(); k++) {
 					if (g.getWidget(j, k) != null) {
 						FormAttribute fa = (FormAttribute) g.getWidget(j, k);
-						String[] value = { fa.getAtribute().getDcmtAttName(), null };
-						if (!fa.att.isRepeating())
+						String[] value = { fa.getAtribute().dcmtAttName, null };
+						if (!fa.att.isRepeating)
 							value[1] = split(fa.getValue(), "|")[fa.att.dropDownCol];
 						else {
 							String allValues = "";
