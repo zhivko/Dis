@@ -39,8 +39,8 @@ public class Tab extends IsSelected {
 		this();
 		this.item = tab;
 
-		id.setText(tab.id);
-		name.setText(tab.name);
+		id.setText(tab.getId());
+		name.setText(tab.getParameter());
 
 		row.setText(String.valueOf(tab.row));
 		col.setText(String.valueOf(tab.col));
@@ -136,7 +136,7 @@ public class Tab extends IsSelected {
 				// TODO Auto-generated method stub
 				if (!value.equals(prevValue)) {
 					si.telekom.dis.shared.Tab tab = (si.telekom.dis.shared.Tab) item;
-					tab.name = value;
+					tab.setName(value);
 					NewProfile.instance.refreshAttsStatesRoles();
 				}
 			}
@@ -228,7 +228,7 @@ public class Tab extends IsSelected {
 				// TODO Auto-generated method stub
 				if (!value.equals(prevValue)) {
 					si.telekom.dis.shared.Tab tab = (si.telekom.dis.shared.Tab) item;
-					tab.id = value;
+					tab.setId(value);
 					Tab.this.idChanged();
 					NewProfile.instance.changeTabId(prevValue, value);
 				}
@@ -242,7 +242,7 @@ public class Tab extends IsSelected {
 				// TODO Auto-generated method stub
 				if (!value.equals(prevValue)) {
 					si.telekom.dis.shared.Tab tab = (si.telekom.dis.shared.Tab) item;
-					tab.name = value;
+					tab.setName(value);
 					Tab.this.nameChanged();
 				}
 			}

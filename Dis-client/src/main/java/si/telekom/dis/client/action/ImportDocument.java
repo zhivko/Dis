@@ -267,9 +267,9 @@ public class ImportDocument extends WindowBox {
 				ArrayList<String> usersGroups = new ArrayList<String>();
 
 				for (UserGroup ug : role.defaultUserGroups) {
-					dqlUsers = dqlUsers + "'" + ug.id + "',";
-					if (ug.id.equals("dm_world") || ug.id.equals("dm_group"))
-						usersGroups.add(ug.id);
+					dqlUsers = dqlUsers + "'" + ug.getId() + "',";
+					if (ug.getId().equals("dm_world") || ug.getId().equals("dm_group"))
+						usersGroups.add(ug.getId());
 				}
 				if (dqlUsers.length() > 0)
 					dqlUsers = dqlUsers.substring(0, dqlUsers.length() - 1);
@@ -476,7 +476,7 @@ public class ImportDocument extends WindowBox {
 					for (si.telekom.dis.shared.Attribute att : arsw.attributes) {
 						if (tab.getId().equals(att.tabId)) {
 							FormAttribute fa = new FormAttribute(att);
-							g.setWidget(att.row, att.col, fa);
+							g.setWidget(att.getRow(), att.getCol(), fa);
 							fa.setWidth("90%");
 							if (att.dcmtAttName.equals("mob_classification_id")) {
 								ArrayList<String> values = new ArrayList<String>();

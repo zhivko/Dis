@@ -1,8 +1,8 @@
 package si.telekom.dis.shared;
 
 public class UserGroup implements HasIdName, com.google.gwt.user.client.rpc.IsSerializable, java.io.Serializable  {
-	public String id;
-	public String name;
+	private String id;
+	private String name;
 	
 	public UserGroup() {
 

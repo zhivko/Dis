@@ -785,7 +785,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			for (int j = 0; j < nlUserGroups.getLength(); j++) {
 				Element ugEl = (Element) nlUserGroups.item(j);
 				UserGroup ug = new UserGroup();
-				ug.id = ugEl.getAttribute("id");
+				ug.setId(ugEl.getAttribute("id"));
 				role.defaultUserGroups.add(ug);
 			}
 			roles.add(role);
@@ -1145,7 +1145,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			for (UserGroup ug : role.defaultUserGroups) {
 				Element nodUG = doc.createElement("defaultUserGroup");
-				nodUG.setAttribute("id", ug.id);
+				nodUG.setAttribute("id", ug.getId());
 				nodRole.appendChild(nodUG);
 			}
 
@@ -1203,7 +1203,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// attributes
 			for (Tab tab : prof.tabs) {
 				for (Attribute attribute : arsw.attributes) {
-					if (attribute.tabId.equals(tab.id) && attribute != null && attribute.dcmtAttName != null && !attribute.dcmtAttName.equals("")) {
+					if (attribute.tabId.equals(tab.getId()) && attribute != null && attribute.dcmtAttName != null && !attribute.dcmtAttName.equals("")) {
 
 						Element nodAttribute = doc.createElement("attribute");
 
@@ -1264,7 +1264,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				// try to find if roleid is defined in profile and it exists
 				boolean ok = false;
 				for (State sta : prof.states) {
-					if (sta.id.contentEquals(stateId)) {
+					if (sta.getId().contentEquals(stateId)) {
 						ok = true;
 						break;
 					}
@@ -2729,7 +2729,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		int ret = -1;
 		int i = 0;
 		for (State state : prof.states) {
-			if (state.id.equals(stateId)) {
+			if (state.getId().equals(stateId)) {
 				ret = i;
 				break;
 			}
@@ -3542,7 +3542,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		for (int j = stateId - 1; j > 0; j--) {
 			State state = prof.states.get(j);
 			if (state != null)
-				return state.id;
+				return state.getId();
 		}
 		return null;
 	}
@@ -3551,7 +3551,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		for (int j = stateId + 1; j < prof.states.size(); j++) {
 			State state = prof.states.get(j);
 			if (state != null)
-				return state.id;
+				return state.getId();
 		}
 		return null;
 	}
@@ -3739,7 +3739,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				for (Role role : prof.roles) {
 					ArrayList<String> users = new ArrayList<String>();
 					for (UserGroup ug : role.defaultUserGroups) {
-						users.add(ug.id);
+						users.add(ug.getId());
 					}
 					rolesUsers.put(role.getId(), users);
 				}

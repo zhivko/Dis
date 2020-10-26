@@ -5,8 +5,8 @@ import java.util.List;
 
 public class State implements HasIdName, com.google.gwt.user.client.rpc.IsSerializable,  java.io.Serializable {
 	
-	public String id;
-	public String name;
+	private String id;
+	private String name;
 	public List<StandardAction> standardActions;
 	
 	

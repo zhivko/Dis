@@ -212,9 +212,9 @@ public class ClassifyDocument extends WindowBox {
 				ArrayList<String> usersGroups = new ArrayList<String>();
 
 				for (UserGroup ug : role.defaultUserGroups) {
-					dqlUsers = dqlUsers + "'" + ug.id + "',";
-					if (ug.id.equals("dm_world") || ug.id.equals("dm_group"))
-						usersGroups.add(ug.id);
+					dqlUsers = dqlUsers + "'" + ug.getId() + "',";
+					if (ug.getId().equals("dm_world") || ug.getId().equals("dm_group"))
+						usersGroups.add(ug.getId());
 				}
 				if (dqlUsers.length() > 0)
 					dqlUsers = dqlUsers.substring(0, dqlUsers.length() - 1);
@@ -324,8 +324,8 @@ String fullDqlUg =
 						state_id = null;
 
 						for (State state : prof.states) {
-							if (!state.id.equals("unclassified"))
-								lbStates.addItem(state.name, state.id);
+							if (!state.getId().equals("unclassified"))
+								lbStates.addItem(state.getParameter(), state.getId());
 						}
 						lbStates.setSelectedIndex(0);
 						nextB.setEnabled(false);
@@ -449,7 +449,7 @@ String fullDqlUg =
 										MainPanel.log("Attribute value for attribute <strong>" + att.dcmtAttName + "</strong> not received from server.");
 										fa.att.isReadOnly = true;
 									}
-									g.setWidget(att.row, att.col, fa);
+									g.setWidget(att.getRow(), att.getCol(), fa);
 									allFaAl.add(fa);
 									// logger.info("\tadded to row:" + att.row + " col:" +
 									// att.col);

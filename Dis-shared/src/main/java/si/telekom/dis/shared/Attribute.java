@@ -55,8 +55,8 @@ public class Attribute implements com.google.gwt.user.client.rpc.IsSerializable,
 	public String type;
 	
 	public String tabId;
-	public int row;
-	public int col;
+	private int row;
+	private int col;
 
 	public String defaultValue;
 	public boolean defaultValueIsConstant;
@@ -84,16 +84,6 @@ public class Attribute implements com.google.gwt.user.client.rpc.IsSerializable,
 	 */
 	public String restQuery;
 	
-	public String getCommaSeparatedValueListDefinition() {
-		return commaSeparatedValueListDefinition;
-	}
-
-	public void setCommaSeparatedValueListDefinition(String commaSeparatedValueListDefinition) {
-		this.commaSeparatedValueListDefinition = commaSeparatedValueListDefinition;
-	}
-	
-	
-
 	public String getDcmtAttName() {
 		return dcmtAttName;
 	}

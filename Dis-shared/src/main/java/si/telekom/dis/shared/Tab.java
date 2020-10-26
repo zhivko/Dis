@@ -14,8 +14,8 @@ public class Tab implements HasIdName, com.google.gwt.user.client.rpc.IsSerializ
 		this.name = name;
 	}
 
-	public String id;
-	public String name;
+	private String id;
+	private String name;
 
 	@Override
 	public String getId() {

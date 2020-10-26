@@ -88,7 +88,7 @@ public class DocumentProperties extends WindowBox {
 												+ "</strong> not received from server.");
 										fa.att.isReadOnly = true;
 									}
-									g.setWidget(att.row, att.col, fa);
+									g.setWidget(att.getRow(), att.getCol(), fa);
 									allFaAl.add(fa);
 									// logger.info("\tadded to row:" + att.row + " col:" + att.col);
 								}

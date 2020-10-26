@@ -6,19 +6,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.ext.ParamConverter;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_EMPTY)
-public class AttValueList implements javax.ws.rs.ext.ParamConverterProvider {
+public class AttValueList {
+	@QueryParam("attValueList")
 	public List<AttValue> attValueList;
 
 	public AttValueList() {
 		this.attValueList = new ArrayList<AttValue>();
 	}
 
+	/*
 	@Override
 	public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
 		if (rawType.equals(AttValueList.class)) {
@@ -28,11 +31,7 @@ public class AttValueList implements javax.ws.rs.ext.ParamConverterProvider {
 	}
 
 	
-	private class MyParamConverter implements ParamConverter<AttValueList>{
-	  /**
-	   * @param AttValueList string should be separated with $ and # and ¤ form attName1$attvalue1¤attvalue2¤attvalue3¤...#attName1$attvalue1¤attvalue2¤attvalue3¤...
-	   * @return
-	   */
+
 	  @Override
 	  public AttValueList fromString(String s){
 	  	AttValueList attValueList = new AttValueList();
@@ -64,4 +63,6 @@ public class AttValueList implements javax.ws.rs.ext.ParamConverterProvider {
 	    return ret;
 	  }
 	}	
+	
+	*/
 }

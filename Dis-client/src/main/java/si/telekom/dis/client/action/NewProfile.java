@@ -890,7 +890,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 				AttributeRoleStateWizards arsw = attributeRolesStatesWizards.get(attributeRolesStatesWizardsIndex);
 				for (si.telekom.dis.shared.Attribute a : arsw.attributes) {
 					if (a != null)
-						getLogger().info("\tAtt: " + a.dcmtAttName + " tab: " + a.tabId + " (r:" + a.row + ",c:" + a.col + ")");
+						getLogger().info("\tAtt: " + a.dcmtAttName + " tab: " + a.tabId + " (r:" + a.getRow() + ",c:" + a.getCol() + ")");
 				}
 				getLogger().info("Size(" + attributeRolesStatesWizardsIndex + ")=" + arsw.attributes.size());
 
@@ -898,7 +898,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 				arsw = attributeRolesStatesWizards.get(attributeRolesStatesWizardsIndex);
 				for (si.telekom.dis.shared.Attribute a : arsw.attributes) {
 					if (a != null)
-						getLogger().info("\tAtt: " + a.dcmtAttName + " tab: " + a.tabId + " (r:" + a.row + ",c:" + a.col + ")");
+						getLogger().info("\tAtt: " + a.dcmtAttName + " tab: " + a.tabId + " (r:" + a.getRow() + ",c:" + a.getCol() + ")");
 				}
 				getLogger().info("Size(" + attributeRolesStatesWizardsIndex + ")=" + arsw.attributes.size());
 
@@ -1155,14 +1155,14 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 
 						for (si.telekom.dis.shared.Attribute a : arsw.attributes) {
 							if (a != null && a.getTabId().equals(tab.getId())) {
-								if (g != null && (a.row <= g.getRowCount() - 1 && a.col <= g.getColumnCount() - 1)) {
-									VerticalPanel vpEmptyPanel = (VerticalPanel) g.getWidget(a.row, a.col);
+								if (g != null && (a.getRow() <= g.getRowCount() - 1 && a.getCol() <= g.getColumnCount() - 1)) {
+									VerticalPanel vpEmptyPanel = (VerticalPanel) g.getWidget(a.getRow(), a.getCol());
 
 									ProfileAttribute pa = new ProfileAttribute(a);
 
 									vpEmptyPanel.remove(0);
 									vpEmptyPanel.add(pa);
-									String key = i + "~" + a.getTabId() + "~" + a.row + "~" + a.col;
+									String key = i + "~" + a.getTabId() + "~" + a.getRow() + "~" + a.getCol();
 									attTabPosition.put(key, pa);
 								}
 							}
@@ -1250,7 +1250,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 					hmRoleActionsInState.put(role.getId(), actions);
 				}
 			}
-			p.roleStateActions.put(state.id, hmRoleActionsInState);
+			p.roleStateActions.put(state.getId(), hmRoleActionsInState);
 		}
 
 		// Map<String, Map<String, List<String>>>
@@ -1357,8 +1357,8 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 					a.dcmtType = dcmtType;
 					a.dcmtAttName = attName;
 					a.tabId = tab.getId();
-					a.row = row;
-					a.col = col;
+					a.setRow(row);
+					a.setCol(col);
 					a.label = attName;
 					a.type = si.telekom.dis.shared.Attribute.types.TEXTBOX.type;
 
@@ -1420,7 +1420,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 		Grid g = gridAtts.get((spinnerAtts.value - 1) + "~" + profileAttribute.attr.tabId);
 
 		profileAttribute.removeFromParent();
-		g.setWidget(profileAttribute.attr.row, profileAttribute.attr.col, getEmptyPanel(profileAttribute.attr.row, profileAttribute.attr.col));
+		g.setWidget(profileAttribute.attr.getRow(), profileAttribute.attr.getCol(), getEmptyPanel(profileAttribute.attr.getRow(), profileAttribute.attr.getCol()));
 	}
 
 	public void changeRoleId(String prevValue, String value) {
@@ -1501,7 +1501,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 
 	public void removeState(int itemNo) {
 		si.telekom.dis.shared.State state = (si.telekom.dis.shared.State) (roles.getItem(itemNo).item);
-		String stateId = state.id;
+		String stateId = state.getId();
 		for (AttributeRoleStateWizards arsw : attributeRolesStatesWizards) {
 			arsw.stateRole.remove(stateId);
 		}
@@ -1612,43 +1612,43 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 	}-*/;
 
 	public void leftProfileAttribute(ProfileAttribute profileAttribute) {
-		if (profileAttribute.attr.col > 0) {
-			int targetRow = profileAttribute.attr.row;
-			int targetCol = profileAttribute.attr.col - 1;
+		if (profileAttribute.attr.getCol() > 0) {
+			int targetRow = profileAttribute.attr.getRow();
+			int targetCol = profileAttribute.attr.getCol() - 1;
 			swap(profileAttribute, targetRow, targetCol);
 		}
 	}
 
 	public void rightProfileAttribute(ProfileAttribute profileAttribute) {
 		si.telekom.dis.shared.Tab tab = (si.telekom.dis.shared.Tab) tabs.getArrayList().get(tpAtts.getTabBar().getSelectedTab());
-		if (profileAttribute.attr.col < tab.col) {
-			int targetRow = profileAttribute.attr.row;
-			int targetCol = profileAttribute.attr.col + 1;
+		if (profileAttribute.attr.getCol() < tab.col) {
+			int targetRow = profileAttribute.attr.getRow();
+			int targetCol = profileAttribute.attr.getCol() + 1;
 			swap(profileAttribute, targetRow, targetCol);
 		}
 	}
 
 	public void upProfileAttribute(ProfileAttribute profileAttribute) {
 		si.telekom.dis.shared.Tab tab = (si.telekom.dis.shared.Tab) tabs.getArrayList().get(tpAtts.getTabBar().getSelectedTab());
-		if (profileAttribute.attr.row > 0) {
-			int targetRow = profileAttribute.attr.row - 1;
-			int targetCol = profileAttribute.attr.col;
+		if (profileAttribute.attr.getRow() > 0) {
+			int targetRow = profileAttribute.attr.getRow() - 1;
+			int targetCol = profileAttribute.attr.getCol();
 			swap(profileAttribute, targetRow, targetCol);
 		}
 	}
 
 	public void downProfileAttribute(ProfileAttribute profileAttribute) {
 		si.telekom.dis.shared.Tab tab = (si.telekom.dis.shared.Tab) tabs.getArrayList().get(tpAtts.getTabBar().getSelectedTab());
-		if (profileAttribute.attr.row < tab.row) {
-			int targetRow = profileAttribute.attr.row + 1;
-			int targetCol = profileAttribute.attr.col;
+		if (profileAttribute.attr.getRow() < tab.row) {
+			int targetRow = profileAttribute.attr.getRow() + 1;
+			int targetCol = profileAttribute.attr.getCol();
 			swap(profileAttribute, targetRow, targetCol);
 		}
 	}
 
 	private void swap(ProfileAttribute profileAttribute, int targetRow, int targetCol) {
-		int row = profileAttribute.attr.row;
-		int col = profileAttribute.attr.col;
+		int row = profileAttribute.attr.getRow();
+		int col = profileAttribute.attr.getCol();
 
 		for (int i = 0; i < attributeRolesStatesWizards.size(); i++) {
 			AttributeRoleStateWizards arsw = attributeRolesStatesWizards.get(i);
@@ -1656,7 +1656,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 			for (Object tabObj : tabs.getArrayList()) {
 				si.telekom.dis.shared.Tab tab = (si.telekom.dis.shared.Tab) tabObj;
 
-				if (i == (spinnerAtts.value - 1) && tab.id == profileAttribute.attr.getTabId()) {
+				if (i == (spinnerAtts.value - 1) && tab.getId() == profileAttribute.attr.getTabId()) {
 					Grid g = gridAtts.get(i + "~" + tab.getId());
 					VerticalPanel vertPanelTarget = (VerticalPanel) g.getWidget(targetRow, targetCol);
 					VerticalPanel vertPanelSource = (VerticalPanel) g.getWidget(row, col);
@@ -1670,22 +1670,22 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 					if (className.endsWith("ProfileAttribute")) {
 						ProfileAttribute paTarget = (ProfileAttribute) vertPanelTarget.getWidget(0);
 						vertPanelTarget.remove(paTarget);
-						paTarget.attr.col = col;
-						paTarget.attr.row = row;
+						paTarget.attr.setCol(col);
+						paTarget.attr.setRow(row);
 
-						paSource.attr.col = targetCol;
-						paSource.attr.row = targetRow;
+						paSource.attr.setCol(targetCol);
+						paSource.attr.setRow(targetRow);
 
-						String key = i + "~" + paSource.attr.getTabId() + "~" + paSource.attr.row + "~" + paSource.attr.col;
+						String key = i + "~" + paSource.attr.getTabId() + "~" + paSource.attr.getRow() + "~" + paSource.attr.getCol();
 						attTabPosition.put(key, paSource);
 						vertPanelSource.add(paTarget);
-						key = i + "~" + paTarget.attr.getTabId() + "~" + paTarget.attr.row + "~" + paTarget.attr.col;
+						key = i + "~" + paTarget.attr.getTabId() + "~" + paTarget.attr.getRow() + "~" + paTarget.attr.getCol();
 						attTabPosition.put(key, paTarget);
 					} else {
-						paSource.attr.col = targetCol;
-						paSource.attr.row = targetRow;
+						paSource.attr.setCol(targetCol);
+						paSource.attr.setRow(targetRow);
 
-						String key = i + "~" + paSource.attr.getTabId() + "~" + paSource.attr.row + "~" + paSource.attr.col;
+						String key = i + "~" + paSource.attr.getTabId() + "~" + paSource.attr.getRow() + "~" + paSource.attr.getCol();
 						attTabPosition.put(key, paSource);
 						key = i + "~" + paSource.attr.getTabId() + "~" + targetRow + "~" + targetCol;
 						attTabPosition.remove(key);

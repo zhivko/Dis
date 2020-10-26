@@ -687,8 +687,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				stateId = collection.getString("current_state_id");
 				String foundStateId = null;
 				for (State sta : prof.states) {
-					if (sta.id.equals(stateId)) {
-						foundStateId = sta.id;
+					if (sta.getId().equals(stateId)) {
+						foundStateId = sta.getId();
 						break;
 					}
 				}
@@ -806,8 +806,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				prof = ExplorerServiceImpl.getInstance().findProfileForObjectType(persObject);
 			int indexOfDraftState = 0;
 			for (State stat : prof.states) {
-				if (!stat.id.equals("unclassified")) {
-					stateId = stat.id;
+				if (!stat.getId().equals("unclassified")) {
+					stateId = stat.getId();
 					break;
 				}
 				indexOfDraftState++;
@@ -2267,7 +2267,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			boolean foundState = false;
 			int stateNo = 0;
 			for (State state : prof.states) {
-				if (state.id.equals(stateId)) {
+				if (state.getId().equals(stateId)) {
 					foundState = true;
 					break;
 				}
@@ -2309,7 +2309,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				throw new ServerException("Obvezni atributi (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
 			}
 
-			query.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).id + "' where r_object_id='" + r_object_id + "'");
+			query.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
 			collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 			Map<String, List<String>> roleUserGroups = (Map<String, List<String>>) profileAndRolesOfUserAndState[4];
 			setUsersForRoles(userSession, persObj, roleUserGroups);
@@ -2854,7 +2854,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				String newStateId = null;
 				for (int j = 0; j < prof.states.size(); j++) {
-					if (!prof.states.get(j).id.equals("unclassified")) {
+					if (!prof.states.get(j).getId().equals("unclassified")) {
 						newStateId = prof.states.get(j).getId();
 						break;
 					}
@@ -3060,7 +3060,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				String newStateId = null;
 				for (int j = 0; j < prof.states.size(); j++) {
-					if (!prof.states.get(j).id.equals("unclassified")) {
+					if (!prof.states.get(j).getId().equals("unclassified")) {
 						newStateId = prof.states.get(j).getId();
 						break;
 					}
@@ -3677,7 +3677,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							if (!roleUserGroups.containsKey(prof.roles.get(i).getId()))
 								roleUserGroups.put(prof.roles.get(i).getId(), new ArrayList<String>());
 
-							roleUserGroups.get(prof.roles.get(i).getId()).add(ug.id);
+							roleUserGroups.get(prof.roles.get(i).getId()).add(ug.getId());
 						}
 					}
 

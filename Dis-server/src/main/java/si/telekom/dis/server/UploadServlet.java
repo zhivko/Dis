@@ -353,7 +353,7 @@ public class UploadServlet extends HttpServlet {
 															if (!roleUserGroups.containsKey(prof.roles.get(i).getId()))
 																roleUserGroups.put(prof.roles.get(i).getId(), new ArrayList<String>());
 
-															roleUserGroups.get(prof.roles.get(i).getId()).add(ug.id);
+															roleUserGroups.get(prof.roles.get(i).getId()).add(ug.getId());
 														}
 													}
 
@@ -363,8 +363,8 @@ public class UploadServlet extends HttpServlet {
 												String statId = (String) profileAndRolesOfUserAndState[3];
 												if (statId == null) {
 													for (State state : prof.states) {
-														if (!state.name.equals("unclassified")) {
-															statId = state.id;
+														if (!state.getParameter().equals("unclassified")) {
+															statId = state.getId();
 															break;
 														}
 													}

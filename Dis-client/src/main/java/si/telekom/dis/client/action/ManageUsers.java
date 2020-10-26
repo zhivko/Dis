@@ -137,7 +137,7 @@ public class ManageUsers extends WindowBox {
 					while(dugIt.hasNext())
 					{
 						UserGroup ug = dugIt.next();
-						String userGroupId = ug.id;
+						String userGroupId = ug.getId();
 						dqlUsers = dqlUsers + "'" + userGroupId + "',";
 						if (userGroupId.equals("dm_world") || userGroupId.equals("dm_group"))
 							usersGroups.add(userGroupId);

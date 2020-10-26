@@ -1,22 +1,24 @@
 package si.telekom.dis.server.rest;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.ext.ParamConverter;
+import javax.ws.rs.QueryParam;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_EMPTY)
-public class RoleValueList implements javax.ws.rs.ext.ParamConverterProvider {
+public class RoleValueList {
+	@QueryParam("roleValueList")
 	public List<RoleValue> roleValueList;
 
 	public RoleValueList() {
+		roleValueList = new ArrayList<RoleValue>();
 	}
 
+	
+	/*
 	@Override
 	public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
 		if (rawType.equals(RoleValueList.class)) {
@@ -25,13 +27,7 @@ public class RoleValueList implements javax.ws.rs.ext.ParamConverterProvider {
 		return null;
 	}
 
-	private class MyParamConverter implements ParamConverter<RoleValueList> {
-		/**
-		 * @param AttValueList
-		 *          string should be separated with $ and # and ¤ form
-		 *          attName1$attvalue1¤attvalue2¤attvalue3¤...#attName1$attvalue1¤attvalue2¤attvalue3¤...
-		 * @return
-		 */
+
 		@Override
 		public RoleValueList fromString(String s) {
 			RoleValueList roleValueList = new RoleValueList();
@@ -63,5 +59,6 @@ public class RoleValueList implements javax.ws.rs.ext.ParamConverterProvider {
 			return ret;
 		}
 	}
+	*/
 
 }

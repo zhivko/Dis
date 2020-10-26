@@ -452,7 +452,7 @@ public class ProfileAttribute extends IsSelected {
 		rbDefaultValueIsDql.setValue(attr.defaultValueIsDql);
 		rbDefaultValueIsSql.setValue(attr.defaultValueIsSql);
 
-		vp.getElement().setId("profileAttribute:" + attr.tabId + "~" + attr.tabId + "~" + attr.dcmtAttName + "~" + attr.row + "~" + attr.col);
+		vp.getElement().setId("profileAttribute:" + attr.tabId + "~" + attr.tabId + "~" + attr.dcmtAttName + "~" + attr.getRow() + "~" + attr.getCol());
 	}
 
 	protected void setIsSelected(boolean b) {
