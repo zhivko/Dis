@@ -19,6 +19,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
@@ -855,26 +856,53 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				for (Field field : fieldsA) {
 					// System.out.println(field);
 					String value = nAttribute.getAttribute(field.getName());
-					try {
-						if (field.getAnnotatedType().getType().getTypeName().equals("boolean")) {
-							if (!value.equals(""))
-								field.set(a, Boolean.valueOf(value));
-						} else if (field.getAnnotatedType().getType().getTypeName().equals("int")) {
-							if (!value.equals(""))
-								field.set(a, Integer.valueOf(value));
-						} else if (field.getAnnotatedType().getType().getTypeName().equals("java.lang.String")) {
-							if (!value.equals("") && !value.equals("null"))
-								field.set(a, String.valueOf(value));
-						} else if (field.getAnnotatedType().getType().getTypeName().equals("ArrayList")) {
-						} else {
-							// field.set(a, value);
+					String methodName = "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1, field.getName().length());
+					int modifiers = field.getModifiers();
+					if (modifiers == 1) {
+						try {
+							if (field.getAnnotatedType().getType().getTypeName().equals("boolean")) {
+								if (!value.equals(""))
+									field.set(a, Boolean.valueOf(value));
+							} else if (field.getAnnotatedType().getType().getTypeName().equals("int")) {
+								if (!value.equals(""))
+									field.set(a, Integer.valueOf(value));
+							} else if (field.getAnnotatedType().getType().getTypeName().equals("java.lang.String")) {
+								if (!value.equals("") && !value.equals("null")) {
+									field.set(a, String.valueOf(value));
+								}
+
+							} else if (field.getAnnotatedType().getType().getTypeName().equals("ArrayList")) {
+							} else {
+								// field.set(a, value);
+							}
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
-					} catch (IllegalArgumentException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					} else {
+						try {
+							Method m=null;
+							if (field.getAnnotatedType().getType().getTypeName().equals("boolean"))
+							 m = a.getClass().getMethod(methodName, boolean.class);
+							else if (field.getAnnotatedType().getType().getTypeName().equals("int"))
+								m = a.getClass().getMethod(methodName, int.class);
+							else if (field.getAnnotatedType().getType().getTypeName().equals("java.lang.String"))
+								m = a.getClass().getMethod(methodName, String.class);
+							if(m!=null)
+							{
+								m.invoke(a, value);
+								Logger.getLogger(AdminServiceImpl.class).info("method " + methodName + " invoked.");
+							}
+							else
+							{
+								Logger.getLogger(AdminServiceImpl.class).error("unknown field type " + field.getName());
+							}
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
 					}
 				}
 
@@ -909,6 +937,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		retProfile.attributeRolesStatesWizards = arsws;
 
 		retProfile.roleStateActions = new HashMap<String, Map<String, List<String>>>();
+
 		// expr = xPath.compile("/profile/actions");
 		Element profileActions = (Element) profileNode.getElementsByTagName("actions").item(0); // /profile/actions
 		if (profileActions == null) {

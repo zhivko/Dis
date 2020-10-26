@@ -14,6 +14,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
+import org.glassfish.hk2.utilities.reflection.Logger;
+
 import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
 import si.telekom.dis.shared.Profile;
@@ -33,8 +35,8 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/dqlLookup")
-	public List<List<String>> dqlLookup(@QueryParam("loginName") String loginName,
-			@QueryParam("passwordEncrypted") String passwordEncrypted, @QueryParam("dql") String dql) throws Exception {
+	public List<List<String>> dqlLookup(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
+			@QueryParam("dql") String dql) throws Exception {
 		// return ExplorerServiceImpl.getInstance().dqlLookup(loginName,
 		// passwordEncrypted, dql);
 		try {
@@ -48,9 +50,8 @@ public class DisRest {
 	@Consumes({ "text/xml", "application/json" })
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/newDocument")
-	public String newDocument(@QueryParam("loginName") String loginName,
-			@QueryParam("passwordEncrypted") String passwordEncrypted, @QueryParam("profileId") String profileId,
-			@BeanParam AttValueList attributes, @BeanParam RoleValueList roles,
+	public String newDocument(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
+			@QueryParam("profileId") String profileId, @BeanParam AttValueList attributes, @BeanParam RoleValueList roles,
 			@QueryParam("templateObjectNameOrFolder") String templateObjectNameOrFolder) {
 		try {
 
@@ -77,11 +78,9 @@ public class DisRest {
 	@Produces({ MediaType.APPLICATION_JSON })
 
 	@Path("/importDocument")
-	public String importDocument(@QueryParam("loginName") String loginName,
-			@QueryParam("encryptedPassword") String encryptedPassword, @QueryParam("folderRObjectId") String folderRObjectId,
-			@QueryParam("profileId") String profileId, @BeanParam AttValueList attributes,
-			@BeanParam RoleValueList roles, @QueryParam("base64content") String base64Content,
-			@QueryParam("format") String format) {
+	public String importDocument(@QueryParam("loginName") String loginName, @QueryParam("encryptedPassword") String encryptedPassword,
+			@QueryParam("folderRObjectId") String folderRObjectId, @QueryParam("profileId") String profileId, @BeanParam AttValueList attributes,
+			@BeanParam RoleValueList roles, @QueryParam("base64content") String base64Content, @QueryParam("format") String format) {
 		try {
 			HashMap<String, List<String>> vals_ = new HashMap<String, List<String>>();
 			for (AttValue attValue : attributes.attValueList) {
@@ -104,13 +103,16 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/getProfilesForClassSign")
-	public List<String> getProfilesForClassSign(@QueryParam("loginName") String loginName,
-			@QueryParam("passwordEncrypted") String passwordEncrypted, @QueryParam("classSign") String classSign,
-			@QueryParam("wizzardType") String wizardType) {
-		List<Profile> profiles = AdminServiceImpl.getInstance().getProfilesForClassSign(loginName, passwordEncrypted, classSign, wizardType);
+	public List<String> getProfilesForClassSign(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
+			@QueryParam("classSign") String classSign, @QueryParam("wizzardType") String wizardType) {
 		ArrayList<String> ret = new ArrayList<String>();
-		for (Profile profile : profiles) {
-			ret.add(profile.id);
+		try {
+			List<Profile> profiles = AdminServiceImpl.getInstance().getProfilesForClassSign(loginName, passwordEncrypted, classSign, wizardType);
+			for (Profile profile : profiles) {
+				ret.add(profile.id);
+			}
+		} catch (Exception ex) {
+			throw new WebApplicationException(ex.getMessage());
 		}
 		return ret;
 	}
@@ -119,8 +121,8 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/promote")
-	public Void promote(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted, @QueryParam("r_object_id") String r_object_id)
-			throws Exception {
+	public Void promote(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
+			@QueryParam("r_object_id") String r_object_id) throws Exception {
 		return ExplorerServiceImpl.getInstance().promote(loginName, passwordEncrypted, r_object_id);
 	}
 
@@ -128,7 +130,8 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/demote")
-	public Void demote(@QueryParam("loginName") String loginName,@QueryParam("passwordEncrypted") String passwordEncrypted, @QueryParam("r_object_id") String r_object_id) throws Exception {
+	public Void demote(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
+			@QueryParam("r_object_id") String r_object_id) throws Exception {
 		return ExplorerServiceImpl.getInstance().demote(loginName, passwordEncrypted, r_object_id);
 	}
 
