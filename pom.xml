@@ -117,7 +117,7 @@
 		<profile>
 			<id>localhost-windows</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
 				<property>
 					<name>env</name>
 					<value>prod</value>
@@ -132,7 +132,7 @@
 		<profile>
 			<id>prod</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<activeByDefault>true</activeByDefault>
 				<property>
 					<name>env</name>
 					<value>prod</value>

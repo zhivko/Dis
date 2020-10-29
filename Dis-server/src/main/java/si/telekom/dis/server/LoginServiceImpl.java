@@ -120,10 +120,10 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				ret[4] = AdminServiceImpl.repositoryName;
 
 				loginName = "e-kalapcievv";
-				loginName = "ikovacic";
 				loginName = "alzupan";
+				loginName = "ikovacic";
+				loginName = "lokart";
 				loginName = "zivkovick";
-				// loginName = "lokart";
 
 				ret[0] = loginName;
 				IDfSession adminSession = AdminServiceImpl.getInstance().getAdminSession();
@@ -140,12 +140,13 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				else
 					ret[2] = "user";
 
-				adminSession.getSessionManager().release(adminSession);
 				ret[3] = dcmtUser.getUserName();
 				ret[4] = AdminServiceImpl.repositoryName;
 
 				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>"
-						+ AdminServiceImpl.getAdminSession().getServerConfig().getString("r_server_version");
+						+ adminSession.getServerConfig().getString("r_server_version");
+
+				adminSession.getSessionManager().release(adminSession);
 
 				Logger.getLogger(this.getClass()).info(String.format("Logged user: %s, role: %s, documentumUser %s", ret[0], ret[2], ret[3]));
 
@@ -357,17 +358,19 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	public UserSettings getUserSettings(String loginName, String passwordEncrypted) throws ServerException {
 		UserSettings us = null;
 
+		IDfSession userSess = null;
+		IDfSession adminSession = null;
 		try {
 			StringWriter writer = new StringWriter();
 			JAXBContext context = JAXBContext.newInstance(UserSettings.class);
 
-			IDfSession userSess = AdminServiceImpl.getSession(loginName, passwordEncrypted);
+			userSess = AdminServiceImpl.getSession(loginName, passwordEncrypted);
 
 			String currentPrivateFolder = userSess.getUser(userSess.getLoginUserName()).getDefaultFolder();
 			String privateFolder = "/" + userSess.getLoginUserName();
 			if (!currentPrivateFolder.equals(privateFolder)) {
 				// not correct private folder change it on user!
-				IDfSession adminSession = AdminServiceImpl.getAdminSession();
+				adminSession = AdminServiceImpl.getAdminSession();
 
 				IDfUser user = adminSession.getUser(userSess.getLoginUserName());
 				user.setDefaultFolder(privateFolder, true);
@@ -405,7 +408,11 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			us = (UserSettings) m.unmarshal(reader);
 		} catch (Exception ex) {
 			throw new ServerException(ex.getMessage());
+		} finally {
+			if (adminSession != null)
+				AdminServiceImpl.getInstance().releaseSession(adminSession);
 		}
+
 		return us;
 	}
 

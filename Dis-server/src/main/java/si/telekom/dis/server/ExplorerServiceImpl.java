@@ -1500,6 +1500,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		IDfSession userSession = null;
 		IDfCollection collection = null;
 		Logger.getLogger(this.getClass()).info(String.format("[%s] deleteObject started for %s", loginName, r_object_id));
+		
+		IDfSession adminSession=null;
+		
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			AdminServiceImpl.beginTransaction(userSession);
@@ -1564,7 +1567,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			WsServer.log(loginName, "Destroying...");
 			if (allVersions) {
-				IDfSession adminSession = AdminServiceImpl.getAdminSession();
+				adminSession = AdminServiceImpl.getAdminSession();
 				// check permissions on all versions if there is no permission add
 				// permission
 				IDfCollection col2 = dfDocument.getVersions("r_object_id");
@@ -1582,7 +1585,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								((IDfSysObject) doc).getACL().save();
 
 								((IDfSysObject) doc).setACLDomain("dm_dbo");
-								((IDfSysObject) doc).grant(loginName, 7, null);
+								((IDfSysObject) doc).grant(userSession.getLoginUserName(), 7, null);
 								doc.save();
 								break;
 							}
@@ -1617,9 +1620,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				if (collection != null)
 					collection.close();
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				ex.printStackTrace();		
 			}
 			try {
+				if(adminSession!=null)
+					AdminServiceImpl.getInstance().releaseSession(adminSession);
 				if (userSession != null)
 					AdminServiceImpl.getInstance().releaseSession(userSession);
 
@@ -1844,6 +1849,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		// persObject.save();
 		//IDfSession adminSession = AdminServiceImpl.getAdminSession();
 		//adminSession.beginTrans();
+		IDfSession adminSess=null;
 		try {
 			String r_object_id = persObject.getString("r_object_id");
 			persObject = userSession.getObject(new DfId(r_object_id));
@@ -1857,10 +1863,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			coll.close();
 
 			// create new if needed
-			IDfACL objAcl = (IDfACL) sysObj.getACL();
+//			IDfACL objAcl = (IDfACL) sysObj.getACL();
 			
-			if(objAcl==null)
-				objAcl = (IDfACL) userSession.newObject("dm_acl");
+//			if(objAcl==null)
+			adminSess =AdminServiceImpl.getAdminSession();
+			
+			IDfACL objAcl = (IDfACL) adminSess.newObject("dm_acl");
 			
 
 			IDfList permits = null;
@@ -1925,6 +1933,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			objAcl.setDomain("dm_dbo");
 			objAcl.save();
+			
+
 
 			sysObj.setACLDomain("dm_dbo");
 			sysObj.setACLName(objAcl.getObjectName());
@@ -1945,6 +1955,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			WsServer.log(userSession.getLoginUserName(), ex.getMessage());
 			throw new ServerException(ex.getMessage());
 		} finally {
+			adminSess.getSessionManager().release(adminSess);
 		}
 	}
 
@@ -3766,6 +3777,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			if (mimeType == null || (al.size() == 0 && mimeType.equals("application/zip"))) {
 				al.addAll(Arrays.asList("msw12", "excel12book", "odt", "ods", "pdf"));
+			}
+			
+			if(mimeType.equals("application/vnd.oasis.opendocument.text"))
+			{
+				al.add("odt");
 			}
 
 			if (mimeType.equals("application/xhtml+xml")) {

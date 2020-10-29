@@ -884,20 +884,17 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						}
 					} else {
 						try {
-							Method m=null;
+							Method m = null;
 							if (field.getAnnotatedType().getType().getTypeName().equals("boolean"))
-							 m = a.getClass().getMethod(methodName, boolean.class);
+								m = a.getClass().getMethod(methodName, boolean.class);
 							else if (field.getAnnotatedType().getType().getTypeName().equals("int"))
 								m = a.getClass().getMethod(methodName, int.class);
 							else if (field.getAnnotatedType().getType().getTypeName().equals("java.lang.String"))
 								m = a.getClass().getMethod(methodName, String.class);
-							if(m!=null)
-							{
+							if (m != null) {
 								m.invoke(a, value);
 								Logger.getLogger(AdminServiceImpl.class).info("method " + methodName + " invoked.");
-							}
-							else
-							{
+							} else {
 								Logger.getLogger(AdminServiceImpl.class).error("unknown field type " + field.getName());
 							}
 						} catch (Exception ex) {
@@ -1072,9 +1069,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			serializeProfiles();
 			serializeDocTypes();
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			Logger.getLogger(this.getClass()).error(e1);
+		} catch (Throwable e1) {
+			ByteArrayOutputStream byteAOs = new ByteArrayOutputStream();
+			PrintWriter pw = new PrintWriter(byteAOs);
+			e1.printStackTrace(pw);
+			pw.flush();
+			Logger.getLogger(AdminServiceImpl.class).error(byteAOs.toString());
 			throw new ServerException(e1.getMessage());
 		} finally {
 			if (userSession != null)
@@ -1239,21 +1239,31 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						Field[] fieldsAtt = attribute.getClass().getDeclaredFields();
 						Logger.getLogger(AdminServiceImpl.class).debug(String.format("%d fields:", fields.length));
 						for (Field field : fieldsAtt) {
+							int modifiers = field.getModifiers();
+							String value = null;
 							if (field.getType().getSimpleName().equals("String") || field.getType().getSimpleName().equals("boolean")
 									|| field.getType().getSimpleName().equals("int")) {
-								String value = String.valueOf(field.get(attribute));
+								if (modifiers == 1) {
+									value = String.valueOf(field.get(attribute));
+								} else {
+									String methodName = "get" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1, field.getName().length());
+									Method m = attribute.getClass().getMethod(methodName);
+									
+									value = (String)m.invoke(attribute);
+								}
 
-								if (field.getName().startsWith("defaultValueIsConstant"))
+								if (field.getName().startsWith("defaultValueIsConstant")) {
 									if (attribute.defaultValue != null)
 										System.out.println("");
+								}
 
 								Logger.getLogger(AdminServiceImpl.class).debug(String.format("\t%s %s %s value: %s", Modifier.toString(field.getModifiers()),
 										field.getType().getSimpleName(), field.getName(), value));
 								nodAttribute.setAttribute(field.getName(), value);
 							}
-						}
 
-						nodAttributes.appendChild(nodAttribute);
+							nodAttributes.appendChild(nodAttribute);
+						}
 					}
 				}
 			}
@@ -1413,7 +1423,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		String toAddVersions = vp.getNextMinorLabel() + ",CURRENT";
 		IDfId dfnewid = sysObj.checkin(keepLock, toAddVersions);
-		IDfSysObject newSysObj = (IDfSysObject) getAdminSession().getObject(dfnewid);
+		
+		IDfSession adminSess = getAdminSession();
+		
+		IDfSysObject newSysObj = (IDfSysObject)adminSess.getObject(dfnewid);
 		newSysObj.setTime("a_effective_date", new DfTime(prof.modifyDateUTC));
 		newSysObj.fetch("dm_document");
 		newSysObj.save();
@@ -1425,6 +1438,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				+ " a_effective_date: " + utcFormat.format(newSysObj.getTime("a_effective_date").getDate());
 		WsServer.log("_all_", msg2);
 		Logger.getLogger(AdminServiceImpl.class).info(msg2);
+		
+		AdminServiceImpl.getInstance().releaseSession(adminSess);
 		return "";
 	}
 

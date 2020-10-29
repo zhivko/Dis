@@ -3,6 +3,7 @@ package si.telekom.dis.server.rest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Named;
 import javax.ws.rs.BeanParam;
@@ -13,8 +14,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-
-import org.glassfish.hk2.utilities.reflection.Logger;
 
 import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
@@ -51,21 +50,41 @@ public class DisRest {
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/newDocument")
 	public String newDocument(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
-			@QueryParam("profileId") String profileId, @BeanParam AttValueList attributes, @BeanParam RoleValueList roles,
+			@QueryParam("profileId") String profileId, @BeanParam HashMap<String, ArrayList<String>> attributes, @BeanParam HashMap<String, ArrayList<String>> roles,
 			@QueryParam("templateObjectNameOrFolder") String templateObjectNameOrFolder) {
 		try {
 
-			HashMap<String, List<String>> vals = new HashMap<String, List<String>>();
-			for (AttValue attValue : attributes.attValueList) {
-				vals.put(attValue.attName, attValue.values);
+//			HashMap<String, List<String>> vals = new HashMap<String, List<String>>();
+//			for (AttValue attValue : attributes.attValueList) {
+//				vals.put(attValue.attName, attValue.values);
+//			}
+//
+//			HashMap<String, List<String>> rolesUsers = new HashMap<String, List<String>>();
+//			for (RoleValue roleValue : roles.roleValueList) {
+//				rolesUsers.put(roleValue.roleName, roleValue.values);
+//			}
+			
+			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
+			for (String attName :  attributes.keySet()) {
+				ArrayList<String> values = new ArrayList<String>();
+				for (String value : attributes.get(attName)) {
+					values.add(value);
+				}
+				attributes_.put(attName, values);
 			}
 
-			HashMap<String, List<String>> rolesUsers = new HashMap<String, List<String>>();
-			for (RoleValue roleValue : roles.roleValueList) {
-				rolesUsers.put(roleValue.roleName, roleValue.values);
+			
+			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
+			for (String roleName :  attributes.keySet()) {
+				ArrayList<String> values = new ArrayList<String>();
+				for (String value : roles.get(roleName)) {
+					values.add(value);
+				}
+				roles_.put(roleName, values);
 			}
 
-			return ExplorerServiceImpl.getInstance().newDocument(loginName, passwordEncrypted, profileId, vals, rolesUsers, templateObjectNameOrFolder);
+
+			return ExplorerServiceImpl.getInstance().newDocument(loginName, passwordEncrypted, profileId, attributes_, roles_, templateObjectNameOrFolder);
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
 		}

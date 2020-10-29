@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -146,47 +145,43 @@
 		</dependency>
 
 
-        <!-- Jersey -->       
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-            <version>${version.jersey}</version>
-        </dependency>
-        <!-- do not use jettison, prefer jackson
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jettison</artifactId>
-            <version>${version.jersey}</version>
-        </dependency>
-        -->
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${version.jersey}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-processing</artifactId>
-            <version>${version.jersey}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-multipart</artifactId>
-            <version>${version.jersey}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-sse</artifactId>
-            <version>${version.jersey}</version>
-        </dependency>
-        <!-- if you are using Jersey client specific features -->
-        <!--
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${version.jersey}</version>
-        </dependency>
-        -->        
+		<!-- Jersey -->
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet</artifactId>
+			<version>${version.jersey}</version>
+		</dependency>
+		<!-- do not use jettison, prefer jackson <dependency> <groupId>org.glassfish.jersey.media</groupId> <artifactId>jersey-media-json-jettison</artifactId> 
+			<version>${version.jersey}</version> </dependency> -->
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-jackson</artifactId>
+			<version>${version.jersey}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-processing</artifactId>
+			<version>${version.jersey}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-multipart</artifactId>
+			<version>${version.jersey}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-sse</artifactId>
+			<version>${version.jersey}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.10.3</version>
+		</dependency>
+
+		<!-- if you are using Jersey client specific features -->
+		<!-- <dependency> <groupId>org.glassfish.jersey.core</groupId> <artifactId>jersey-client</artifactId> <version>${version.jersey}</version> </dependency> -->
 
 
 		<!-- jersey dependencies END -->
@@ -303,12 +298,9 @@
 
 
 
-		<!-- <dependency> <groupId>org.docx4j</groupId> <artifactId>docx4j</artifactId> 
-			<version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-bundle/target/docx4j-bundle-8.1.5-SNAPSHOT-shaded.jar</systemPath> 
-			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>jaxb-Internal</artifactId> 
-			<version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-JAXB-Internal/target/docx4j-JAXB-Internal-8.1.5-SNAPSHOT.jar</systemPath> 
-			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>core</artifactId> 
-			<version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-core/target/docx4j-core-8.1.5-SNAPSHOT.jar</systemPath> 
+		<!-- <dependency> <groupId>org.docx4j</groupId> <artifactId>docx4j</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-bundle/target/docx4j-bundle-8.1.5-SNAPSHOT-shaded.jar</systemPath> 
+			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>jaxb-Internal</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-JAXB-Internal/target/docx4j-JAXB-Internal-8.1.5-SNAPSHOT.jar</systemPath> 
+			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>core</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-core/target/docx4j-core-8.1.5-SNAPSHOT.jar</systemPath> 
 			</dependency> -->
 
 		<dependency>
@@ -531,8 +523,7 @@
 
 	<profiles>
 		<profile>
-			<!-- XXX: We want to exclude Dis-client from 'env-dev' profile, Maven 
-				forces us to make a 'env-prod' profile -->
+			<!-- XXX: We want to exclude Dis-client from 'env-dev' profile, Maven forces us to make a 'env-prod' profile -->
 			<id>env-prod</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
