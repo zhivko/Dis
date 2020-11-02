@@ -1248,8 +1248,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 								} else {
 									String methodName = "get" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1, field.getName().length());
 									Method m = attribute.getClass().getMethod(methodName);
-									
-									value = (String)m.invoke(attribute);
+
+									value = (String) m.invoke(attribute);
 								}
 
 								if (field.getName().startsWith("defaultValueIsConstant")) {
@@ -1423,10 +1423,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		String toAddVersions = vp.getNextMinorLabel() + ",CURRENT";
 		IDfId dfnewid = sysObj.checkin(keepLock, toAddVersions);
-		
+
 		IDfSession adminSess = getAdminSession();
-		
-		IDfSysObject newSysObj = (IDfSysObject)adminSess.getObject(dfnewid);
+
+		IDfSysObject newSysObj = (IDfSysObject) adminSess.getObject(dfnewid);
 		newSysObj.setTime("a_effective_date", new DfTime(prof.modifyDateUTC));
 		newSysObj.fetch("dm_document");
 		newSysObj.save();
@@ -1438,7 +1438,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				+ " a_effective_date: " + utcFormat.format(newSysObj.getTime("a_effective_date").getDate());
 		WsServer.log("_all_", msg2);
 		Logger.getLogger(AdminServiceImpl.class).info(msg2);
-		
+
 		AdminServiceImpl.getInstance().releaseSession(adminSess);
 		return "";
 	}
@@ -2820,17 +2820,17 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public List<MyParametrizedQuery> getLazySearchQueries(String loginName, String loginPass) throws ServerException {
+	public List<MyParametrizedQuery> getLazySearchQueries(String loginName, String dcmtUserName, String loginPass) throws ServerException {
 		Logger.getLogger(AdminServiceImpl.class).info("getLazySearchQueries requested by " + loginName);
-		return getSearchQueries(loginName, loginPass, true);
+		return getSearchQueries(loginName, dcmtUserName, loginPass, true);
 	}
 
 	@Override
-	public List<MyParametrizedQuery> getSearchQueries(String loginName, String loginPass) throws ServerException {
-		return getSearchQueries(loginName, loginPass, false);
+	public List<MyParametrizedQuery> getSearchQueries(String loginName, String dcmtUserName, String loginPass) throws ServerException {
+		return getSearchQueries(loginName, dcmtUserName, loginPass, false);
 	}
 
-	public List<MyParametrizedQuery> getSearchQueries(String loginName, String loginPass, boolean lazy) throws ServerException {
+	public List<MyParametrizedQuery> getSearchQueries(String loginName, String dcmtUserName, String loginPass, boolean lazy) throws ServerException {
 		Logger.getLogger(AdminServiceImpl.class).info("getSearchQueries requested by " + loginName);
 
 		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
@@ -2851,25 +2851,33 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				Element el = (Element) nl.item(i);
 				String searchName = el.getAttribute("name");
 
+				Logger.getLogger(this.getClass()).info("Shoud user get " +searchName);
+
 				boolean userShouldGetSearch = false;
-				XPathExpression expr2 = xpath.compile(".//group");
+				XPathExpression expr2 = xpath.compile(".//userGroup");
 				NodeList groupList = (NodeList) expr2.evaluate(el, XPathConstants.NODESET);
 				for (int j = 0; j < groupList.getLength(); j++) {
 					Element el1 = (Element) groupList.item(j);
-					String groupName = el1.getAttribute("name");
+					String groupName = el1.getAttribute("id");
 
-					userShouldGetSearch = groupName.equalsIgnoreCase("world");
+					userShouldGetSearch = groupName.equalsIgnoreCase("dm_world");
 					if (!userShouldGetSearch) {
-						userShouldGetSearch = isMember(loginName, groupName);
-						break;
+						if (groupName.equals(dcmtUserName)) {
+							userShouldGetSearch = true;
+						} else {
+							userShouldGetSearch = isMember(loginName, groupName);
+						}
+						if(userShouldGetSearch)
+							break;
 					}
-
 				}
 
 				if (userShouldGetSearch || LoginServiceImpl.admins.contains(loginName)) { // userShouldGetSearch
 					WsServer.log(loginName, new String(el.getAttribute("name").getBytes(), "UTF-8"));
 					MyParametrizedQuery query = getParametrizedQuery(el, xpathFac, lazy);
 					queries.add(query);
+					Logger.getLogger(this.getClass()).info("\tyes.");
+					
 				}
 
 			}
@@ -2900,11 +2908,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			return ret;
 
 		XPath xpath = xpathFac.newXPath();
-		XPathExpression expr3 = xpath.compile(".//group");
+		XPathExpression expr3 = xpath.compile(".//userGroup");
 		NodeList groupList3 = (NodeList) expr3.evaluate(el, XPathConstants.NODESET);
 		for (int k = 0; k < groupList3.getLength(); k++) {
 			Element elGroup = (Element) groupList3.item(k);
-			ret.groups.add(elGroup.getAttribute("name"));
+			UserGroup ug = new UserGroup(elGroup.getAttribute("id"), elGroup.getAttribute("name"));
+			ret.usersGroups.add(ug);
 		}
 
 		expr3 = xpath.compile(".//orderBy");
@@ -2920,11 +2929,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		expr3 = xpath.compile(".//filterClass");
 		NodeList filterByList = (NodeList) expr3.evaluate(el, XPathConstants.NODESET);
-		for (int k = 0; k < filterByList.getLength(); k++) {
-			Element filterBy = (Element) filterByList.item(k);
-			if (filterBy != null)
-				ret.filterClass = filterBy.getTextContent();
-		}
+		Element filterBy = (Element) filterByList.item(0);
+		if (filterBy != null)
+			ret.filterClass = filterBy.getTextContent();
 
 		String patternToCompile = "[<][0-9].*?[>]";
 		Pattern p = Pattern.compile(patternToCompile, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -3086,19 +3093,27 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " with newName: " + newName);
 				el.setTextContent(newDql);
 				el.setAttribute("name", newName);
-				Element elGroups = getDocConfig().createElement("groups");
+				Element elGroups = getDocConfig().createElement("userGroups");
 				el.appendChild(elGroups);
 				for (String group : groups) {
+					String groupId = "";
+					if (group.split("\\|").length > 1)
+						groupId = group.split("\\|")[0];
+					else
+						groupId = group;
+
 					String groupName = "";
 					if (group.split("\\|").length > 1)
 						groupName = group.split("\\|")[1];
 					else
 						groupName = group;
-					Element elGroup = getDocConfig().createElement("group");
+
+					Element elGroup = getDocConfig().createElement("userGroup");
+					elGroup.setAttribute("id", groupId);
 					elGroup.setAttribute("name", groupName);
 					elGroups.appendChild(elGroup);
 				}
-				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " groups.");
+				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " usersGroups.");
 
 				Element elOrderBys = getDocConfig().createElement("orderBys");
 				el.appendChild(elOrderBys);

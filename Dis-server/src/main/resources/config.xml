@@ -1,158 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-   <docbase name="Mobitel">
-      <sqlAdapters>
-         <sqlAdapter databaseName="DM_Mobitel_docbase"
-                     driverClass="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-                     lowerFunction="lower"
-                     name="s-dmfsMsSql"
-                     password="frm25es14"
-                     portNumber="1433"
-                     serverName="s-dcmsql.mobitel.si"
-                     url="jdbc:sqlserver://s-dcmsql.mobitel.si:1433"
-                     username="dctm_forms_user"/>
-      </sqlAdapters>
-      <objectTypes>
-         <objectType name="mob_incoming_mail">
-            <attributes>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="mob_sender">
-                  <possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='PRE' and [STATUS]&gt;0 and %likestr% order by name"
-                                  sqlAdapter="s-dmfsMsSql"/>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="mob_signation">
-                  <possibleValues query="select ou from T_OGP_SIGNATION where ([TYPE_TYPE]='ORG' OR [TYPE_TYPE]='PER' OR [ou]='MOBITEL') and [STATUS]&gt;0 and [ou]='MOBITEL' and %likestr% union select ou from T_OGP_SIGNATION where ([TYPE_TYPE]='ORG' OR [TYPE_TYPE]='PER' OR [ou]='MOBITEL' ) and [STATUS]&gt;0 and not([ou]='MOBITEL') and %likestr%"
-                                  sqlAdapter="s-dmfsMsSql"/>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="mob_subject">
-                  <possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='ZKO' and %likestr%"
-                                  sqlAdapter="s-dmfsMsSql"/>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="sender_location">
-                  <possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='KRA' and [STATUS]&gt;0 and %likestr% order by name"
-                                  sqlAdapter="s-dmfsMsSql"/>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="mob_shipment_type">
-                  <possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='VRS' and [STATUS]&gt;0 and %likestr%"
-                                  sqlAdapter="s-dmfsMsSql"/>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="mob_shipment_type">
-                  <possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='POS' and [STATUS]&gt;0 and %likestr%"
-                                  sqlAdapter="s-dmfsMsSql"/>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="mob_catalog_id">
-                  <possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='DOK' and [STATUS]&gt;0 and %likestr%"
-                                  sqlAdapter="s-dmfsMsSql"/>
-               </attribute>
-            </attributes>
-            <wizard>
-               <scan/>
-               <import/>
-               <newDocument/>
-            </wizard>
-         </objectType>
-         <objectType name="mob_form_template">
-            <attributes>
-               <attribute limittedByPossibleValues="true"
-                          mandatory="false"
-                          name="mob_im_activation_allowed"
-                          readOnly="false">
-                  <possibleValues>
-                     <value description="Predhodno aktiviranje omogočeno.">1</value>
-                  </possibleValues>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="mob_template_id"
-                          readOnly="false">
-                  <possibleValues>
+	<docbase name="Mobitel">
+		<sqlAdapters>
+			<sqlAdapter databaseName="DM_Mobitel_docbase" driverClass="com.microsoft.sqlserver.jdbc.SQLServerDriver" lowerFunction="lower"
+				name="s-dmfsMsSql" password="frm25es14" portNumber="1433" serverName="s-dcmsql.mobitel.si" url="jdbc:sqlserver://s-dcmsql.mobitel.si:1433"
+				username="dctm_forms_user" />
+		</sqlAdapters>
+		<objectTypes>
+			<objectType name="mob_incoming_mail">
+				<attributes>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="mob_sender">
+						<possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='PRE' and [STATUS]&gt;0 and %likestr% order by name"
+							sqlAdapter="s-dmfsMsSql" />
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="mob_signation">
+						<possibleValues
+							query="select ou from T_OGP_SIGNATION where ([TYPE_TYPE]='ORG' OR [TYPE_TYPE]='PER' OR [ou]='MOBITEL') and [STATUS]&gt;0 and [ou]='MOBITEL' and %likestr% union select ou from T_OGP_SIGNATION where ([TYPE_TYPE]='ORG' OR [TYPE_TYPE]='PER' OR [ou]='MOBITEL' ) and [STATUS]&gt;0 and not([ou]='MOBITEL') and %likestr%"
+							sqlAdapter="s-dmfsMsSql" />
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="mob_subject">
+						<possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='ZKO' and %likestr%" sqlAdapter="s-dmfsMsSql" />
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="sender_location">
+						<possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='KRA' and [STATUS]&gt;0 and %likestr% order by name"
+							sqlAdapter="s-dmfsMsSql" />
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="mob_shipment_type">
+						<possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='VRS' and [STATUS]&gt;0 and %likestr%"
+							sqlAdapter="s-dmfsMsSql" />
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="mob_shipment_type">
+						<possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='POS' and [STATUS]&gt;0 and %likestr%"
+							sqlAdapter="s-dmfsMsSql" />
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="mob_catalog_id">
+						<possibleValues query="select name from T_OGP_TYPE where [TYPE_TYPE]='DOK' and [STATUS]&gt;0 and %likestr%"
+							sqlAdapter="s-dmfsMsSql" />
+					</attribute>
+				</attributes>
+				<wizard>
+					<scan />
+					<import />
+					<newDocument />
+				</wizard>
+			</objectType>
+			<objectType name="mob_form_template">
+				<attributes>
+					<attribute limittedByPossibleValues="true" mandatory="false" name="mob_im_activation_allowed" readOnly="false">
+						<possibleValues>
+							<value description="Predhodno aktiviranje omogočeno.">1</value>
 						</possibleValues>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="object_name"
-                          readOnly="true">
-                  <possibleValues>
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="mob_template_id" readOnly="false">
+						<possibleValues>
 						</possibleValues>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="r_object_id"
-                          readOnly="true">
-                  <possibleValues>
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="object_name" readOnly="true">
+						<possibleValues>
 						</possibleValues>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="r_creation_date"
-                          readOnly="true">
-                  <possibleValues>
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="r_object_id" readOnly="true">
+						<possibleValues>
 						</possibleValues>
-               </attribute>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="r_modify_date"
-                          readOnly="true">
-                  <possibleValues>
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="r_creation_date" readOnly="true">
+						<possibleValues>
 						</possibleValues>
-               </attribute>
-            </attributes>
-         </objectType>
-         <objectType name="mob_outgoing_invoice">
-            <attributes>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="false"
-                          name="object_name"
-                          readOnly="true">
-                  <possibleValues>
+					</attribute>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="r_modify_date" readOnly="true">
+						<possibleValues>
 						</possibleValues>
-               </attribute>
-            </attributes>
-         </objectType>
-         <objectType name="T_CLASSIFICATION_PLAN">
-            <attributes>
-               <attribute limittedByPossibleValues="false"
-                          mandatory="true"
-                          name="id"
-                          readOnly="true">
-                  <possibleValues>
+					</attribute>
+				</attributes>
+			</objectType>
+			<objectType name="mob_outgoing_invoice">
+				<attributes>
+					<attribute limittedByPossibleValues="false" mandatory="false" name="object_name" readOnly="true">
+						<possibleValues>
 						</possibleValues>
-               </attribute>
-            </attributes>
-         </objectType>
-      </objectTypes>
-      <queries>
-         <query name="Dokument po r_object_id">select r_object_id from dm_document where r_object_id (Documentum id r_object_id) ='&lt;1&gt;'
-ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
-				
-         <groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Dokument po object_name (barkodi)">select
+					</attribute>
+				</attributes>
+			</objectType>
+			<objectType name="T_CLASSIFICATION_PLAN">
+				<attributes>
+					<attribute limittedByPossibleValues="false" mandatory="true" name="id" readOnly="true">
+						<possibleValues>
+						</possibleValues>
+					</attribute>
+				</attributes>
+			</objectType>
+		</objectTypes>
+		<queries>
+			<query name="Dokument po r_object_id">select
+				r_object_id from dm_document where r_object_id (Documentum id r_object_id) ='&lt;1&gt;'
+				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
+
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Dokument po object_name (barkodi)">select
 				r_object_id from dm_document where
 				object_name (Barkoda) ='&lt;1&gt;'
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Naročniški dokument - iskanje po inet_id">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Naročniški dokument - iskanje po inet_id">select
 				r_object_id from mob_subscriber_document where
 				mob_subscription_inet_id (Id obrazca v apostrof ločen z vejico) in
 				(&lt;1&gt;)
@@ -160,41 +117,41 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				10 'r_modify_date desc')
 
 
-				<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-         </query>
-         <query name="Naročniški dokument - iskanje po SPP ID">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys />
+			</query>
+			<query name="Naročniški dokument - iskanje po SPP ID">select
 				r_object_id from mob_subscriber_document where
 				mob_subscriber_number
 				(SPP ID stranke) ='&lt;1&gt;'
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Naročniški dokument - iskanje po OMS Order ID">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Naročniški dokument - iskanje po OMS Order ID">select
 				r_object_id from mob_subscriber_document where
 				mob_order_id (OMS
 				order ID) ='&lt;1&gt;'
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date
 				desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="ePredloge - VSE predloge">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="ePredloge - VSE predloge">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm')
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="ePredloge - GO">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="ePredloge - GO">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				mob_template_number like
@@ -207,34 +164,34 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 
 
 
-				<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys>
-               <orderBy direction="D" name="mob_template_id"/>
-            </orderBys>
-         </query>
-         <query name="Naročniški dokument - iskanje po SPP ID">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys>
+					<orderBy direction="D" name="mob_template_id" />
+				</orderBys>
+			</query>
+			<query name="Naročniški dokument - iskanje po SPP ID">select
 				r_object_id from mob_subscriber_document where
 				mob_subscriber_number
 				(SPP ID stranke) ='&lt;1&gt;'
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="ePredloge - po ID predloge">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="ePredloge - po ID predloge">select
 				r_object_id from mob_form_template where
 				mob_template_id (Id
 				predloge) = &lt;1&gt;
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Posredniški dokumenti za dostavo strankam">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Posredniški dokumenti za dostavo strankam">select
 				r_object_id from mob_subscriber_document where
 				owner_name='b2pdev'
 				and
@@ -243,62 +200,62 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				mob_type_id in
 				(39,41,45,49,52,53,59,82,83,88,89,95,120,122,123,125,133,135,138,139,140,141,142,152,153,163)
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Vhodna pošta DANES">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Vhodna pošta DANES">select
 				r_object_id from mob_incoming_mail where r_creation_date &gt;=
 				DATE(TODAY) and
 				r_creation_date &lt;= DATE(TOMORROW)
 				ENABLE
 				(RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="documentum-admin"/>
-            </groups>
-         </query>
-         <query name="Vhodne fakture DANES">select
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+			</query>
+			<query name="Vhodne fakture DANES">select
 				r_object_id from mob_incoming_invoice where r_creation_date &gt;=
 				DATE(TODAY) and
 				r_creation_date &lt;= DATE(TOMORROW)
 				ENABLE
 				(RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="documentum-admin"/>
-            </groups>
-         </query>
-         <query name="Vhodna faktura po r_object_id">select
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+			</query>
+			<query name="Vhodna faktura po r_object_id">select
 				r_object_id from mob_incoming_invoice where r_object_id (r_object_id
 				dokumenta) = '&lt;1&gt;'
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date
 				desc')
-				<groups>
-               <group name="documentum-admin"/>
-            </groups>
-         </query>
-         <query name="Vsi documentum Job-i">
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+			</query>
+			<query name="Vsi documentum Job-i">
 				select r_object_id from dm_job
 				ENABLE (RETURN_RANGE 1 10
 				'a_last_invocation DESC')
 
-				<groups>
-               <group name="documentum-admin"/>
-            </groups>
-         </query>
-         <query name="Vsi telekom documentum Job-i">
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+			</query>
+			<query name="Vsi telekom documentum Job-i">
 				select r_object_id from mob_job
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
 
 
 
-				<groups>
-               <group name="documentum-admin"/>
-            </groups>
-         </query>
-         <query name="NotIn Saplink Relation">select
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+			</query>
+			<query name="NotIn Saplink Relation">select
 				* from mob_incoming_invoice where
 				(
 				folder('/SAP/Invoice') or
@@ -323,14 +280,14 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE (RETURN_RANGE 1 20
 				'r_creation_date')
 
-				<groups>
-               <group name="documentum-admin"/>
-            </groups>
-            <orderBys>
-               <orderBy name="r_creation_date"/>
-            </orderBys>
-         </query>
-         <query name="Naročniški dokumenti danes">select
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+				<orderBys>
+					<orderBy name="r_creation_date" />
+				</orderBys>
+			</query>
+			<query name="Naročniški dokumenti danes">select
 				r_object_id from mob_subscriber_document where
 				r_creation_date &gt;=
 				DATE(TODAY) and
@@ -338,11 +295,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				a_content_type='pdf'
 				ENABLE (RETURN_RANGE 1 10 'r_creation_date
 				desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Naročniški dokumenti od datuma danes z neznano stranko">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Naročniški dokumenti od datuma danes z neznano stranko">select
 				r_object_id from mob_subscriber_document where
 				r_modify_date (Datum
 				spremembe) &gt;=DATE('&lt;1&gt;','MM/DD/YYYY hh:mm:ss') and
@@ -355,14 +312,14 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				mob_type_id&lt;&gt;'64'
 				ENABLE
 				(RETURN_RANGE 1 10 'r_creation_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys>
-               <orderBy name="r_creation_date"/>
-            </orderBys>
-         </query>
-         <query name="Današnji in včerajšnji ePero naročniški dokumenti po zvrsti mob_type_id">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys>
+					<orderBy name="r_creation_date" />
+				</orderBys>
+			</query>
+			<query name="Današnji in včerajšnji ePero naročniški dokumenti po zvrsti mob_type_id">select
 				r_object_id from mob_subscriber_document where
 				r_creation_date&gt;=DATE(yesterday) and
 				mob_type_id (Tip predloge)
@@ -371,24 +328,24 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE (RETURN_RANGE 1 10
 				'r_creation_date desc')
 
-				<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys>
-               <orderBy name="r_creation_date"/>
-            </orderBys>
-         </query>
-         <query name="Naročniški dokumenti z mob_nextstep='-1'">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys>
+					<orderBy name="r_creation_date" />
+				</orderBys>
+			</query>
+			<query name="Naročniški dokumenti z mob_nextstep='-1'">
 				select r_object_id from mob_subscriber_document where
 				mob_nextstep='-1'
 				ENABLE (RETURN_RANGE 1 10 'r_creation_date desc')
 
-				<groups>
-               <group name="mob-ppm-ep-sp-mc-subscriber"/>
-               <group name="documentum-admin"/>
-            </groups>
-         </query>
-         <query name="Izhodna pošta po barkodi">select
+				<userGroups>
+					<userGroup name="mob-ppm-ep-sp-mc-subscriber" />
+					<userGroup name="documentum-admin" />
+				</userGroups>
+			</query>
+			<query name="Izhodna pošta po barkodi">select
 				r_object_id from mob_outgoing_mail where
 				object_name (Barkoda
 				dokumenta) ='&lt;1&gt;'
@@ -396,43 +353,43 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				desc')
 
 
-				<groups>
-               <group name="documentum-admin"/>
-            </groups>
-         </query>
-         <query name="Izbrisani dokumenti">
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+			</query>
+			<query name="Izbrisani dokumenti">
 				select r_object_id, event_name, user_name, audited_obj_id,
 				time_stamp, object_name, object_type, owner_name from dm_audittrail
 				where time_stamp &gt;
 				DATE('17.02.2012','DD.mm.YYYY') and event_name
 				=
 				'dm_destroy' order by time_stamp
-				<groups>
-               <group name="documentum-admin"/>
-            </groups>
-         </query>
-         <query name="Izhodne fakture za stranko npr. Klinični center in obdobje 1210">select
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+			</query>
+			<query name="Izhodne fakture za stranko npr. Klinični center in obdobje 1210">select
 				r_object_id,object_name,title from mob_outgoing_invoice where
 				mob_period (perioda YYMM npr 1201 za januar 2012) = '&lt;1&gt;' and
 				mob_subscriber_number (spp id stranke) = '&lt;2&gt;'
 				ENABLE
 				(RETURN_RANGE 1 10 'r_creation_date desc')
 
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Izhodni finančni dokumenti za stranko">select
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Izhodni finančni dokumenti za stranko">select
 				r_object_id,object_name,title from mob_outgoing_invoice where
 				mob_subscriber_number (spp id stranke) = '&lt;1&gt;'
 				ENABLE
 				(RETURN_RANGE 1 10
 				'r_creation_date desc')
-				<groups>
-               <group name="documentum-admin"/>
-            </groups>
-         </query>
-         <query name="ePredloge splošni pogoji - GD">
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+			</query>
+			<query name="ePredloge splošni pogoji - GD">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				mob_template_number like
@@ -440,29 +397,29 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
 
-				
-			<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Prodajne ponudbe - PP">
+
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Prodajne ponudbe - PP">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				mob_template_number like
 				'PP%'
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				
-				
-			<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Tiskovine VSE">
+
+
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Tiskovine VSE">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				(mob_template_number like
@@ -488,15 +445,14 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				mob_template_number like
 				'TP%')
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
-				
-				
-			<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Tiskovine po komercialni oznaki">select
+
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Tiskovine po komercialni oznaki">select
 				r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				mob_template_number
@@ -508,16 +464,16 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 
 
 
-				
-				
-			<groups>
-               <group name="world"/>
-               <group name="admingroup"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Tiskovine po opisu">
+
+
+				<userGroups>
+					<userGroup id="dm_world" />
+					<userGroup name="admingroup" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Tiskovine po opisu">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				(mob_template_number like
@@ -549,14 +505,14 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 
 
 
-				
-			<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Katalogi">
+
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Katalogi">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				(mob_template_number like
@@ -567,15 +523,15 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				mob_template_number like
 				'TK%')
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
-				
-			<groups>
-               <group name="world"/>
-               <group name="admingroup"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Službeni priključki">
+
+				<userGroups>
+					<userGroup id="dm_world" />
+					<userGroup name="admingroup" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Službeni priključki">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				(mob_template_number like
@@ -585,16 +541,16 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 
 
-				
-				
-			<groups>
-               <group name="world"/>
-               <group name="admingroup"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Pogodbe za služnosti">
+
+
+				<userGroups>
+					<userGroup id="dm_world" />
+					<userGroup name="admingroup" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Pogodbe za služnosti">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				(mob_template_number like
@@ -602,12 +558,12 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
 
-				<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-         </query>
-         <query name="Pogodbe za soglasja">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys />
+			</query>
+			<query name="Pogodbe za soglasja">
 				select r_object_id from
 				mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
@@ -616,57 +572,57 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
 
-				
-				
-			<groups>
-               <group name="world"/>
-               <group name="admingroup"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Informacije javnega značaja">
+
+
+				<userGroups>
+					<userGroup id="dm_world" />
+					<userGroup name="admingroup" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Informacije javnega značaja">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				mob_template_number like
 				'IJZ%'
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="ePredloge - slike">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="ePredloge - slike">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				(mob_template_number like
 				'PI%')
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Debitel izvršbe vhodne">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Debitel izvršbe vhodne">
 				select r_object_id from mob_outgoing_invoice
 				where
 				folder('/Debitel/Izvrsbe/Vhodni')
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Debitel izvršbe izhodne">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Debitel izvršbe izhodne">
 				select r_object_id from mob_outgoing_invoice where
 				folder('/Debitel/Izvrsbe/Izhodni')
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Kadrovske predloge">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Kadrovske predloge">
 				select r_object_id from
 				mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
@@ -674,12 +630,12 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				'HR%')
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <!-- mob_contract_customer -->
-         <query name="Pogodbe velikih strank - PUS">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<!-- mob_contract_customer -->
+			<query name="Pogodbe velikih strank - PUS">
 				select
 				r_object_id,object_name,r_creation_date,r_modify_date,mob_issue_date,
 				mob_contract_date,mob_owner,mob_company_id,acl_name,mob_classification_id,mob_signation_id,mob_parent_barcode,mob_subject,
@@ -688,11 +644,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				mob_contract_customer where mob_catalog_id='PUS' and
 				object_name
 				(Črtna koda dokumenta) = '&lt;1&gt;'
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Pogodbe velikih strank - ZPK">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Pogodbe velikih strank - ZPK">
 				select
 				r_object_id,object_name,r_creation_date,r_modify_date,mob_issue_date,
 				mob_contract_date,mob_owner,mob_company_id,acl_name,mob_classification_id,mob_signation_id,mob_parent_barcode,mob_subject,
@@ -701,11 +657,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				mob_contract_customer where mob_catalog_id='ZPK' and
 				object_name
 				(Črtna koda dokumenta) = '&lt;1&gt;'
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Pogodbe velikih strank - Moneta">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Pogodbe velikih strank - Moneta">
 				select
 				r_object_id,object_name,r_creation_date,r_modify_date,mob_issue_date,
 				mob_contract_date,mob_owner,mob_company_id,acl_name,mob_classification_id,mob_signation_id,mob_parent_barcode,mob_subject,
@@ -713,11 +669,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				from
 				mob_contract_customer where mob_catalog_id='Moneta' and
 				object_name (Črtna koda dokumenta) = '&lt;1&gt;'
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Pogodbe velikih strank - Ponudniki">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Pogodbe velikih strank - Ponudniki">
 				select
 				r_object_id,object_name,r_creation_date,r_modify_date,mob_issue_date,
 				mob_contract_date,mob_owner,mob_company_id,acl_name,mob_classification_id,mob_signation_id,mob_parent_barcode,mob_subject,
@@ -725,11 +681,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				from
 				mob_contract_customer where mob_catalog_id='Ponudniki' and
 				object_name (Črtna koda dokumenta) = '&lt;1&gt;'
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodni računi 0101 (davčna številka, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodni računi 0101 (davčna številka, datum od, datum do)">
 				SELECT r_object_id, object_name FROM mob_incoming_invoice WHERE
 				object_name LIKE '0101%' AND
 				mobo_vendor_tax_no (davčna številka)
@@ -742,11 +698,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE
 				(RETURN_RANGE 1 20)
 
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodni računi 0101 (davčna številka, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodni računi 0101 (davčna številka, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mobo_invoice_vendor,
 				mobo_vendor_tax_no,
@@ -766,11 +722,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				AND
 				r_creation_date (datum do) &lt;= DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodni računi 0101 (naziv partnerja, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodni računi 0101 (naziv partnerja, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mobo_invoice_vendor,
 				mobo_vendor_tax_no,
@@ -790,11 +746,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				AND
 				r_creation_date (datum do) &lt;= DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodni računi 0101 (črtna koda)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodni računi 0101 (črtna koda)">
 				SELECT
 				r_object_id, object_name, mobo_invoice_vendor,
 				mobo_vendor_tax_no,
@@ -810,11 +766,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				'0101%' AND
 				object_name (črtna koda) LIKE '&lt;1&gt;%'
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodni e računi 2101 (davčna številka, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodni e računi 2101 (davčna številka, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mobo_invoice_vendor,
 				mobo_vendor_tax_no,
@@ -834,11 +790,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				AND
 				r_creation_date (datum do) &lt;= DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodni e računi 2101 (naziv partnerja, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodni e računi 2101 (naziv partnerja, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mobo_invoice_vendor,
 				mobo_vendor_tax_no,
@@ -858,11 +814,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				AND
 				r_creation_date (datum do) &lt;= DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodni e računi 2101 (črtna koda)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodni e računi 2101 (črtna koda)">
 				SELECT r_object_id FROM mob_incoming_invoice WHERE
 				object_name LIKE
 				'2101%' AND
@@ -870,11 +826,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE(RETURN_RANGE 1 10)
 
 
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodne e takse 2901 (davčna številka, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodne e takse 2901 (davčna številka, datum od, datum do)">
 				SELECT r_object_id FROM mob_incoming_invoice WHERE
 				object_name LIKE
 				'2901%' AND
@@ -886,11 +842,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE(RETURN_range 1 20)
 
 
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodne e takse 2901 (naziv partnerja, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodne e takse 2901 (naziv partnerja, datum od, datum do)">
 				SELECT r_object_id FROM mob_incoming_invoice WHERE
 				object_name LIKE
 				'2901%' AND
@@ -903,21 +859,21 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				(RETURN_RANGE 1 20)
 
 
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - vhodne e takse 2901 (črtna koda)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - vhodne e takse 2901 (črtna koda)">
 				SELECT r_object_id FROM mob_incoming_invoice WHERE
 				object_name LIKE
 				'2901%' AND
 				object_name (črtna koda) LIKE '&lt;1&gt;%'
 				ENABLE(RETURN_RANGE 1 20)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - naročniški dokumenti 0910 (črtna koda)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - naročniški dokumenti 0910 (črtna koda)">
 				SELECT r_object_id FROM mob_subscriber_document
 				WHERE
 				object_name LIKE
@@ -927,11 +883,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				20)
 
 
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - naročniški dokumenti 0910 (naziv partnerja, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - naročniški dokumenti 0910 (naziv partnerja, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mob_commercial_id,
 				mob_subscriber_number,
@@ -948,11 +904,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				r_creation_date (datum do) &lt;=
 				DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - naročniški dokumenti 0910 (SPPID, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - naročniški dokumenti 0910 (SPPID, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mob_commercial_id,
 				mob_subscriber_number,
@@ -972,11 +928,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP
 				500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - ovojnice eDelovodnik 0903 (naziv pošiljatelja, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - ovojnice eDelovodnik 0903 (naziv pošiljatelja, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mob_shipment_type, mob_sender,
 				mob_shipment_zip, mob_shipment_type, mob_service_number,
@@ -993,11 +949,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				r_creation_date (datum do)
 				&lt;= DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - dokumenti eDelovodnik Mobitel 0904 (naziv pošiljatelja, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - dokumenti eDelovodnik Mobitel 0904 (naziv pošiljatelja, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mob_shipment_type, mob_sender,
 				mob_shipment_zip, mob_shipment_type, mob_service_number,
@@ -1016,11 +972,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				DATE('&lt;2&gt;','DD.MM.YYYY') AND
 				r_creation_date (datum do) &lt;= DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - kadrovske pogodbe stare 0923 (SAPID zaposlenega)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - kadrovske pogodbe stare 0923 (SAPID zaposlenega)">
 				SELECT
 				r_object_id, object_name, mob_sap_id, mob_contract_type,
 				mob_contract_date, mob_classification_id, mob_signation_id,
@@ -1033,11 +989,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				LIKE '0923%' AND
 				mob_sap_id (SAPID zaposlenega) LIKE '&lt;1&gt;%'
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - kadrovske pogodbe 0962 (SAPID zaposlenega)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - kadrovske pogodbe 0962 (SAPID zaposlenega)">
 				SELECT
 				r_object_id, object_name, mob_sap_id, mob_contract_type,
 				mob_contract_date, mob_classification_id, mob_signation_id,
@@ -1050,11 +1006,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				LIKE '0962%' AND
 				mob_sap_id (SAPID zaposlenega) LIKE '&lt;1&gt;%'
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - PUSS pogodbe 0938 (črtna koda)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - PUSS pogodbe 0938 (črtna koda)">
 				SELECT
 				r_object_id, object_name, mobc_packet_name, mob_customer,
 				mob_subscriber_number, mob_buyer_tax_no, mob_contract_name,
@@ -1069,11 +1025,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				object_name (črtna koda) LIKE
 				'&lt;1&gt;%'
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - VAS pogodbe 0940 (črtna koda)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - VAS pogodbe 0940 (črtna koda)">
 				SELECT
 				r_object_id, object_name, mobc_packet_name, mob_customer,
 				mob_subscriber_number, mob_buyer_tax_no, mob_contract_name,
@@ -1087,11 +1043,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				(črtna koda) LIKE '&lt;1&gt;%'
 				ENABLE(RETURN_TOP
 				500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - VAS pogodbe 0941 (črtna koda)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - VAS pogodbe 0941 (črtna koda)">
 				SELECT
 				r_object_id, object_name, mobc_packet_name, mob_customer,
 				mob_subscriber_number, mob_buyer_tax_no, mob_contract_name,
@@ -1105,11 +1061,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				(črtna koda) LIKE '&lt;1&gt;%'
 				ENABLE(RETURN_TOP
 				500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - VAS pogodbe 0942 (črtna koda)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - VAS pogodbe 0942 (črtna koda)">
 				SELECT
 				r_object_id, object_name, mobc_packet_name, mob_customer,
 				mob_subscriber_number, mob_buyer_tax_no, mob_contract_name,
@@ -1123,11 +1079,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				(črtna koda) LIKE '&lt;1&gt;%'
 				ENABLE(RETURN_TOP
 				500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - CRP 0950 (črtna koda)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - CRP 0950 (črtna koda)">
 				SELECT
 				r_object_id, object_name, mob_contract_sap_id, mob_contractor,
 				mob_contractor_tax_no, mob_description, mob_document_type,
@@ -1145,11 +1101,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				'0950%' AND
 				object_name (črtna koda) LIKE '&lt;1&gt;%'
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - CRP 0950 (davčna številka, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - CRP 0950 (davčna številka, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mob_contract_sap_id, mob_contractor,
 				mob_contractor_tax_no, mob_description, mob_document_type,
@@ -1171,11 +1127,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				AND
 				r_creation_date (datum do) &lt;= DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - CRP 0950 (SPPID, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - CRP 0950 (SPPID, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mob_contract_sap_id, mob_contractor,
 				mob_contractor_tax_no, mob_description, mob_document_type,
@@ -1197,11 +1153,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				&gt;= DATE('&lt;2&gt;','DD.MM.YYYY') AND
 				r_creation_date (datum do) &lt;= DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Tim ANP - CRP 0950 (naziv dobavitelja, datum od, datum do)">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Tim ANP - CRP 0950 (naziv dobavitelja, datum od, datum do)">
 				SELECT
 				r_object_id, object_name, mob_contract_sap_id, mob_contractor,
 				mob_contractor_tax_no, mob_description, mob_document_type,
@@ -1222,11 +1178,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				(datum od) &gt;= DATE('&lt;2&gt;','DD.MM.YYYY') AND
 				r_creation_date (datum do) &lt;= DATE('&lt;3&gt;','DD.MM.YYYY')+1
 				ENABLE(RETURN_TOP 500)
-				<groups>
-               <group name="world"/>
-            </groups>
-         </query>
-         <query name="Doklasifikacija prejetih računov, vrnjeni SAP tip = ZT_FI">
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+			</query>
+			<query name="Doklasifikacija prejetih računov, vrnjeni SAP tip = ZT_FI">
 				SELECT
 				r_object_id, object_name, r_creation_date,
 				mob_archive_eliminate_date, mob_archive_start_date,
@@ -1335,7 +1291,7 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				resolution_label,
 				subject,
 				title,
-				world_permit
+				dm_world_permit
 				FROM mob_incoming_invoice
 				WHERE
 				mobs_invoice_type_finance = 'ZT_FI' AND
@@ -1345,12 +1301,12 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE (RETURN_RANGE 1 20
 				'r_object_id')
 
-				<groups>
-               <group name="ts_classification_user"/>
-            </groups>
-            <orderBys/>
-         </query>
-         <query name="Doklasifikacija prejetih računov, vrnjeni SAP tip = ZT_MM">
+				<userGroups>
+					<userGroup name="ts_classification_user" />
+				</userGroups>
+				<orderBys />
+			</query>
+			<query name="Doklasifikacija prejetih računov, vrnjeni SAP tip = ZT_MM">
 				SELECT
 				r_object_id, object_name, r_creation_date,
 				mob_archive_eliminate_date, mob_archive_start_date,
@@ -1459,7 +1415,7 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				resolution_label,
 				subject,
 				title,
-				world_permit
+				dm_world_permit
 				FROM mob_incoming_invoice
 				WHERE
 				mobs_invoice_type_finance = 'ZT_MM' AND
@@ -1469,12 +1425,12 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				enable (return_range 1 20
 				'r_object_id')
 
-				<groups>
-               <group name="ts_classification_user"/>
-            </groups>
-            <orderBys/>
-         </query>
-         <query name="Doklasifikacija prejetih računov, brez vrnjenega SAP tipa">
+				<userGroups>
+					<userGroup name="ts_classification_user" />
+				</userGroups>
+				<orderBys />
+			</query>
+			<query name="Doklasifikacija prejetih računov, brez vrnjenega SAP tipa">
 				SELECT
 				r_object_id, object_name, r_creation_date,
 				mob_archive_eliminate_date, mob_archive_start_date,
@@ -1583,7 +1539,7 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				resolution_label,
 				subject,
 				title,
-				world_permit
+				dm_world_permit
 				FROM mob_incoming_invoice
 				WHERE
 				mobs_invoice_type_finance = '' AND
@@ -1591,26 +1547,26 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				mob_classification_id = ''
 				ENABLE (RETURN_RANGE 1 20'r_object_id')
 
-				<groups>
-               <group name="ts_classification_user"/>
-            </groups>
-            <orderBys/>
-         </query>
-         <query name="Predloge ki bi morale biti v effective stanju">
+				<userGroups>
+					<userGroup name="ts_classification_user" />
+				</userGroups>
+				<orderBys />
+			</query>
+			<query name="Predloge ki bi morale biti v effective stanju">
 				select object_name, mob_valid_from, r_version_label from
 				mob_form_template where not mob_valid_from is nulldate and
 				DATEDIFF(day,
 				"mob_valid_from",
 				date(today))&lt;0 and not (any
 				r_version_label = 'effective' or any r_version_label = 'archive')
-				
-			<groups>
-               <group name="documentum-admin"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="Najemne pogodbe za stranko">select
+
+				<userGroups>
+					<userGroup name="documentum-admin" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="Najemne pogodbe za stranko">select
 				r_object_id from mob_subscriber_document where
 				mob_subscriber_number
 				(SPP stranke) ='&lt;1&gt;'
@@ -1619,45 +1575,67 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				ENABLE (RETURN_RANGE 1
 				10
 				'r_modify_date desc')
-				
-			<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="SAP računi, ki so se popravljali v tem tednu">SELECT r_object_id FROM mob_incoming_invoice WHERE DATEDIFF(week, "r_modify_date" , DATE(TODAY))&lt;=1  and r_creator_name='Captiva Administrator' ENABLE (RETURN_RANGE 1 100 'r_modify_date desc')
-      
-        
-        
-      <groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="SODO elektrika dokumenti z manjkajočim klas znak">select r_object_id from mob_subscriber_document where owner_name='service_elektrika' and mob_source='SODO' and mob_classification_id=' ' ENABLE (RETURN_RANGE 1 100 'r_modify_date desc')
+				<groups>
+					<group name="Štajner Mojca &#xD;&#xA;00004566" />
+					<group name="Rizvič Dragica &#xD;&#xA;00004483" />
+				</groups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="SAP računi, ki so se popravljali v tem tednu">SELECT
+				r_object_id FROM mob_incoming_invoice WHERE DATEDIFF(week, "r_modify_date" , DATE(TODAY))&lt;=1 and r_creator_name='Captiva Administrator' ENABLE
+				(RETURN_RANGE 1 100 'r_modify_date desc')
 
-			<groups>
-               <group name="world"/>
-            </groups>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="OMS dokumenti z manjkajočim klas znak 1">select r_object_id from mob_subscriber_document where owner_name='omssystemuser' and mob_classification_id=' ' ENABLE (RETURN_RANGE 1 100 'r_modify_date desc')
-        
-      <groups/>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="predloge ki so effective in niso sb1">select r_object_id from mob_form_template doc where any r_version_label='effective' and doc.r_object_id not in (select r_object_id from mob_form_template where any r_version_label in ('sb1')) ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 
-            
-            
-         <groups/>
-            <orderBys/>
-            <filterClass/>
-         </query>
-      </queries>
-   </docbase>
+
+
+
+
+
+
+
+
+
+
+
+
+
+				<userGroups>
+					<userGroup id="kovacevicr" name="kovacevicr" />
+					<userGroup id="DRizvic" name="DRizvic" />
+					<userGroup id="Mstajner" name="Mstajner" />
+				</userGroups>
+				<orderBys />
+				<filterClass>si.telekom.dis.server.reports.FilterSapObjects</filterClass>
+			</query>
+			<query name="SODO elektrika dokumenti z manjkajočim klas znak">
+				select r_object_id from mob_subscriber_document where owner_name='service_elektrika' and mob_source='SODO' and mob_classification_id=' ' ENABLE
+				(RETURN_RANGE 1 100 'r_modify_date desc')
+
+				<userGroups>
+					<userGroup id="dm_world" />
+				</userGroups>
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="OMS dokumenti z manjkajočim klas znak 1">
+				select r_object_id from mob_subscriber_document where owner_name='omssystemuser' and mob_classification_id=' ' ENABLE (RETURN_RANGE 1 100
+				'r_modify_date desc')
+
+				<userGroups />
+				<orderBys />
+				<filterClass />
+			</query>
+			<query name="predloge ki so effective in niso sb1">
+				select r_object_id from mob_form_template doc where any r_version_label='effective' and doc.r_object_id not in (select r_object_id from
+				mob_form_template where any r_version_label in ('sb1')) ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
+
+
+
+				<userGroups />
+				<orderBys />
+				<filterClass />
+			</query>
+		</queries>
+	</docbase>
 </config>

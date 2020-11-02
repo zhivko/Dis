@@ -41,9 +41,9 @@ public interface AdminService extends RemoteService {
 
 	void updateRegTableRow(String loginName, String loginPass, String regTableId, String value, int columnIndex, String pkValue) throws ServerException;
 
-	List<MyParametrizedQuery> getSearchQueries(String loginName, String loginPass) throws ServerException;
+	List<MyParametrizedQuery> getSearchQueries(String loginName, String dctmUserName, String loginPass) throws ServerException;
 	
-	List<MyParametrizedQuery> getLazySearchQueries(String loginName, String loginPass) throws ServerException;
+	List<MyParametrizedQuery> getLazySearchQueries(String loginName, String dctmUserName, String loginPass) throws ServerException;
 	
 	MyParametrizedQuery getParametrizedQueryByName(String loginName, String loginPass, String name) throws ServerException;
 

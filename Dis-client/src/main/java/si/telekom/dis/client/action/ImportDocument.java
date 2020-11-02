@@ -228,7 +228,7 @@ public class ImportDocument extends WindowBox {
 				Logger.getGlobal().info("event.getResults() " + event.getResults());
 				if (event.getResults() != null) {
 					MainPanel.log("Created imported object.");
-					ImportDocument.this.hide();
+					//ImportDocument.this.hide();
 				} else {
 					MainPanel.log("Error creating object: " + event.getResults());
 				}

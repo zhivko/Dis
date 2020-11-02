@@ -10,7 +10,7 @@ public class MyParametrizedQuery implements java.io.Serializable, com.google.gwt
 	public List<String> dqlParts;
 	public List<String> labels;
 	public List<String> arguments;
-	public List<String> groups;
+	public List<UserGroup> usersGroups;
 	public List<String> orderBys;
 	public List<String> orderByDirections;
 	
@@ -21,7 +21,7 @@ public class MyParametrizedQuery implements java.io.Serializable, com.google.gwt
 		dqlParts = new ArrayList<String>();
 		labels = new ArrayList<String>();
 		arguments = new ArrayList<String>();
-		groups = new ArrayList<String>();
+		usersGroups = new ArrayList<UserGroup>();
 		orderBys = new ArrayList<String>();
 		orderByDirections = new ArrayList<String>();
 		filterClass = null;

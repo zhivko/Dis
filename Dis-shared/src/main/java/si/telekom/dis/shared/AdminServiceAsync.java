@@ -11,7 +11,7 @@ public interface AdminServiceAsync {
 	void getActions(String loginName, String password, AsyncCallback<List<Action>> callback) throws IllegalArgumentException;
 
 	void getActionById(String actionId, AsyncCallback<Action> callback) throws IllegalArgumentException;
-	
+
 	void getDocTypes(String loginName, String password, AsyncCallback<List<DocType>> callback);
 
 	void getDocType(String loginName, String password, String doctypeName, AsyncCallback<DocType> callback);
@@ -39,29 +39,31 @@ public interface AdminServiceAsync {
 	void updateRegTableRow(String loginName, String loginPass, String regTableId, String value, int columnIndex, String pkValue,
 			AsyncCallback<Void> asyncCallback);
 
-	void getRegTableFieldNames(String loginName, String loginPass, String regTableName, AsyncCallback<List<String>> asyncCallback)  throws ServerException;
+	void getRegTableFieldNames(String loginName, String loginPass, String regTableName, AsyncCallback<List<String>> asyncCallback)
+			throws ServerException;
 
-	void getSearchQueries(String loginName, String loginPass, AsyncCallback<List<MyParametrizedQuery>> asyncCallback) throws ServerException;
+	void getSearchQueries(String loginName, String dcmtUserName, String loginPass, AsyncCallback<List<MyParametrizedQuery>> asyncCallback) throws ServerException;
 
-	void getLazySearchQueries(String loginName, String loginPass, AsyncCallback<List<MyParametrizedQuery>> asyncCallback) throws ServerException;
-	
-	
-	void getParametrizedQueryByName(String loginName, String loginPass, String name, AsyncCallback<MyParametrizedQuery> asyncCallback) throws ServerException;
-	
-	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups, List<String> orderBy, List<String> orderByDirections, String filterClass, AsyncCallback<Void> callback) throws ServerException;
+	void getLazySearchQueries(String loginName, String loginPass, String dctmUserName, AsyncCallback<List<MyParametrizedQuery>> asyncCallback) throws ServerException;
+
+	void getParametrizedQueryByName(String loginName, String loginPass, String name, AsyncCallback<MyParametrizedQuery> asyncCallback)
+			throws ServerException;
+
+	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
+			List<String> orderBy, List<String> orderByDirections, String filterClass, AsyncCallback<Void> callback) throws ServerException;
 
 	void duplicateParametrizedQuery(String loginName, String loginPass, String name, AsyncCallback<String> asyncCallback) throws ServerException;
-	
+
 	void getDocTypeFromDql(String loginName, String loginPass, String dql, AsyncCallback<DocType> asyncCallBack) throws ServerException;
-	
-	void getColIdsForTemplate(String loginName, String loginPass, int templateId, int start, int length, AsyncCallback<List<List<String>>> asyncCallBack) throws ServerException;
+
+	void getColIdsForTemplate(String loginName, String loginPass, int templateId, int start, int length,
+			AsyncCallback<List<List<String>>> asyncCallBack) throws ServerException;
 
 	void updateCollId(String loginName, String loginPass, int templateId, String templateName, String col_id, String columnName, String value,
 			AsyncCallback<Void> callback);
-	
-	void deleteCollId(String loginName, String loginPass, int templateId, String col_id, AsyncCallback<Void> callback) throws ServerException;	
+
+	void deleteCollId(String loginName, String loginPass, int templateId, String col_id, AsyncCallback<Void> callback) throws ServerException;
 
 	void transferToAllEnvironments(String loginName, String loginPass, int templateId, AsyncCallback<Void> callback) throws ServerException;
-	
-	
+
 }

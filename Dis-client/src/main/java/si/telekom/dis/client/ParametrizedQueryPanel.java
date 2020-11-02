@@ -143,8 +143,24 @@ public class ParametrizedQueryPanel extends WindowBox {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				SearchEdit se = new SearchEdit(ParametrizedQueryPanel.this);
-				se.show();
+				try {
+					adminService.getParametrizedQueryByName(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
+							ParametrizedQueryPanel.this.parametrizedQuery.name, new AsyncCallback<MyParametrizedQuery>() {
+								@Override
+								public void onSuccess(MyParametrizedQuery result) {
+									ParametrizedQueryPanel.this.parametrizedQuery = result;
+									SearchEdit se = new SearchEdit(ParametrizedQueryPanel.this);
+									se.show();
+								}
+								
+								public void onFailure(Throwable caught) {
+									MainPanel.getInstance().log(caught.getMessage());
+								};
+							});
+				} catch (ServerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 		a.setText("...");

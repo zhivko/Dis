@@ -206,7 +206,7 @@ public class ExplorerPanel extends Composite {
 		vp2.add(fpContent);
 
 		scrollPanel.setWidth("100%");
-		scrollPanel.setAlwaysShowScrollBars(false);
+		scrollPanel.setAlwaysShowScrollBars(true);
 
 		hp.add(vp);
 		hp.add(vp2);
@@ -220,7 +220,7 @@ public class ExplorerPanel extends Composite {
 				resize();
 			}
 		});
-
+		
 		initWidget(hp);
 	}
 
@@ -236,7 +236,6 @@ public class ExplorerPanel extends Composite {
 				if (number.length() > 0) {
 					int emSize = Integer.valueOf(number).intValue();
 					height = MainPanel.getInstance().getOffsetHeight() - MainPanel.getInstance().topPanel.getOffsetHeight() - 3 * emSize;
-					// MainPanel.log(String.valueOf(height));
 				} else
 					height = MainPanel.getInstance().getOffsetHeight() - MainPanel.getInstance().topPanel.getOffsetHeight() - 20;
 				if (height > 0)

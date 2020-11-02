@@ -219,6 +219,7 @@ public class NewDocument extends ActionDialogBox {
 							@Override
 							public void onSuccess(String result) {
 								MainPanel.log("NewDocument created, object_name: " + result);
+								NewDocument.this.hide(true);
 							}
 
 						});

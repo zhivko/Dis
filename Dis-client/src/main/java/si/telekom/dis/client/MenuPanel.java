@@ -116,6 +116,8 @@ public class MenuPanel extends Composite {
 					MainPanel.clearPanel();
 					activeExplorerInstance = ExplorerPanel.getExplorerInstance();
 					MainPanel.getPanel().add(activeExplorerInstance);
+					
+
 				} else if (index == 1) {
 					CustomTreeModel.selectionModel.clear();
 					createSearchItems();
@@ -134,14 +136,14 @@ public class MenuPanel extends Composite {
 							adminPanel.add(refreshDocTypesAndAtts());
 						}
 						if (actionsTree == null) {
-							actionsTree = new Tree(images){
+							actionsTree = new Tree(images) {
 								@Override
 								public void setFocus(boolean focus) {
 									// https://bugs.chromium.org/p/chromium/issues/detail?id=681382#c27
 									// do nothing
 								}
 							};
-							
+
 							spActions = new ScrollPanel();
 							adminPanel.add(createActions());
 						}
@@ -243,9 +245,9 @@ public class MenuPanel extends Composite {
 		adminPanel.setWidth("100%");
 		adminPanel.add(NewProfile.getMenuItem());
 		adminPanel.add(SyncDoctypes.getMenuItem());
-		adminPanel.add(RegisterTable.getMenuItem());		
-		
-		//adminPanel.add(classifyButton);
+		adminPanel.add(RegisterTable.getMenuItem());
+
+		// adminPanel.add(classifyButton);
 
 		return adminPanel;
 	}
@@ -261,7 +263,6 @@ public class MenuPanel extends Composite {
 				// do nothing
 			}
 		};
-
 
 		// docTypesAndAttsTree.addCloseHandler(new CloseHandler<TreeItem>() {
 		// @Override
@@ -401,21 +402,20 @@ public class MenuPanel extends Composite {
 						removeProfile.addClickHandler(new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent arg0) {
-								ActionDialogBox db = new ActionDialogBox("","Really delete profile?");
+								ActionDialogBox db = new ActionDialogBox("", "Really delete profile?");
 								db.getOkButton().addClickHandler(new ClickHandler() {
-									
+
 									@Override
 									public void onClick(ClickEvent event) {
 										// TODO Auto-generated method stub
-										
+
 										String id = prof.id;
 										String loginName = MainPanel.getInstance().loginName;
 										String loginPass = MainPanel.getInstance().loginPass;
 										NewProfile.deleteProfile(loginName, loginPass, id);
 
 										profiles.removeItem(profileItem);
-										
-										
+
 										db.hide();
 									}
 								});
@@ -493,7 +493,7 @@ public class MenuPanel extends Composite {
 		vp.add(NewDocument.getMenuItem());
 		vp.add(ImportDocument.getMenuItem());
 		vp.add(NewFolder.getMenuItem());
-		
+
 		vp.add(ExplorerSettings.getMenuItem());
 		return vp;
 	}
@@ -501,14 +501,14 @@ public class MenuPanel extends Composite {
 	public void createSearchItems() {
 		if (vpSearchButtons != null) {
 			vpSearchButtons.removeFromParent();
-			vpSearchButtons=null;
+			vpSearchButtons = null;
 		}
-		
+
 		if (vpSearchButtons == null) {
 			vpSearchButtons = new VerticalPanel();
 			spSearchItems.add(vpSearchButtons);
 			try {
-				adminService.getLazySearchQueries(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
+				adminService.getLazySearchQueries(MainPanel.getInstance().loginName, MainPanel.getInstance().dctmUserName, MainPanel.getInstance().loginPass,
 						new AsyncCallback<List<MyParametrizedQuery>>() {
 							@Override
 							public void onSuccess(List<MyParametrizedQuery> result) {
@@ -711,20 +711,18 @@ public class MenuPanel extends Composite {
 	}
 
 	protected void resize() {
+		GWT.log("Resizing...");
 		if (MainPanel.getInstance() != null && spDocTypes != null && spActions != null)
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 
 				@Override
 				public void execute() {
-					Logger.getGlobal()
-							.info(MainPanel.getInstance().getOffsetHeight() + "-" + spDocTypes.getAbsoluteTop() + "-" + spActions.getOffsetHeight() + "-" + 10);
-					// int calcHeight = MainPanel.getInstance().getOffsetHeight() -
-					// spDocTypes.getAbsoluteTop()
-					// - spActions.getOffsetHeight() - 10;
-					// if (spDocTypes.getMinimumVerticalScrollPosition() < calcHeight)
-					// spDocTypes.setHeight(calcHeight + "px");
-					// else
-					spDocTypes.setHeight("300px");
+					GWT.log((MainPanel.getInstance().getOffsetHeight() + "-" + spDocTypes.getAbsoluteTop() + "-" + spActions.getOffsetHeight() + "-" + 10));
+					int calcHeight = MainPanel.getInstance().getOffsetHeight() - spDocTypes.getAbsoluteTop() - spActions.getOffsetHeight() - 10;
+					if (spDocTypes.getMinimumVerticalScrollPosition() < calcHeight)
+						spDocTypes.setHeight(calcHeight + "px");
+					else
+						spDocTypes.setHeight("300px");
 				}
 			});
 	}

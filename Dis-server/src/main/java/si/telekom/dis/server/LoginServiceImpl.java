@@ -39,6 +39,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import si.telekom.dis.shared.LoginService;
 import si.telekom.dis.shared.ServerException;
 import si.telekom.dis.shared.UserSettings;
+import si.telekom.dis.server.WsServer;
 
 /**
  * The server-side implementation of the RPC service.
@@ -99,6 +100,9 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	public String[] checkPassword(String loginName, String passwordHashed) throws Exception {
 		String ret[] = { "", "", "", "", "", "" };
 
+		IDfSession adminSession = null;
+		IDfSession userSess = null;
+
 		try (final DatagramSocket socket = new DatagramSocket()) {
 			final String ip = getThreadLocalRequest().getRemoteHost();
 			InetAddress addr = InetAddress.getByName(ip);
@@ -121,12 +125,16 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 				loginName = "e-kalapcievv";
 				loginName = "alzupan";
-				loginName = "ikovacic";
 				loginName = "lokart";
-				loginName = "zivkovick";
 
+				loginName = "drizvic";
+
+
+				loginName = "zivkovick";
+				loginName = "ikovacic";
+				
 				ret[0] = loginName;
-				IDfSession adminSession = AdminServiceImpl.getInstance().getAdminSession();
+				adminSession = AdminServiceImpl.getInstance().getAdminSession();
 				IDfUser dcmtUser = (IDfUser) adminSession.getObjectByQualification("dm_user where user_login_name='" + loginName + "'");
 
 				if (loginName.contentEquals("zivkovick"))
@@ -146,25 +154,19 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>"
 						+ adminSession.getServerConfig().getString("r_server_version");
 
-				adminSession.getSessionManager().release(adminSession);
-
 				Logger.getLogger(this.getClass()).info(String.format("Logged user: %s, role: %s, documentumUser %s", ret[0], ret[2], ret[3]));
 
 				return ret;
 			}
-		}
 
-		byte[] fromBase64 = Base64Utils.fromBase64(passwordHashed);
-		String password = new String(fromBase64, Charset.forName("UTF-8"));
-		// String password = Tools.decryptString(passwordHashed);
+			byte[] fromBase64 = Base64Utils.fromBase64(passwordHashed);
+			String password = new String(fromBase64, Charset.forName("UTF-8"));
+			// String password = Tools.decryptString(passwordHashed);
 
-		if (password.equals(""))
-			password = "blabla";
+			if (password.equals(""))
+				password = "blabla";
 
-		boolean ldapCheck = false;
-
-		IDfSession userSess = null;
-		try {
+			boolean ldapCheck = false;
 
 			if (!ldapCheck) {
 				userSess = AdminServiceImpl.getSession(loginName, passwordHashed);
@@ -246,6 +248,9 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		} finally {
 			if (userSess != null)
 				userSess.getSessionManager().release(userSess);
+			if (adminSession != null)
+				adminSession.getSessionManager().release(adminSession);
+
 		}
 
 		ret[0] = loginName;
@@ -376,7 +381,6 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				user.setDefaultFolder(privateFolder, true);
 				user.save();
 
-				adminSession.getSessionManager().release(adminSession);
 			}
 
 			IDfSysObject obj = (IDfSysObject) userSess
@@ -411,6 +415,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		} finally {
 			if (adminSession != null)
 				AdminServiceImpl.getInstance().releaseSession(adminSession);
+			if (userSess != null)
+				AdminServiceImpl.getInstance().releaseSession(userSess);
 		}
 
 		return us;

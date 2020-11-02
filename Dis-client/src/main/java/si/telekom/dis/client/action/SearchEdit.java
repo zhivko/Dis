@@ -35,6 +35,7 @@ import si.telekom.dis.shared.DcmtAttribute;
 import si.telekom.dis.shared.DocType;
 import si.telekom.dis.shared.MyParametrizedQuery;
 import si.telekom.dis.shared.ServerException;
+import si.telekom.dis.shared.UserGroup;
 
 public class SearchEdit extends WindowBox {
 	private final static AdminServiceAsync adminService = GWT.create(AdminService.class);
@@ -91,7 +92,6 @@ public class SearchEdit extends WindowBox {
 		filterClass = new MyTxtBox("Filter class name");
 		filterClass.setValue(this.pqp.parametrizedQuery.filterClass);
 		filterClass.setTextBoxWidth("700px");
-		filterClass.setValue(this.pqp.parametrizedQuery.filterClass);
 		getContentPanel().add(filterClass);
 
 		Attribute aAtts = new Attribute();
@@ -199,14 +199,18 @@ public class SearchEdit extends WindowBox {
 						"select group_name, description from dm_group where 1=1 " + 
 						"fixedValues(dm_world, vsi;dm_owner, lastnik; dm_group, skupina)";				
 		aGroupUser.setType(Attribute.types.DROPDOWN.type);
-		aGroupUser.dropDownCol = 1;
-		aGroupUser.isLimitedToValueList = false;
+		aGroupUser.dropDownCol = 0;
+		aGroupUser.isLimitedToValueList = true;
 		if (!MainPanel.getInstance().loginRole.toLowerCase().equals("administrator")) {
 			aGroupUser.isReadOnly = true;
 		}
 		faGroups = new FormAttribute(aGroupUser);
-		faGroups.setValue(this.pqp.parametrizedQuery.groups);
+		MainPanel.log("UsersGroups number: " + this.pqp.parametrizedQuery.usersGroups.size());
+		for (UserGroup ug : this.pqp.parametrizedQuery.usersGroups) {
+			faGroups.values.addItem(ug.getId(), ug.getParameter());
+		}
 		getContentPanel().add(faGroups);
+		
 
 		duplicateSearch = new Button("Duplicate search");
 		duplicateSearch.addClickHandler(new ClickHandler() {
@@ -243,7 +247,7 @@ public class SearchEdit extends WindowBox {
 			public void onClick(ClickEvent event) {
 				try {
 					adminService.editParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, oldName,
-							name.getTextBox().getValue(), dql.getTextBox().getValue(), faGroups.getValues(), faSortAtts.getValues(true), orderByDirections,
+							name.getTextBox().getValue(), dql.getTextBox().getValue(), faGroups.getValues(true), faSortAtts.getValues(true), orderByDirections,
 							filterClass.getValue(), new AsyncCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {

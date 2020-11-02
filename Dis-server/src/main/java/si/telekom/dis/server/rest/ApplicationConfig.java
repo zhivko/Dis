@@ -25,7 +25,6 @@ public class ApplicationConfig extends Application {
         //resources.add(com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider.class);
         
         //instead let's do it manually:
-        resources.add(si.telekom.dis.server.rest.MyJacksonJsonProvider.class);
         resources.add(si.telekom.dis.shared.Profile.class);
         resources.add(si.telekom.dis.shared.Role.class);
         resources.add(si.telekom.dis.server.rest.DisRest.class);

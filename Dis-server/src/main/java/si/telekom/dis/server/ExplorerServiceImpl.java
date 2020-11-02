@@ -134,12 +134,14 @@ import si.telekom.dis.shared.Document;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExtendedPermit;
 import si.telekom.dis.shared.MyParametrizedQuery;
+import si.telekom.dis.shared.Permit;
 import si.telekom.dis.shared.Profile;
 import si.telekom.dis.shared.ProfileAttributesAndValues;
 import si.telekom.dis.shared.Role;
 import si.telekom.dis.shared.ServerException;
 import si.telekom.dis.shared.State;
 import si.telekom.dis.shared.UserGroup;
+import si.telekom.dis.shared.ExtendedPermit.extPermit;
 
 /**
  * The server-side implementation of the RPC service.
@@ -1042,9 +1044,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						// }
 					}
 				}
-				if (ret.values == null || ret.values.size() == 0)
-					WsServer.log(loginName,
-							"No attribute definition in profile <strong>" + prof.name + "(" + prof.id + ")</strong> for role: <strong>" + roleId + "</strong>");
+				if (ret.values == null || ret.values.size() == 0) {
+					String msg = "No attribute definition in profile <strong>" + prof.name + "(" + prof.id + ")</strong> for role: <strong>" + roleId
+							+ "</strong>";
+					WsServer.log(loginName, msg);
+					Logger.getLogger(this.getClass()).warn(msg);
+				}
 
 			} else {
 				String durationStr = String.format(Locale.ROOT, "%.3fs.", (System.currentTimeMillis() - t1) / 1000.0);
@@ -1500,9 +1505,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		IDfSession userSession = null;
 		IDfCollection collection = null;
 		Logger.getLogger(this.getClass()).info(String.format("[%s] deleteObject started for %s", loginName, r_object_id));
-		
-		IDfSession adminSession=null;
-		
+
+		IDfSession adminSession = null;
+
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			AdminServiceImpl.beginTransaction(userSession);
@@ -1620,10 +1625,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				if (collection != null)
 					collection.close();
 			} catch (Exception ex) {
-				ex.printStackTrace();		
+				ex.printStackTrace();
 			}
 			try {
-				if(adminSession!=null)
+				if (adminSession != null)
 					AdminServiceImpl.getInstance().releaseSession(adminSession);
 				if (userSession != null)
 					AdminServiceImpl.getInstance().releaseSession(userSession);
@@ -1847,35 +1852,36 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	void setUsersForRoles(IDfSession userSession, IDfPersistentObject persObject, Map<String, List<String>> roleUserGroups) throws Throwable {
 
 		// persObject.save();
-		//IDfSession adminSession = AdminServiceImpl.getAdminSession();
-		//adminSession.beginTrans();
-		IDfSession adminSess=null;
+		// IDfSession adminSession = AdminServiceImpl.getAdminSession();
+		// adminSession.beginTrans();
+		IDfSession adminSess = null;
 		try {
 			String r_object_id = persObject.getString("r_object_id");
 			persObject = userSession.getObject(new DfId(r_object_id));
-			
+
 			IDfSysObject sysObj = (IDfSysObject) persObject;
-			
-			
+
 			String deleteDql = "delete from dm_dbo.T_DOCMAN_R where r_object_id='" + r_object_id + "'";
 			IDfQuery queryDelete = new DfQuery(deleteDql);
 			IDfCollection coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 			coll.close();
 
 			// create new if needed
-//			IDfACL objAcl = (IDfACL) sysObj.getACL();
-			
-//			if(objAcl==null)
-			adminSess =AdminServiceImpl.getAdminSession();
-			
-			IDfACL objAcl = (IDfACL) adminSess.newObject("dm_acl");
-			
-
-			IDfList permits = null;
-			if (objAcl != null)
-				permits = objAcl.getPermissions();
+			adminSess = AdminServiceImpl.getAdminSession();
+			IDfACL objAcl = (IDfACL) adminSess.getACL(sysObj.getACL().getDomain(), sysObj.getACL().getObjectName());
+			if (objAcl.getObjectName().startsWith("mob_") || objAcl.getObjectName().startsWith("dm_")) {// adminSess
+				objAcl = (IDfACL) adminSess.newObject("dm_acl");
+				objAcl.setObjectName("dis_acl_" + System.currentTimeMillis());
+				objAcl.setDomain("dm_dbo");
+				objAcl.save();
+			}
 
 			objAcl.grant("dm_world", 1, "");
+			objAcl.grant("dm_owner", 7, "CHANGE_OWNER,CHANGE_PERMIT");
+			objAcl.grant("documentum-admin", 7, "CHANGE_OWNER,CHANGE_PERMIT");
+
+			IDfList permits = null;
+			permits = objAcl.getPermissions();
 
 			for (String roleId : roleUserGroups.keySet()) {
 				for (String userGroup : roleUserGroups.get(roleId)) {
@@ -1889,10 +1895,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						for (int i = 0; i < permits.getCount(); i++) {
 							IDfPermit userPermit = (IDfPermit) permits.get(i);
 							if (userPermit.getAccessorName().equals(userGroup)) {
-								// Logger.getLogger(this.getClass().getName())
-								// .info("revoking permit for accessor name:" +
-								// userPermit.getAccessorName() + " permit: " +
-								// userPermit.getPermitType());
+								Logger.getLogger(this.getClass().getName())
+										.info("revoking permit for accessor name:" + userPermit.getAccessorName() + " permit: " + userPermit.getPermitType());
 								objAcl.revokePermit(userPermit);
 							}
 						}
@@ -1913,37 +1917,38 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								allExtPermissions = allExtPermissions + exp.value() + ",";
 						}
 					}
-					// Logger.getLogger(this.getClass().getName()).info("\tpermit: " +
-					// maxGrant + " extPermit: " + allExtPermissions);
 
 					if (allExtPermissions.length() > 0)
 						allExtPermissions = allExtPermissions.substring(0, allExtPermissions.length() - 1);
 
 					IDfUser user = userSession.getUser(userGroup);
-					if (user != null || userGroup.equals("dm_world") || userGroup.equals("dm_group") || userGroup.equals("dm_owner"))
-					{
-						//((IDfSysObject) persObject).grant(userGroup, maxGrant, allExtPermissions);
+					if (user != null || userGroup.equals("dm_world") || userGroup.equals("dm_group") || userGroup.equals("dm_owner")) {
 						objAcl.grant(userGroup, maxGrant, allExtPermissions);
-					}
-					else
+						Logger.getLogger(this.getClass().getName()).info("\tgranted: " + maxGrant + " extPermit: " + allExtPermissions + " for " + userGroup);
+					} else
 						Logger.getLogger(this.getClass().getName()).info("No such user: " + userGroup);
 
 				}
 			}
 
-			objAcl.setDomain("dm_dbo");
+			// objAcl.setDomain("dm_dbo");
 			objAcl.save();
-			
 
-
-			sysObj.setACLDomain("dm_dbo");
+			// sysObj.setACLDomain("dm_dbo");
 			sysObj.setACLName(objAcl.getObjectName());
+			sysObj.setACLDomain(objAcl.getDomain());
 			sysObj.save();
-			sysObj.fetch("dm_document");
+			// sysObj.fetch("dm_document");
+			int userPermit = sysObj.getPermitEx(userSession.getLoginUserName());
+			int userExPermit = sysObj.getXPermit(userSession.getLoginUserName());
+			boolean canChangePermit = false;
+			if ((userExPermit & 65536) == 65536) {
+				canChangePermit = true;
+			}
 
-			if (userSession.isTransactionActive())
-				userSession.commitTrans();			
-			
+			// if (userSession.isTransactionActive())
+			// userSession.commitTrans();
+
 			Logger.getLogger(this.getClass()).info("Acl name:   " + sysObj.getACLName());
 			Logger.getLogger(this.getClass()).info("Acl domain: " + sysObj.getACLDomain());
 
@@ -1955,7 +1960,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			WsServer.log(userSession.getLoginUserName(), ex.getMessage());
 			throw new ServerException(ex.getMessage());
 		} finally {
-			adminSess.getSessionManager().release(adminSess);
+			if (adminSess != null)
+				adminSess.getSessionManager().release(adminSess);
 		}
 	}
 
@@ -2320,7 +2326,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				throw new ServerException("Obvezni atributi (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
 			}
 
-			query.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
+			query
+					.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
 			collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 			Map<String, List<String>> roleUserGroups = (Map<String, List<String>>) profileAndRolesOfUserAndState[4];
 			setUsersForRoles(userSession, persObj, roleUserGroups);
@@ -3778,9 +3785,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			if (mimeType == null || (al.size() == 0 && mimeType.equals("application/zip"))) {
 				al.addAll(Arrays.asList("msw12", "excel12book", "odt", "ods", "pdf"));
 			}
-			
-			if(mimeType.equals("application/vnd.oasis.opendocument.text"))
-			{
+
+			if (mimeType.equals("application/vnd.oasis.opendocument.text")) {
 				al.add("odt");
 			}
 

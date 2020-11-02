@@ -187,7 +187,8 @@ public class ClassifyDocument extends WindowBox {
 
 							@Override
 							public void onSuccess(Void result) {
-								MainPanel.log("NewDocument created, object_name: " + result);
+								MainPanel.log("Classified document.");
+								ClassifyDocument.this.hide(true);
 							}
 
 						});
