@@ -75,6 +75,8 @@ import org.apache.poi.hsmf.datatypes.MAPIProperty;
 import org.apache.poi.hsmf.datatypes.PropertyValue;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.util.CodePageUtil;
+import org.apache.tika.Tika;
+import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
@@ -88,7 +90,6 @@ import org.logicalcobwebs.proxool.ProxoolFacade;
 import com.documentum.com.DfClientX;
 import com.documentum.com.IDfClientX;
 import com.documentum.fc.client.DfClient;
-import com.documentum.fc.client.DfPermit;
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.IDfACL;
 import com.documentum.fc.client.IDfAuditTrailManager;
@@ -134,14 +135,12 @@ import si.telekom.dis.shared.Document;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExtendedPermit;
 import si.telekom.dis.shared.MyParametrizedQuery;
-import si.telekom.dis.shared.Permit;
 import si.telekom.dis.shared.Profile;
 import si.telekom.dis.shared.ProfileAttributesAndValues;
 import si.telekom.dis.shared.Role;
 import si.telekom.dis.shared.ServerException;
 import si.telekom.dis.shared.State;
 import si.telekom.dis.shared.UserGroup;
-import si.telekom.dis.shared.ExtendedPermit.extPermit;
 
 /**
  * The server-side implementation of the RPC service.
@@ -2276,7 +2275,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			Logger.getLogger(this.getClass()).info("Promote for " + userSession.getLoginInfo().getUser() + " for: " + r_object_id + " toState: " + stateId);
 
-			AdminServiceImpl.beginTransaction(userSession);
+			boolean startedTransaction = false;
+			if(!userSession.isTransactionActive())
+			{
+				AdminServiceImpl.beginTransaction(userSession);
+				startedTransaction = true;
+			}
+			
 			IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 
 			Profile prof = (Profile) profileAndRolesOfUserAndState[1];
@@ -2337,8 +2342,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			if (shouldSupersede)
 				supersede(persObj, userSession);
 
-			if (userSession.isTransactionActive())
+			if (startedTransaction)
 				userSession.commitTrans();
+			
 
 		} catch (Throwable ex) {
 			// ex.printStackTrace();
@@ -2360,12 +2366,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			try {
 				if (collection != null)
 					collection.close();
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-			try {
-				if (userSession != null)
-					AdminServiceImpl.getInstance().releaseSession(userSession);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -3761,37 +3761,27 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				stream.write(data);
 			}
 
-			String mimeType = Files.probeContentType(tempFile.toPath());
+			TikaInputStream tis = TikaInputStream.get(data);
 
-			sess = AdminServiceImpl.getAdminSession();
+			Tika tika = new Tika();
+			String filetype = tika.detect(tis);
 
-			query.setDQL("select name from dm_format where mime_type='" + mimeType + "'");
+			if (filetype.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+				al.add("msw12");
+			else {
+				String mimeType = Files.probeContentType(tempFile.toPath());
+				sess = AdminServiceImpl.getAdminSession();
+				query.setDQL("select name from dm_format where mime_type='" + mimeType + "'");
+				collection = query.execute(sess, DfQuery.DF_READ_QUERY);
 
-			collection = query.execute(sess, DfQuery.DF_READ_QUERY);
+				while (collection.next()) {
+					al.add(collection.getString("name"));
+					Logger.getLogger(this.getClass()).info("\t" + collection.getString("name"));
+				}
+				collection.close();
+				Logger.getLogger(this.getClass()).info("Recognizing format...Done.");
 
-			while (collection.next()) {
-				al.add(collection.getString("name"));
-				Logger.getLogger(this.getClass()).info("\t" + collection.getString("name"));
-			}
-			collection.close();
-			Logger.getLogger(this.getClass()).info("Recognizing format...Done.");
-
-			IDfFormatRecognizer formatRecognizer = new DfFormatRecognizer(sess, tempFile.getAbsolutePath(), "");
-			String format = formatRecognizer.getDefaultSuggestedFileFormat();
-
-			if (format != null)
-				al.add(format);
-
-			if (mimeType == null || (al.size() == 0 && mimeType.equals("application/zip"))) {
-				al.addAll(Arrays.asList("msw12", "excel12book", "odt", "ods", "pdf"));
-			}
-
-			if (mimeType.equals("application/vnd.oasis.opendocument.text")) {
-				al.add("odt");
-			}
-
-			if (mimeType.equals("application/xhtml+xml")) {
-				al.addAll(Arrays.asList("html"));
+				
 			}
 
 		} catch (Throwable ex) {

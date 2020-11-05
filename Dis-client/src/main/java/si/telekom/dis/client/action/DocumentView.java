@@ -90,7 +90,7 @@ public class DocumentView extends WindowBox {
 			public void onClick(ClickEvent event) {
 				String url = getUrl(r_object_id, renditions.getSelectedItemText()) + "&download=true";
 				String safeUriDocView = UriUtils.fromString(url).asString();
-				Window.open(URL.encode(safeUriDocView), "_self", "status=0,toolbar=0,menubar=0,location=0");
+				Window.open(URL.encode(safeUriDocView), "_blank", "status=0,toolbar=0,menubar=0,location=0");
 			}
 		});
 		hp.add(buttonDownload);
@@ -173,7 +173,7 @@ public class DocumentView extends WindowBox {
 				}
 			});
 		} else if (DocumentViewFileTypes.downloadFormats.contains(rendition)) {
-			Window.open(URL.encode(safeUriDocView), "_self", "status=0,toolbar=0,menubar=0,location=0");
+			//Window.open(URL.encode(safeUriDocView), "_blank", "status=0,toolbar=0,menubar=0,location=0");
 		} else {
 			RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, URL.encode(safeUriDocView));
 			try {

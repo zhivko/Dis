@@ -3,7 +3,6 @@ package si.telekom.dis.server.rest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Named;
 import javax.ws.rs.BeanParam;
@@ -46,12 +45,13 @@ public class DisRest {
 	}
 
 	@GET
-	@Consumes({ "text/xml", "application/json" })
-	@Produces({ MediaType.APPLICATION_JSON })
+	@Consumes( MediaType.APPLICATION_JSON )
+	@Produces( MediaType.APPLICATION_JSON )
 	@Path("/newDocument")
-	public String newDocument(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
-			@QueryParam("profileId") String profileId, @BeanParam HashMap<String, ArrayList<String>> attributes, @BeanParam HashMap<String, ArrayList<String>> roles,
-			@QueryParam("templateObjectNameOrFolder") String templateObjectNameOrFolder) {
+//	public String newDocument(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
+//			@QueryParam("profileId") String profileId, @BeanParam HashMap<String, ArrayList<String>> attributes, @BeanParam HashMap<String, ArrayList<String>> roles,
+//			@QueryParam("templateObjectNameOrFolder") String templateObjectNameOrFolder) {
+public String newDocument(NewDocumentArg newDocumentArg) {
 		try {
 
 //			HashMap<String, List<String>> vals = new HashMap<String, List<String>>();
@@ -64,38 +64,35 @@ public class DisRest {
 //				rolesUsers.put(roleValue.roleName, roleValue.values);
 //			}
 			
-			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
-			for (String attName :  attributes.keySet()) {
-				ArrayList<String> values = new ArrayList<String>();
-				for (String value : attributes.get(attName)) {
-					values.add(value);
-				}
-				attributes_.put(attName, values);
-			}
+//			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
+//			for (String attName :  attributes.keySet()) {
+//				ArrayList<String> values = new ArrayList<String>();
+//				for (String value : attributes.get(attName)) {
+//					values.add(value);
+//				}
+//				attributes_.put(attName, values);
+//			}
+//
+//			
+//			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
+//			for (String roleName :  attributes.keySet()) {
+//				ArrayList<String> values = new ArrayList<String>();
+//				for (String value : roles.get(roleName)) {
+//					values.add(value);
+//				}
+//				roles_.put(roleName, values);
+//			}
 
-			
-			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
-			for (String roleName :  attributes.keySet()) {
-				ArrayList<String> values = new ArrayList<String>();
-				for (String value : roles.get(roleName)) {
-					values.add(value);
-				}
-				roles_.put(roleName, values);
-			}
 
-
-			return ExplorerServiceImpl.getInstance().newDocument(loginName, passwordEncrypted, profileId, attributes_, roles_, templateObjectNameOrFolder);
+			return ExplorerServiceImpl.getInstance().newDocument(newDocumentArg.getLoginName(), newDocumentArg.getPasswordEncrypted(), newDocumentArg.getProfileId(), newDocumentArg.getAttributes(), newDocumentArg.getRoles(), newDocumentArg.getTemplateObjectNameOrFolder());
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
 		}
 	}
 
 	@GET
-
 	@Consumes(MediaType.TEXT_HTML)
-
 	@Produces({ MediaType.APPLICATION_JSON })
-
 	@Path("/importDocument")
 	public String importDocument(@QueryParam("loginName") String loginName, @QueryParam("encryptedPassword") String encryptedPassword,
 			@QueryParam("folderRObjectId") String folderRObjectId, @QueryParam("profileId") String profileId, @BeanParam AttValueList attributes,
