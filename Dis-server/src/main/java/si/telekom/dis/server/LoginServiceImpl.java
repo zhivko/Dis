@@ -110,7 +110,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 			if (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1")) {
 				// if (false) {
-				WsServer.maxInactivityTimeSec = 1000;
+				WsServer.maxInactivityTimeSec = 5000;
 				ret[0] = "zivkovick";
 				ret[1] = Base64Utils.toBase64("Doitman789012".getBytes());
 				ret[2] = "administrator";
@@ -130,9 +130,10 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				loginName = "drizvic";
 
 
+
+				loginName = "ttaks";
 				loginName = "ikovacic";
 				loginName = "zivkovick";
-
 				
 				ret[0] = loginName;
 				adminSession = AdminServiceImpl.getInstance().getAdminSession();

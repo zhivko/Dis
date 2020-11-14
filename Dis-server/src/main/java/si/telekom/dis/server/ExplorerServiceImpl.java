@@ -1577,24 +1577,29 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				IDfCollection col2 = dfDocument.getVersions("r_object_id");
 				while (col2.next()) {
 					String r_object_id_ = col2.getString("r_object_id");
-//					IDfPersistentObject doc = adminSession.getObject(new DfId(r_object_id_));
-//					IDfList allPermissions = ((IDfSysObject) doc).getPermissions();
-//					for (int i = 0; i < allPermissions.getCount(); i++) {
-//						IDfPermit permit = (IDfPermit) allPermissions.get(i);
-//						if (permit.getAccessorName().contentEquals(userSession.getLoginUserName())) {
-//							if (permit.getPermitValueInt() < 7) {
-//								WsServer.log(loginName, "Needed permit DELETE on version of object with r_object_id: " + r_object_id_);
-//
-//								((IDfSysObject) doc).getACL().setDomain("dm_dbo");
-//								((IDfSysObject) doc).getACL().save();
-//
-//								((IDfSysObject) doc).setACLDomain("dm_dbo");
-//								((IDfSysObject) doc).grant(userSession.getLoginUserName(), 7, null);
-//								doc.save();
-//								break;
-//							}
-//						}
-//					}
+					// IDfPersistentObject doc = adminSession.getObject(new
+					// DfId(r_object_id_));
+					// IDfList allPermissions = ((IDfSysObject) doc).getPermissions();
+					// for (int i = 0; i < allPermissions.getCount(); i++) {
+					// IDfPermit permit = (IDfPermit) allPermissions.get(i);
+					// if
+					// (permit.getAccessorName().contentEquals(userSession.getLoginUserName()))
+					// {
+					// if (permit.getPermitValueInt() < 7) {
+					// WsServer.log(loginName, "Needed permit DELETE on version of object
+					// with r_object_id: " + r_object_id_);
+					//
+					// ((IDfSysObject) doc).getACL().setDomain("dm_dbo");
+					// ((IDfSysObject) doc).getACL().save();
+					//
+					// ((IDfSysObject) doc).setACLDomain("dm_dbo");
+					// ((IDfSysObject) doc).grant(userSession.getLoginUserName(), 7,
+					// null);
+					// doc.save();
+					// break;
+					// }
+					// }
+					// }
 					IDfPersistentObject docPersObject = userSession.getObject(new DfId(r_object_id_));
 					docPersObject.destroy();
 					WsServer.log(loginName, "Destroyed version of object: " + r_object_id_);
@@ -1857,7 +1862,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			String r_object_id = persObject.getString("r_object_id");
 			persObject = userSession.getObject(new DfId(r_object_id));
-
 			IDfSysObject sysObj = (IDfSysObject) persObject;
 
 			String deleteDql = "delete from dm_dbo.T_DOCMAN_R where r_object_id='" + r_object_id + "'";
@@ -1934,6 +1938,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			objAcl.save();
 
 			// sysObj.setACLDomain("dm_dbo");
+			sysObj.fetch(null);
 			sysObj.setACLName(objAcl.getObjectName());
 			sysObj.setACLDomain(objAcl.getDomain());
 			sysObj.save();
@@ -2226,7 +2231,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					shouldSupersede = true;
 				else
 					shouldSupersede = false;
-				moveToState(loginName, password, r_object_id, nextStateId, profileAndRolesOfUserAndState, shouldSupersede);
+				userSession.beginTrans();
+				moveToState(userSession, r_object_id, nextStateId, profileAndRolesOfUserAndState, shouldSupersede);
+				userSession.commitTrans();
 			} else
 				throw new ServerException("Cannot promote, already last state.");
 
@@ -2250,6 +2257,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return null;
 	}
 
+	public Void moveToState(String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState,
+			boolean shouldSupersede, IDfSession userSession) throws ServerException {
+		return moveToState(userSession, r_object_id, stateId, profileAndRolesOfUserAndState, shouldSupersede);
+	}
+	
 	public Void moveToState(String loginName, String password, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState,
 			boolean shouldSupersede) throws ServerException {
 		IDfSession userSession;
@@ -2273,15 +2285,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 		IDfCollection collection = null;
 		try {
-			Logger.getLogger(this.getClass()).info("Promote for " + userSession.getLoginInfo().getUser() + " for: " + r_object_id + " toState: " + stateId);
+			Logger.getLogger(this.getClass()).info("moveToState for triggered by user: " + userSession.getLoginInfo().getUser() + " for: " + r_object_id + " toState: " + stateId);
 
 			boolean startedTransaction = false;
-			if(!userSession.isTransactionActive())
-			{
+			if (!userSession.isTransactionActive()) {
 				AdminServiceImpl.beginTransaction(userSession);
 				startedTransaction = true;
 			}
-			
+
 			IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 
 			Profile prof = (Profile) profileAndRolesOfUserAndState[1];
@@ -2334,9 +2345,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			query
 					.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
 			collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
-			Map<String, List<String>> roleUserGroups = (Map<String, List<String>>) profileAndRolesOfUserAndState[4];
-			setUsersForRoles(userSession, persObj, roleUserGroups);
-			persObj.fetch("dm_document");
+//			Map<String, List<String>> roleUserGroups = (Map<String, List<String>>) profileAndRolesOfUserAndState[4];
+//			setUsersForRoles(userSession, persObj, roleUserGroups);
+//			persObj.fetch(null);
 			AdminServiceImpl.runStandardActions(persObj, stateNo, userSession);
 
 			if (shouldSupersede)
@@ -2344,7 +2355,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			if (startedTransaction)
 				userSession.commitTrans();
-			
 
 		} catch (Throwable ex) {
 			// ex.printStackTrace();
@@ -2399,7 +2409,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// try to get profile from local path - if it doesnt exist load it from
 			// documentum
 
-			Logger.getLogger(this.getClass()).info("Demote for " + loginName + " for: " + r_object_id);
+			Logger.getLogger(this.getClass()).info("Demote triggered rom user: " + loginName + " for object r_object_id: " + r_object_id);
 
 			if (loginName == null)
 				throw new Exception("LoginName should not be null");
@@ -2407,6 +2417,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				throw new Exception("Password should not be null");
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
+			userSession.beginTrans();
 			IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 
 			Object[] profileAndRolesOfUserAndState = getProfileAndUserRolesAndState(persObj, loginName, userSession);
@@ -2417,10 +2428,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 			String prevStateId = AdminServiceImpl.getPrevStateId(prof, stateInd);
 			if (prevStateId != null)
-				moveToState(loginName, password, r_object_id, prevStateId, profileAndRolesOfUserAndState, false);
+				moveToState(userSession, r_object_id, prevStateId, profileAndRolesOfUserAndState, false);
 			else
 				throw new ServerException("Cannot promote, already first state.");
-
+			userSession.commitTrans();
 			Logger.getLogger(this.getClass()).info("Demote for " + loginName + " for: " + r_object_id + " done.");
 
 		} catch (Throwable ex) {
@@ -3781,13 +3792,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				collection.close();
 				Logger.getLogger(this.getClass()).info("Recognizing format...Done.");
 
-				
 			}
 
 		} catch (Throwable ex) {
 			Logger.getLogger(this.getClass()).error(ex);
 		} finally {
-			sess.getSessionManager().release(sess);
+			if (sess != null)
+				sess.getSessionManager().release(sess);
 			if (tempFile != null)
 				tempFile.delete();
 		}
