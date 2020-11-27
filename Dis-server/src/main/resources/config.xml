@@ -1596,16 +1596,12 @@
             </userGroups>
             <orderBys/>
          </query>
-         <query name="Predloge ki bi morale biti v effective stanju">
-				select object_name, mob_valid_from, r_version_label from
-				mob_form_template where not mob_valid_from is nulldate and
-				DATEDIFF(day,
-				"mob_valid_from",
-				date(today))&lt;0 and not (any
-				r_version_label = 'effective' or any r_version_label = 'archive')
+         <query name="Predloge ki bi morale biti v effective stanju">select r_object_id from mob_form_template where not mob_valid_from is nulldate and
+DATEDIFF(day,"mob_valid_from", date(today))&gt;0 and any r_version_label in ('draft') group by r_object_id enable (return_range 1 30 'r_object_id')
 
-				<userGroups>
-               <userGroup name="documentum-admin"/>
+            
+         <userGroups>
+               <userGroup id="documentum-admin" name="documentum-admin"/>
             </userGroups>
             <orderBys/>
             <filterClass/>
@@ -1671,16 +1667,6 @@
             <filterClass/>
          </query>
          <query name="predloge ki so effective in niso sb1">
-				select r_object_id from mob_form_template doc where any r_version_label='effective' and doc.r_object_id not in (select r_object_id from
-				mob_form_template where any r_version_label in ('sb1')) ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
-
-
-
-				<userGroups/>
-            <orderBys/>
-            <filterClass/>
-         </query>
-         <query name="predloge ki so effective in niso sb1 (copy of)">
 				select r_object_id from mob_form_template doc where any r_version_label='effective' and doc.r_object_id not in (select r_object_id from
 				mob_form_template where any r_version_label in ('sb1')) ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 
