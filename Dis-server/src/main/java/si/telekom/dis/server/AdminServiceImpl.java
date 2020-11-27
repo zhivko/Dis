@@ -51,6 +51,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -119,6 +122,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+import si.telekom.dis.server.jobs.MoveMobFormTemplateToEffective;
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.AdminService;
 import si.telekom.dis.shared.Attribute;
@@ -380,6 +384,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						coll.close();
 						adminSession.getSessionManager().release(adminSession);
 						Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...end.");
+						// 1 hour
 						Thread.sleep(1 * 60 * 60 * 1000);
 					}
 				} catch (Exception e) {
@@ -389,6 +394,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		});
 		t1.setName("SyncGroups");
 		t1.start();
+
+		MoveMobFormTemplateToEffective job = new MoveMobFormTemplateToEffective();
+		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+		scheduler.scheduleAtFixedRate(job, 10, 60, TimeUnit.MINUTES);
 
 		// correctAcls();
 
@@ -2851,7 +2860,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				Element el = (Element) nl.item(i);
 				String searchName = el.getAttribute("name");
 
-				Logger.getLogger(this.getClass()).info("Shoud user get " +searchName);
+				Logger.getLogger(this.getClass()).info("Shoud user get " + searchName);
 
 				boolean userShouldGetSearch = false;
 				XPathExpression expr2 = xpath.compile(".//userGroup");
@@ -2867,7 +2876,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						} else {
 							userShouldGetSearch = isMember(loginName, groupName);
 						}
-						if(userShouldGetSearch)
+						if (userShouldGetSearch)
 							break;
 					}
 				}
@@ -2877,7 +2886,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					MyParametrizedQuery query = getParametrizedQuery(el, xpathFac, lazy);
 					queries.add(query);
 					Logger.getLogger(this.getClass()).info("\tyes.");
-					
+
 				}
 
 			}

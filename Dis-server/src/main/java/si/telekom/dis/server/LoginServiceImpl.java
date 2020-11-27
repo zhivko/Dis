@@ -108,7 +108,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			InetAddress addr = InetAddress.getByName(ip);
 			String hostName = addr.getHostName();
 
-			if (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1")) {
+			boolean tryDevelop=true;
+			if (tryDevelop && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 5000;
 				ret[0] = "zivkovick";
@@ -173,7 +174,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			if (!ldapCheck) {
 				userSess = AdminServiceImpl.getSession(loginName, passwordHashed);
 				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>"
-						+ AdminServiceImpl.getAdminSession().getServerConfig().getString("r_server_version");
+						+ userSess.getServerConfig().getString("r_server_version");
 				IDfUser dcmtUser = (IDfUser) userSess.getObjectByQualification("dm_user where user_login_name='" + loginName + "'");
 
 				if (dcmtUser != null) {

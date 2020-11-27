@@ -2209,16 +2209,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return ret;
 	}
 
-	@Override
-	public Void promote(String loginName, String password, String r_object_id) throws ServerException {
-		IDfSession userSession = null;
+	public Void promote(IDfSession userSession, String r_object_id) throws ServerException {
 		try {
-			Logger.getLogger(this.getClass()).info("Promote for " + loginName + " for: " + r_object_id);
-
-			userSession = AdminServiceImpl.getSession(loginName, password);
 			IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 
-			Object[] profileAndRolesOfUserAndState = getProfileAndUserRolesAndState(persObj, loginName, userSession);
+			Object[] profileAndRolesOfUserAndState = getProfileAndUserRolesAndState(persObj, userSession.getLoginUserName(), userSession);
 			Profile prof = (Profile) profileAndRolesOfUserAndState[1];
 			String stateId = (String) profileAndRolesOfUserAndState[3];
 			Logger.getLogger(this.getClass()).info("Promote state: " + stateId);
@@ -2236,8 +2231,25 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				userSession.commitTrans();
 			} else
 				throw new ServerException("Cannot promote, already last state.");
+		} catch (Throwable ex) {
+			// ex.printStackTrace();
+			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
+			Logger.getLogger(this.getClass()).error(ex.getMessage());
+			Logger.getLogger(this.getClass()).error(stackTrace);
+			throw new ServerException(ex.getMessage());
+		} finally {
+		}
+		return null;
+	}
 
-			Logger.getLogger(this.getClass()).info("Promote for " + loginName + " for: " + r_object_id + " done.");
+	@Override
+	public Void promote(String loginName, String password, String r_object_id) throws ServerException {
+		IDfSession userSession = null;
+		try {
+			Logger.getLogger(this.getClass()).info("Promote for " + loginName + " for: " + r_object_id);
+
+			userSession = AdminServiceImpl.getSession(loginName, password);
+			promote(userSession, r_object_id);
 
 		} catch (Throwable ex) {
 			// ex.printStackTrace();
@@ -2257,11 +2269,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return null;
 	}
 
-	public Void moveToState(String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState,
-			boolean shouldSupersede, IDfSession userSession) throws ServerException {
+	public Void moveToState(String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState, boolean shouldSupersede, IDfSession userSession)
+			throws ServerException {
 		return moveToState(userSession, r_object_id, stateId, profileAndRolesOfUserAndState, shouldSupersede);
 	}
-	
+
 	public Void moveToState(String loginName, String password, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState,
 			boolean shouldSupersede) throws ServerException {
 		IDfSession userSession;
@@ -2285,7 +2297,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 		IDfCollection collection = null;
 		try {
-			Logger.getLogger(this.getClass()).info("moveToState for triggered by user: " + userSession.getLoginInfo().getUser() + " for: " + r_object_id + " toState: " + stateId);
+			Logger.getLogger(this.getClass())
+					.info("moveToState for triggered by user: " + userSession.getLoginInfo().getUser() + " for: " + r_object_id + " toState: " + stateId);
 
 			boolean startedTransaction = false;
 			if (!userSession.isTransactionActive()) {
@@ -2345,9 +2358,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			query
 					.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
 			collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
-//			Map<String, List<String>> roleUserGroups = (Map<String, List<String>>) profileAndRolesOfUserAndState[4];
-//			setUsersForRoles(userSession, persObj, roleUserGroups);
-//			persObj.fetch(null);
+			// Map<String, List<String>> roleUserGroups = (Map<String, List<String>>)
+			// profileAndRolesOfUserAndState[4];
+			// setUsersForRoles(userSession, persObj, roleUserGroups);
+			// persObj.fetch(null);
 			AdminServiceImpl.runStandardActions(persObj, stateNo, userSession);
 
 			if (shouldSupersede)
@@ -3722,7 +3736,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				try {
 					copiedObject.setTime("mob_valid_from", DfTime.DF_NULLDATE);
 				} catch (Exception ex) {
-					WsServer.log(loginName, "Object doesn't suppor mob_valid_from attribute (" + ex.getMessage() + ")");
+					String msg = "Object " + copiedObject.getObjectName() + " is of type " + copiedObject.getTypeName()
+							+ " and doesn't suppor mob_valid_from attribute (" + ex.getMessage() + ")";
+					WsServer.log(loginName, msg);
+					Logger.getLogger(this.getClass()).info(msg);
 				}
 
 				ExplorerServiceImpl.getInstance().checkDocmanSExist(persObject, userSession, prof);
@@ -3779,6 +3796,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			if (filetype.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
 				al.add("msw12");
+			else if (filetype.equals("application/xhtml+xml"))
+				al.add("html");
+			else if (filetype.equals("text/html"))
+				al.add("html");
 			else {
 				String mimeType = Files.probeContentType(tempFile.toPath());
 				sess = AdminServiceImpl.getAdminSession();

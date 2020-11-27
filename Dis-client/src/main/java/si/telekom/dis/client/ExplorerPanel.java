@@ -585,6 +585,8 @@ public class ExplorerPanel extends Composite {
 
 						if (tbs != null && result.attributes != null && result.values.size() > 0) {
 							for (Tab tab : tbs) {
+								ScrollPanel sp = new ScrollPanel();
+								//sp.setSize("100%","100%");
 								Grid g = new Grid(tab.row, tab.col);
 								for (Attribute att : result.attributes) {
 									if (tab.getId().equals(att.tabId)) {
@@ -603,7 +605,8 @@ public class ExplorerPanel extends Composite {
 										fa.setWidth("95%");
 									}
 								}
-								tpAtts.add(g, tab.getParameter());
+								sp.add(g);
+								tpAtts.add(sp, tab.getParameter());
 
 							}
 							tpAtts.selectTab(lastSelectedPropertiesTab);
