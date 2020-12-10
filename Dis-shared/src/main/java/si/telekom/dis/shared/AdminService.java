@@ -53,7 +53,7 @@ public interface AdminService extends RemoteService {
 	
 	DocType getDocTypeFromDql(String loginName, String loginPass, String dql) throws ServerException;
 	
-	List<List<String>> getColIdsForTemplate(String loginName, String loginPass, int templateId, int rowNo, int pageLength) throws ServerException;
+	List<List<String>> getColIdsForTemplate(int templateId, int rowNo, int pageLength) throws ServerException;
 
 	void updateCollId(String loginName, String loginPass, int templateId, String templateName, String col_id, String columnName, String value) throws ServerException;	
 

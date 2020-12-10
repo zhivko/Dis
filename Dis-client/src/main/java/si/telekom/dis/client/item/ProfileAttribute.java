@@ -232,6 +232,17 @@ public class ProfileAttribute extends IsSelected {
 
 		hp0.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		hp0.add(labelAttName);
+
+		Button insertRow = new Button("insert row");
+		insertRow.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				NewProfile.instance.insertRow(ProfileAttribute.this);
+			}
+		});
+		hp0.add(insertRow);
+		
+		
 		Button remove = new Button("remove");
 		remove.addClickHandler(new ClickHandler() {
 			@Override

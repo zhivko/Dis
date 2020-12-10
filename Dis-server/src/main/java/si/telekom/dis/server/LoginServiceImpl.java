@@ -132,8 +132,9 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 
 
-				loginName = "ttaks";
+				loginName = "zivkovick";
 				loginName = "ikovacic";
+				loginName = "ttaks";
 				loginName = "zivkovick";
 				
 				ret[0] = loginName;

@@ -116,7 +116,6 @@ public class MenuPanel extends Composite {
 					MainPanel.clearPanel();
 					activeExplorerInstance = ExplorerPanel.getExplorerInstance();
 					MainPanel.getPanel().add(activeExplorerInstance);
-					
 
 				} else if (index == 1) {
 					CustomTreeModel.selectionModel.clear();
@@ -717,12 +716,15 @@ public class MenuPanel extends Composite {
 
 				@Override
 				public void execute() {
-					GWT.log((MainPanel.getInstance().getOffsetHeight() + "-" + spDocTypes.getAbsoluteTop() + "-" + spActions.getOffsetHeight() + "-" + 10));
-					int calcHeight = MainPanel.getInstance().getOffsetHeight() - spDocTypes.getAbsoluteTop() - spActions.getOffsetHeight() - 10;
-					if (spDocTypes.getMinimumVerticalScrollPosition() < calcHeight)
-						spDocTypes.setHeight(calcHeight + "px");
-					else
-						spDocTypes.setHeight("300px");
+
+					int height = Window.getClientHeight() - adminPanel.getAbsoluteTop() - 100;
+
+					int heightDocTypes = (int) (height / 2);
+					int heightActions = (int) (height / 2);
+
+					spDocTypes.setHeight(heightDocTypes + "px");
+					spActions.setHeight(heightActions + "px");
+
 				}
 			});
 	}

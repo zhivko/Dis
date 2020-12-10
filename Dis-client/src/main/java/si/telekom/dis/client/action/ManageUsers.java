@@ -41,6 +41,7 @@ public class ManageUsers extends WindowBox {
 
 	public ManageUsers(String r_object_id_) {
 		this.r_object_id = r_object_id_;
+		getOkButton().setEnabled(false);
 
 		ArrayList<String> allChecked = new ArrayList<String>();
 		for (String r_object_ids_ : ExplorerPanel.getExplorerInstance().getCheckedObjects()) {
@@ -73,7 +74,6 @@ public class ManageUsers extends WindowBox {
 					}
 				});
 
-		getOkButton().setEnabled(false);
 		getOkButton().addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {

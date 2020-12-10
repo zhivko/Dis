@@ -117,7 +117,13 @@ public class UploadServlet extends HttpServlet {
 				@Override
 				public void update(long pBytesRead, long pContentLength, int pItems) {
 					// TODO Auto-generated method stub
-					Logger.getLogger(this.getClass()).info("Items: " + pItems + " bytesread: " + pBytesRead + " content Length:" + pContentLength);
+					// every 10% of uploaded size
+					int partsize = (int) (pBytesRead / pContentLength * 100.0);
+					if(partsize>2)
+						Logger.getLogger(this.getClass()).info("Items: " + pItems + " bytesread: " + pBytesRead + " content Length:" + pContentLength);
+						
+					if (pItems % 2 == 0 && pItems != 0)
+						Logger.getLogger(this.getClass()).info("Items: " + pItems + " bytesread: " + pBytesRead + " content Length:" + pContentLength);
 				}
 			});
 			try {
@@ -260,6 +266,20 @@ public class UploadServlet extends HttpServlet {
 										String prevVersLabels = "";
 										IDfSysObject sysObj = (IDfSysObject) persObj;
 										if (actionClass.endsWith("DocumentCheckin")) {
+											
+											int id = Integer.valueOf(sysObj.getString("mob_template_id")).intValue();
+											
+											ByteArrayInputStream baIs = new ByteArrayInputStream(FileUtils.readFileToByteArray(tempFile));
+											ByteArrayInputStream bacontentStreamIs = ExplorerServlet.makeSureAllFieldsExist(baIs, id);
+											
+									    int nRead;
+									    byte[] data1 = new byte[1024];
+									    ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+									    while ((nRead = bacontentStreamIs.read(data1, 0, data1.length)) != -1) {
+									    	baOs.write(data1, 0, nRead);
+									    }
+									    baOs.flush();
+											
 											String allVersions = sysObj.getAllRepeatingStrings("r_version_label", ",");
 											for (String ver : allVersions.split(",")) {
 												Matcher m = p.matcher(ver);
@@ -307,7 +327,7 @@ public class UploadServlet extends HttpServlet {
 												sysObj.setContentType(fmt.getName()); // only if your
 																															// file
 
-												sysObj.setFile(tempFile.getAbsolutePath());
+												sysObj.setContent(baOs);
 
 												if (!addVersionLabel.equals(""))
 													addVersionLabel = prevVersLabels + "," + addVersionLabel;

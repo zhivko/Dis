@@ -14,16 +14,18 @@
 	<inherits name="com.google.gwt.logging.Logging" />
 
 	<!-- <inherits name='com.google.gwt.user.theme.standard.Standard'/> -->
-	<inherits name='com.google.gwt.user.theme.chrome.Chrome'/>
+	s<inherits name='com.google.gwt.user.theme.chrome.Chrome'/>
 <!-- 	<inherits name='com.google.gwt.user.theme.dark.Dark'/> -->
 
 	<!-- Other module inherits -->
 	<!-- <inherits name='com.tractionsoftware.gwt.user.UTCDateTime' /> -->
 	<!-- <inherits name='com.tractionsoftware.gwt.user.UTCDateBox' /> -->
 	<inherits name='elemental2.dom.Dom' />
+
+	<inherits name="org.gwtbootstrap3.GwtBootstrap3" />
+
 	<!-- <inherits name='com.googlecode.gwt.crypto.Crypto' /> -->
 	<!-- <inherits name="com.github.gwtbootstrap.Bootstrap" /> -->
-	<inherits name="org.gwtbootstrap3.GwtBootstrap3" />
 	<!-- <inherits name="org.gwtbootstrap3.extras.respond.Respond" /> -->
 	<!-- <inherits name="org.gwtbootstrap3.extras.datetimepicker.DateTimePicker" /> -->
 
@@ -57,7 +59,7 @@
 		<include name='/js/*.js' />
 	</public>
 
-<!--   <stylesheet src='dis.css'/> -->
+	<stylesheet src='dis.css'/>
   <!-- <script src='js/theme.js'/> -->
 
 </module>

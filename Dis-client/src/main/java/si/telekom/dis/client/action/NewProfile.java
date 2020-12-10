@@ -398,7 +398,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 			}
 
 		});
-		
+
 		tabs.addKeyUpHandler(new KeyUpHandler() {
 
 			@Override
@@ -412,7 +412,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 					tabs.moveDown();
 				}
 			}
-		});	
+		});
 
 		actionsStatesRoles.setBorderWidth(1);
 		wizards.setBorderWidth(1);
@@ -804,10 +804,14 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 			@Override
 			public void onClick(ClickEvent event) {
 				MainPanel.clearPanel();
+				NewProfile np;
 				if (!MenuPanel.selectedDcmtType.equals(""))
-					MainPanel.getPanel().add(new NewProfile(MenuPanel.selectedDcmtType));
+					np = new NewProfile(MenuPanel.selectedDcmtType);
 				else
-					MainPanel.getPanel().add(new NewProfile());
+					np = new NewProfile();
+
+				MainPanel.getPanel().add(np);
+				// np.setHeight("100%");
 			}
 		});
 		return b;
@@ -826,8 +830,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 			@Override
 			public void enterPressed() {
 				// TODO Auto-generated method stub
-				si.telekom.dis.shared.Tab tab = new si.telekom.dis.shared.Tab(this.getTextBox().getText(),
-						this.getTextBox().getText());
+				si.telekom.dis.shared.Tab tab = new si.telekom.dis.shared.Tab(this.getTextBox().getText(), this.getTextBox().getText());
 				tab.row = 3;
 				tab.col = 1;
 				Tab myTab = new Tab(tab, tabs) {
@@ -1559,17 +1562,13 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 			@Override
 			public void execute() {
 
-				int calcHeight = Window.getClientHeight() - tp.getAbsoluteTop()
-						- (int) (MainPanel.getInstance().splitLayoutPanel.getWidgetSize(MainPanel.getInstance().topPanel).doubleValue()) - 50;
-				// MainPanel.log(Window.getClientHeight() + "-" + tp.getAbsoluteTop() +
-				// "-"
-				// + (int)
-				// (MainPanel.getInstance().splitLayoutPanel.getWidgetSize(MainPanel.getInstance().topPanel).doubleValue())
-				// + "-100=" + calcHeight
-				// + "/" + String.valueOf(calcHeight));
+				int calcHeight = Window.getClientHeight() - tp.getAbsoluteTop() - 30;
+//				MainPanel.log(Window.getClientHeight() + "-" + (int) tp.getAbsoluteTop() + " -30");
+
+				int y = tp.getAbsoluteTop();
+
 				if (calcHeight > 0) {
-					int calcHeight2 = Window.getClientHeight() - tpAtts.getAbsoluteTop()
-							- (int) (MainPanel.getInstance().splitLayoutPanel.getWidgetSize(MainPanel.getInstance().topPanel).doubleValue()) - 50;
+					int calcHeight2 = Window.getClientHeight() - tpAtts.getAbsoluteTop();
 					tp.setHeight(calcHeight + "px");
 					for (String key : gridAtts.keySet()) {
 						Grid g = gridAtts.get(key);
@@ -1595,13 +1594,14 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 					for (String key : gridAtts.keySet()) {
 						Grid g = gridAtts.get(key);
 						ScrollPanel sp = (ScrollPanel) g.getParent();
-						if(calcWidth>0)
+						if (calcWidth > 0)
 							sp.setWidth(calcWidth + "px");
 					}
 					actionsStatesRolesScroll.setWidth(calcWidth + "px");
 					// attsStatesRolesScroll.setWidth(calcWidth + "px");
 
 				}
+
 			}
 		});
 
@@ -1708,6 +1708,35 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 		si.telekom.dis.shared.State st = (si.telekom.dis.shared.State) states.getItem(states.getSelectedIndex()).item;
 		st.standardActions = standardActions.getArrayList();
 		GWT.log("saveStandardActionsForState...Done.");
+	}
+
+	public void insertRow(ProfileAttribute profileAttribute) {
+		String tabId = profileAttribute.attr.tabId;
+
+		// get max row and max col
+		int maxr = -1;
+		int maxc = -1;
+
+		for (int i = 0; i < attributeRolesStatesWizards.size(); i++) {
+			AttributeRoleStateWizards arsw = attributeRolesStatesWizards.get(i);
+			Tab tab = ((Tab) tabs.getItem(tpAtts.getTabBar().getSelectedTab()));
+
+			si.telekom.dis.shared.Tab tb = (si.telekom.dis.shared.Tab) tab.item;
+
+			attributeRolesStatesWizardsIndex = spinnerAtts.value - 1;
+			arsw = attributeRolesStatesWizards.get(attributeRolesStatesWizardsIndex);
+			for (si.telekom.dis.shared.Attribute a : arsw.attributes) {
+				if (a.tabId == tab.getId()) {
+					if (a.row == profileAttribute.attr.row) {
+						a.row = a.row + 1;
+					}
+				}
+			}
+
+		}
+
+		refreshAttsStatesRoles();
+
 	}
 
 }

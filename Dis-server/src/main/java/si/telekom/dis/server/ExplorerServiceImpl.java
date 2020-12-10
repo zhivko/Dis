@@ -63,10 +63,15 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.namespace.QName;
+import javax.xml.ws.Binding;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.Handler;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.hsmf.MAPIMessage;
 import org.apache.poi.hsmf.datatypes.AttachmentChunks;
@@ -125,7 +130,17 @@ import com.documentum.operations.IDfOperationError;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.itextpdf.text.pdf.PdfReader;
 
+import si.telekom.dis.server.jaxwsClient.catalogService.CatalogService;
+import si.telekom.dis.server.jaxwsClient.catalogService.CatalogValue;
+import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogRequestMsg;
+import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogResponseMsg;
+import si.telekom.dis.server.jaxwsClient.catalogService.ICatalogService;
+import si.telekom.dis.server.jaxwsClient.catalogService.RequestMessageHeader;
+import si.telekom.dis.server.jaxwsClient.eRender.PdfGenerator;
+import si.telekom.dis.server.jaxwsClient.eRender.PdfGeneratorImplService;
+import si.telekom.dis.server.jaxwsClient.eRender.SyncTemplate;
 import si.telekom.dis.server.reports.IIncludeInReport;
+import si.telekom.dis.server.rest.CatalogServiceClient.SecurityHandler;
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.Attribute;
 import si.telekom.dis.shared.AttributeRoleStateWizards;
@@ -1044,8 +1059,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					}
 				}
 				if (ret.values == null || ret.values.size() == 0) {
+					String dumpOfObject = persObj.dump();
+					dumpOfObject = dumpOfObject.replaceAll("\n", "<br>");
 					String msg = "No attribute definition in profile <strong>" + prof.name + "(" + prof.id + ")</strong> for role: <strong>" + roleId
-							+ "</strong>";
+							+ "</strong> for r_object_id: " + persObj.getId("r_object_id").toString() + "<br>" + "Dump of object:<br>" + dumpOfObject;
 					WsServer.log(loginName, msg);
 					Logger.getLogger(this.getClass()).warn(msg);
 				}
@@ -1069,8 +1086,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 		}
 		String durationStr = String.format(Locale.ROOT, "%.3fs.", (System.currentTimeMillis() - t1) / 1000.0);
-		String msg = "getProfileAttributesAndValues ended. Returned: " + ret.attributes.size() + " attributes with values for r_object_id=" + r_object_id
-				+ " in " + durationStr;
+		String msg = null;
+		if (ret.attributes != null) {
+			msg = "getProfileAttributesAndValues ended. Returned: " + ret.attributes.size() + " attributes with values for r_object_id=" + r_object_id
+					+ " in " + durationStr;
+		} else {
+			msg = "getProfileAttributesAndValues ended. Attributes null in " + durationStr;
+		}
 		Logger.getLogger(this.getClass()).info(msg);
 
 		return ret;
@@ -2352,16 +2374,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				mandatoryAttNamesNotSet = mandatoryAttNamesNotSet.substring(0, mandatoryAttNamesNotSet.length() - 1);
 
 			if (!allMandatoryFilled) {
-				throw new ServerException("Obvezni atributi (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
+				String object_name = persObj.getString("object_name");
+				String relNo = persObj.hasAttr("mob_releaseno") ? persObj.getString("mob_releaseno") : "";
+				throw new ServerException("Obvezni atributi za r_object_id: " + persObj.getId("r_object_id").toString() + "object_name: " + object_name
+						+ "mob_release_no: " + relNo + "(" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
 			}
 
 			query
 					.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
 			collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
-			// Map<String, List<String>> roleUserGroups = (Map<String, List<String>>)
-			// profileAndRolesOfUserAndState[4];
-			// setUsersForRoles(userSession, persObj, roleUserGroups);
-			// persObj.fetch(null);
+
 			AdminServiceImpl.runStandardActions(persObj, stateNo, userSession);
 
 			if (shouldSupersede)
@@ -3796,6 +3818,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			if (filetype.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
 				al.add("msw12");
+			else if (filetype.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+				al.add("ods");
 			else if (filetype.equals("application/xhtml+xml"))
 				al.add("html");
 			else if (filetype.equals("text/html"))
@@ -4183,6 +4207,55 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				userSession.getSessionManager().release(userSession);
 		}
 
+		return null;
+	}
+
+	@Override
+	public Void syncERenderTemplate(String loginName, String password, String r_object_id) throws ServerException {
+
+		String[] allEndpoints = {
+
+				"http://erender-test.ts.telekom.si:8080/PdfGenerator/services?wsdl",
+				"http://erender-test.ts.telekom.si:8080/PdfGeneratorStaging/services?wsdl",
+				"http://erender-test.ts.telekom.si:8080/PdfGeneratorSb1/services?wsdl",
+				"http://erender-test.ts.telekom.si:9080/PdfGeneratorSb2/services?wsdl",
+				"http://bpl1-kaksisa1-v.ts.telekom.si:8080/PdfGenerator/services?wsdl",
+				"http://bpl2-kaksisa2-v.ts.telekom.si:8080/PdfGenerator/services?wsdl" };
+
+		QName qname = new QName("http://templates.mobitel.com/", "PdfGeneratorImplService");
+
+		for (String wsdlEndpoint : allEndpoints) {
+
+			try {
+				URL serviceUrl = new URL(wsdlEndpoint);
+				PdfGeneratorImplService pdfGeneratorImplService = new PdfGeneratorImplService(serviceUrl, qname);
+				PdfGenerator client = pdfGeneratorImplService.getPdfGeneratorImplPort();
+
+				// final Binding binding = ((BindingProvider) client).getBinding();
+				// List<Handler> handlerList = binding.getHandlerChain();
+				// if (handlerList == null)
+				// handlerList = new ArrayList<Handler>();
+				//
+				// handlerList.add(new SecurityHandler("gdpr-system",
+				// "KulskoGeslo321."));
+				// binding.setHandlerChain(handlerList);
+				//
+				// RequestMessageHeader header = new RequestMessageHeader();
+				// header.setTransactionId("BusinessNotif-" +
+				// System.currentTimeMillis());
+				// GetCatalogRequestMsg msg = new GetCatalogRequestMsg();
+				// msg.setHeader(header);
+				// msg.setName("process.milestones");
+
+				client.syncTemplate(r_object_id);
+				
+				Logger.getLogger(this.getClass()).error("Synced template on: " + wsdlEndpoint + " endpoint.");
+			} catch (Exception ex) {
+				String stackTrace = ExceptionUtils.getStackTrace(ex);
+				Logger.getLogger(this.getClass()).error("Error calling syncTemplate for user: " + loginName);
+				Logger.getLogger(this.getClass()).error(stackTrace);
+			}
+		}
 		return null;
 	}
 

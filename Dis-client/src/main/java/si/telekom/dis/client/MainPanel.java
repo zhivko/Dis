@@ -129,6 +129,7 @@ public class MainPanel extends Composite {
 			public void onResize() {
 				ExplorerPanel.getExplorerInstance().resize();
 				SearchPanel.getSearchPanelInstance().resize();
+				spLog.setHeight(splitLayoutPanel.getWidgetSize(topPanel).intValue()+"px");
 			}
 		};
 		splitLayoutPanel.setStyleName("cw-DockPanel");
@@ -211,6 +212,9 @@ public class MainPanel extends Composite {
 		// centerScrollable.setAlwaysShowScrollBars(false);
 
 		spLog = new ScrollPanel(logHtml);
+		
+		
+		
 
 		refreshLoginInfo("");
 		topPanel.add(spLog);

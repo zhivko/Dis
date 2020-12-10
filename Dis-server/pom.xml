@@ -432,7 +432,7 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>generate-stubs0</id>
+						<id>generate-stubs-catalogService</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>wsimport</goal>
@@ -464,6 +464,41 @@
 							</bindingFiles>
 						</configuration>
 					</execution>
+					
+					<execution>
+						<id>generate-stubs-eRender</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<xauthfile>${basedir}/src/main/resources/authFile</xauthfile>
+							<packageName>si.telekom.dis.server.jaxwsClient.eRender</packageName>
+							<encoding>UTF-8</encoding>
+
+							<!-- <wsdlDirectory>${basedir}/src/wsdl</wsdlDirectory> -->
+							<!-- <wsdlFiles> -->
+							<!-- <wsdlFile>CatalogService_1_6_0.wsdl</wsdlFile> -->
+							<!-- </wsdlFiles> -->
+
+							<wsdlUrls>
+								<wsdlUrl>http://erender-test.ts.telekom.si:8080/PdfGenerator/services?wsdl</wsdlUrl>
+							</wsdlUrls>
+
+							<keep>false</keep>
+							<portname>{http://templates.mobitel.com}PdfGeneratorImplPort</portname>
+							<protocol>soap1.1</protocol>
+							<sourceDestDir>src/main/java</sourceDestDir>
+							<verbose>true</verbose>
+							<keep>false</keep>
+							<xdebug>true</xdebug>
+							<target>2.1</target>
+							<bindingFiles>
+								<bindingFile>${basedir}/src/remote-xjc/bindings-default.xjc</bindingFile>
+							</bindingFiles>
+						</configuration>
+					</execution>
+					
 				</executions>
 			</plugin>
 		</plugins>

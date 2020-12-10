@@ -1676,6 +1676,12 @@ DATEDIFF(day,"mob_valid_from", date(today))&gt;0 and any r_version_label in ('dr
             <orderBys/>
             <filterClass/>
          </query>
+         <query name="Iskanje dokumentov po klasifikacijskem znaku">select r_object_id from mob_document where mob_classification_id (Klasifikacijski znak) = '&lt;1&gt;' enable (return_range 1 30 'r_object_id')<userGroups>
+               <userGroup id="dm_world" name="dm_world"/>
+            </userGroups>
+            <orderBys/>
+            <filterClass/>
+         </query>
       </queries>
    </docbase>
 </config>

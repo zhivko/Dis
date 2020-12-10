@@ -87,6 +87,8 @@ public class ImportDocument extends WindowBox {
 	public ImportDocument() {
 		super();
 		setText("Čarovnik za uvoz dokumenta");
+		
+		getOkButton().setEnabled(false);
 
 		allFaAl = new ArrayList<FormAttribute>();
 
@@ -257,6 +259,9 @@ public class ImportDocument extends WindowBox {
 	protected void refreshUsersAndRoles() {
 		// TODO Auto-generated method stub
 		tpUsers = new TabPanel();
+		
+		ArrayList<String> filledRoles = new ArrayList<String>();
+		
 
 		rolesAndUsers = new HashMap<String, ListBox>();
 		for (Role role : prof.roles) {
@@ -316,6 +321,10 @@ public class ImportDocument extends WindowBox {
 								rolesAndUsers.put(role.getId(), lb);
 
 								tpUsers.selectTab(0);
+								
+								filledRoles.add(role.getId());
+								if(filledRoles.size()==prof.roles.size())
+									getOkButton().setEnabled(true);
 							}
 
 							@Override

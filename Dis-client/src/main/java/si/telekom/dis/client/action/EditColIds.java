@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
-import com.google.gwt.cell.client.TextInputCell;
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -16,6 +15,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -73,6 +73,16 @@ public class EditColIds extends WindowBox implements ClickHandler {
 
 						createEditTableCols(true);
 
+						cellTable.setRowStyles(new RowStyles<Row>() {
+							@Override
+							public String getStyleNames(Row rowObject, int rowIndex) {
+								if (rowIndex % 2 == 0)
+									return "editColIds-soda";
+								else
+									return "editColIds-liha";
+							}
+						});
+
 						MySimplePager.Resources pagerResources = GWT.create(SimplePager.Resources.class);
 						pager = new MySimplePager(TextLocation.RIGHT, pagerResources, false, 0, true);
 						pager.setDisplay(cellTable);
@@ -95,7 +105,7 @@ public class EditColIds extends WindowBox implements ClickHandler {
 
 							@Override
 							public void onSelectionChange(SelectionChangeEvent arg0) {
-								MainPanel.log(selectionModel.getSelectedObject().values.get(0));
+								//MainPanel.log(selectionModel.getSelectedObject().values.get(0));
 							}
 						});
 
@@ -257,6 +267,7 @@ public class EditColIds extends WindowBox implements ClickHandler {
 
 	private final void createEditTableCols(boolean isSelectAll) {
 		Column<Row, String> col_id = addColumn(0, "col_id");
+
 		Column<Row, String> colName = addColumn(1, "col_name");
 
 		cellTable.setColumnWidth(col_id, "200px");
@@ -292,7 +303,7 @@ public class EditColIds extends WindowBox implements ClickHandler {
 			final Range range = display.getVisibleRange();
 
 			try {
-				adminService.getColIdsForTemplate(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, templateId, range.getStart(),
+				adminService.getColIdsForTemplate(templateId, range.getStart(),
 						range.getLength(), new AsyncCallback<List<List<String>>>() {
 							@Override
 							public void onSuccess(List<List<String>> lines) {
@@ -350,7 +361,15 @@ public class EditColIds extends WindowBox implements ClickHandler {
 	}
 
 	public Column<Row, String> addColumn(final int colNo, String fieldName) {
-		Column<Row, String> col = new Column<Row, String>(new TextInputCell()) {
+		EditTextCell tic = new EditTextCell() {
+			@Override
+			public void render(Context context, String value, SafeHtmlBuilder sb) {
+				// TODO Auto-generated method stub
+				super.render(context, value, sb);
+			}
+		};
+
+		Column<Row, String> col = new Column<Row, String>(tic) {
 			@Override
 			public void render(Context context, Row object, SafeHtmlBuilder sb) {
 				// TODO Auto-generated method stub
@@ -361,6 +380,17 @@ public class EditColIds extends WindowBox implements ClickHandler {
 			public String getValue(Row row) {
 				return row.values.get(colNo);
 			}
+
+			@Override
+			public String getCellStyleNames(Context context, Row object) {
+
+				if (selectionModel.isSelected(object)) {
+					return "EditColIds-selected";
+				}
+				return "EditColIds";
+
+			}
+
 		};
 		cellTable.addColumn(col, fieldName);
 		col.setFieldUpdater(new FieldUpdater<Row, String>() {

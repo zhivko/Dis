@@ -52,6 +52,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.hsmf.MAPIMessage;
 import org.simplejavamail.outlookmessageparser.OutlookMessageParser;
@@ -59,6 +60,7 @@ import org.simplejavamail.outlookmessageparser.model.OutlookAttachment;
 import org.simplejavamail.outlookmessageparser.model.OutlookFileAttachment;
 import org.simplejavamail.outlookmessageparser.model.OutlookMessage;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -255,7 +257,8 @@ public class ExplorerServlet extends HttpServlet {
 					encoding = encoding == null ? "UTF-8" : encoding;
 					String body = IOUtils.toString(in, encoding);
 
-					//String fileHref = "/home/klemen/Downloads/SkupinaTelekom_2_0_vizualizacija.xslt";
+					// String fileHref =
+					// "/home/klemen/Downloads/SkupinaTelekom_2_0_vizualizacija.xslt";
 					SAXSource source = new SAXSource(new InputSource(new ByteArrayInputStream(body.getBytes())));
 
 					Transformer transformer = factory.newTransformer(source);
@@ -294,8 +297,8 @@ public class ExplorerServlet extends HttpServlet {
 					// 0);
 					// byte[] bytes = IOUtils.toByteArray(baIs2);
 					// String content = new String(bytes);
-					//xmlString = xmlString.replace("\n", "\n<br>");
-					//String newContent = escapeXml(xmlString);
+					// xmlString = xmlString.replace("\n", "\n<br>");
+					// String newContent = escapeXml(xmlString);
 					bacontentStreamIs = new ByteArrayInputStream(xmlString.getBytes());
 				}
 				baIs.close();
@@ -368,7 +371,7 @@ public class ExplorerServlet extends HttpServlet {
 		return false;
 	}
 
-	private ByteArrayInputStream makeSureAllFieldsExist(ByteArrayInputStream baIs, int templateId) {
+	public static ByteArrayInputStream makeSureAllFieldsExist(ByteArrayInputStream baIs, int templateId) {
 // @formatter:off			
 			String systemFields[] = {
 					"barcode", 
@@ -396,7 +399,7 @@ public class ExplorerServlet extends HttpServlet {
 				if (entry.getName().equals("meta.xml")) {
 					ArrayList<String> systemFieldsAl = new ArrayList<String>(Arrays.asList(systemFields));
 
-					List<List<String>> fields = AdminServiceImpl.getInstance().getColIdsForTemplate(loginName, loginPassword, templateId, 0, -1);
+					List<List<String>> fields = AdminServiceImpl.getInstance().getColIdsForTemplate(templateId, 0, -1);
 					ArrayList<String> allColIds = new ArrayList<String>();
 					for (List<String> list : fields) {
 						String col_id = list.get(0);
@@ -423,56 +426,73 @@ public class ExplorerServlet extends HttpServlet {
 					// lets remove nodes that are not in col_ids
 					XPathExpression expr = xpath.compile("/office:document-meta/office:meta/meta:user-defined");
 					NodeList nodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-					Logger.getLogger(this.getClass()).info("Length: " + nodes.getLength());
+					Logger.getLogger(ExplorerServlet.class).info("Length: " + nodes.getLength());
 					for (int i = 0; i < nodes.getLength(); i++) {
 						Node n = nodes.item(i);
 						String attName = n.getAttributes().getNamedItem("meta:name").getNodeValue();
 						if (!(allColIds.contains(attName.toLowerCase()) || systemFieldsAl.contains(attName.toLowerCase()))) {
-							Logger.getLogger(this.getClass()).info("Doesn't contain: " + attName + " removing.");
+							Logger.getLogger(ExplorerServlet.class).info("Doesn't contain: " + attName + " removing.");
 							n.getParentNode().removeChild(n);
 							changed = true;
 						}
 					}
 
 					// lets add nodes that are missing
+					XPathExpression expr2 = xpath.compile("/office:document-meta/office:meta");
+					Element userDefined = (Element) expr2.evaluate(doc, XPathConstants.NODE);
+
+					allColIds.addAll(systemFieldsAl);
+					
 					for (String col_id : allColIds) {
 						XPathExpression expr1 = xpath.compile("/office:document-meta/office:meta/meta:user-defined[@meta:name='" + col_id + "']");
 						NodeList nodes1 = (NodeList) expr1.evaluate(doc, XPathConstants.NODESET);
 						if (nodes1.getLength() == 0) {
-							Logger.getLogger(this.getClass()).info("Doesn't contain: " + col_id + " adding field.");
-							Node newNode = nodes.item(0).cloneNode(true);
-							newNode.getAttributes().getNamedItem("meta:name").setNodeValue(col_id);
-							nodes.item(0).getParentNode().appendChild(newNode);
+							Logger.getLogger(ExplorerServlet.class).info("Doesn't contain: " + col_id + " adding field.");
+							Element newNode = null;
+							// if (nodes.item(0) != null) {
+							// Node elNode = nodes.item(0);
+							// newNode = elNode.cloneNode(true);
+							// } else {
+							newNode = doc.createElement("meta:user-defined");
+							newNode.setAttribute("meta:name", col_id);
+							newNode.setAttribute("meta:value-type", "string");
+							newNode.setTextContent("value");
+//							builder.parse(new ByteArrayInputStream("<meta:user-defined meta:name=\"name\">value</meta:user-defined>".getBytes()))
+//									.getDocumentElement();
+							// }
+//							newNode.getAttributes().getNamedItem("meta:name").setNodeValue(col_id);
+							userDefined.appendChild(newNode);
 							changed = true;
-
-							ByteArrayOutputStream ret = new ByteArrayOutputStream();
-							// XERCES 1 or 2 additionnal classes.
-							OutputFormat of = new OutputFormat("XML", "UTF-8", false);
-							// of.setPreserveSpace(true);
-							// of.setIndent(1);
-							// of.setIndenting(true);
-
-							// of.setDoctype(null,"users.dtd");
-							XMLSerializer serializer = new XMLSerializer(ret, of);
-							// As a DOM Serializer
-
-							serializer.asDOMSerializer();
-							serializer.serialize(doc.getDocumentElement());
-							ret.close();
-
-							entry.setMethod(ZipEntry.STORED);
-							entry.setCompressedSize(ret.toByteArray().length);
-							entry.setSize(ret.toByteArray().length);
-							CRC32 crc = new CRC32();
-							crc.update(ret.toByteArray());
-							entry.setCrc(crc.getValue());
-
-							files.put("meta.xml", ret.toByteArray());
-
-							changed = true;
-							break;
 						}
 					}
+					
+					if(changed)
+					{
+						ByteArrayOutputStream ret = new ByteArrayOutputStream();
+						// XERCES 1 or 2 additionnal classes.
+						OutputFormat of = new OutputFormat("XML", "UTF-8", false);
+						of.setPreserveSpace(true);
+						of.setIndent(1);
+						of.setIndenting(true);
+
+						// of.setDoctype(null,"users.dtd");
+						XMLSerializer serializer = new XMLSerializer(ret, of);
+						// As a DOM Serializer
+
+						serializer.asDOMSerializer();
+						serializer.serialize(doc.getDocumentElement());
+						ret.close();
+
+						entry.setMethod(ZipEntry.STORED);
+						entry.setCompressedSize(ret.toByteArray().length);
+						entry.setSize(ret.toByteArray().length);
+						CRC32 crc = new CRC32();
+						crc.update(ret.toByteArray());
+						entry.setCrc(crc.getValue());
+
+						files.put("meta.xml", ret.toByteArray());
+					}
+					
 					is.close();
 				}
 			}
@@ -489,14 +509,16 @@ public class ExplorerServlet extends HttpServlet {
 			baIs.close();
 
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			String stackTrace = ExceptionUtils.getStackTrace(ex);
+			Logger.getLogger(ExplorerServlet.class).error(ex.getMessage());
+			Logger.getLogger(ExplorerServlet.class).error(stackTrace);
 		} finally {
 		}
 		baIs.reset();
 		return baIs;
 	}
 
-	private ByteArrayOutputStream saveZip2(ZipInputStream inZip, HashMap<String, byte[]> files) throws Exception {
+	private static ByteArrayOutputStream saveZip2(ZipInputStream inZip, HashMap<String, byte[]> files) throws Exception {
 
 		ByteArrayOutputStream result = null;
 		ZipOutputStream outZip = null;
@@ -521,7 +543,7 @@ public class ExplorerServlet extends HttpServlet {
 						source = new ByteArrayInputStream(contentAsBytes);
 						break;
 					} else {
-						Logger.getLogger(this.getClass()).info(in.getName());
+						Logger.getLogger(ExplorerServlet.class).info(in.getName());
 					}
 				}
 				if (out == null) {

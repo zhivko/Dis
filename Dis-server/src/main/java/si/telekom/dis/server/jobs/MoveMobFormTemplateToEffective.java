@@ -17,7 +17,7 @@ public class MoveMobFormTemplateToEffective implements Runnable {
 
 	public void run() {
 		IDfSession sess = null;
-
+		IDfCollection coll = null;
 		try {
 			sess = AdminServiceImpl.getAdminSession();
 
@@ -25,23 +25,30 @@ public class MoveMobFormTemplateToEffective implements Runnable {
 					+ "DATEDIFF(day,\"mob_valid_from\", date(today)) > 0 and any r_version_label in ('draft') group by r_object_id enable (return_range 1 30 'r_object_id')";
 			IDfQuery q = new DfQuery(dql);
 
-			IDfCollection coll = q.execute(sess, DfQuery.READ_QUERY);
+			coll = q.execute(sess, DfQuery.READ_QUERY);
 			while (coll.next()) {
 				IDfPersistentObject persObj = sess.getObject(coll.getId("r_object_id"));
-				Logger.getLogger(this.getClass()).info("move from draft to effective, barcode: "+persObj.getString("object_name")+" r_object_id: " + coll.getId("r_object_id").toString());
+				Logger.getLogger(this.getClass()).info(
+						"move from draft to effective, barcode: " + persObj.getString("object_name") + " r_object_id: " + coll.getId("r_object_id").toString());
 				ExplorerServiceImpl.getInstance().promote(sess, coll.getId("r_object_id").toString());
 			}
-			coll.close();
+
 		} catch (Throwable ex) {
 			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
 			Logger.getLogger(MoveMobFormTemplateToEffective.class).error(ex.getMessage());
 			Logger.getLogger(MoveMobFormTemplateToEffective.class).error(stackTrace);
 
 		} finally {
+			if (coll != null) {
+				try {
+					coll.close();
+				} catch (Exception ex) {
+					Logger.getLogger(MoveMobFormTemplateToEffective.class).error(ex.getMessage());
+				}
+			}
 			if (sess != null && sess.isConnected())
 				sess.getSessionManager().release(sess);
 		}
-
 
 	}
 

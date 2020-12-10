@@ -60,5 +60,7 @@ public interface ExplorerServiceAsync {
 	void massDownloadContent(String loginName, String password, List<String> r_object_ids, AsyncCallback<String> callback);
 
 	void prepareAiTrainDataForFolderAndClassification(String loginName, String password, List<String> r_object_ids, String classification, boolean deleteTrainingDir, AsyncCallback<Void> callback);
-	
+
+	void syncERenderTemplate(String loginName, String password, String r_object_id, AsyncCallback<Void> callback);
+
 }

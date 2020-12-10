@@ -61,4 +61,5 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 		Void prepareAiTrainDataForFolderAndClassification(String loginName, String password, List<String> r_object_ids, String classification, boolean deleteTrainingDir) throws ServerException;
 		
+		Void syncERenderTemplate(String loginName, String password, String r_object_id) throws ServerException;
 	}

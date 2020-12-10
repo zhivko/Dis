@@ -220,7 +220,7 @@ public class ExplorerPanel extends Composite {
 				resize();
 			}
 		});
-		
+
 		initWidget(hp);
 	}
 
@@ -230,16 +230,24 @@ public class ExplorerPanel extends Composite {
 			@Override
 			public void execute() {
 
-				String val = getStyle(ExplorerPanel.getExplorerInstance().getElement(), "font-size");
-				String number = val.substring(0, val.indexOf("px"));
-				int height;
-				if (number.length() > 0) {
-					int emSize = Integer.valueOf(number).intValue();
-					height = MainPanel.getInstance().getOffsetHeight() - MainPanel.getInstance().topPanel.getOffsetHeight() - 3 * emSize;
-				} else
-					height = MainPanel.getInstance().getOffsetHeight() - MainPanel.getInstance().topPanel.getOffsetHeight() - 20;
-				if (height > 0)
-					scrollPanel.setHeight(height + "px");
+				// String val =
+				// getStyle(ExplorerPanel.getExplorerInstance().getElement(),
+				// "font-size");
+				// String number = val.substring(0, val.indexOf("px"));
+				int height = Window.getClientHeight() - MainPanel.getInstance().splitLayoutPanel.getWidgetSize(MainPanel.getInstance().topPanel).intValue()
+						- 20;
+
+				scrollPanel.setHeight(height + "px");
+
+				// if (number.length() > 0) {
+				// int emSize = Integer.valueOf(number).intValue();
+				// height = MainPanel.getInstance().getOffsetHeight() -
+				// MainPanel.getInstance().topPanel.getOffsetHeight() - 3 * emSize;
+				// } else
+				// height = MainPanel.getInstance().getOffsetHeight() -
+				// MainPanel.getInstance().topPanel.getOffsetHeight() - 20;
+				// if (height > 0)
+				// scrollPanel.setHeight(height + "px");
 			}
 		});
 	}
@@ -340,6 +348,7 @@ public class ExplorerPanel extends Composite {
 			});
 		} else if (actionId.equals("document.cancelCheckOut")) {
 			explorerService.cancelCheckout(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, new AsyncCallback<Void>() {
+
 				@Override
 				public void onSuccess(Void result) {
 					// TODO Auto-generated method stub
@@ -374,9 +383,25 @@ public class ExplorerPanel extends Composite {
 			adb = new EditColIds(r_object_id);
 		} else if (actionId.equals("document.pdfTags")) {
 			adb = new ShowPdfTags(r_object_id);
+		} else if (actionId.equals("template.syncTemplate")) {
+			explorerService.syncERenderTemplate(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id,
+					new AsyncCallback<Void>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							// TODO Auto-generated method stub
+							MainPanel.log(caught.getMessage());
+						}
+
+						@Override
+						public void onSuccess(Void result) {
+							// TODO Auto-generated method stub
+							MainPanel.log("template sync sucesfull.");
+						}
+					});
 		} else if (actionId.equals("template.updateBusinessNotification"))
 			explorerService.updateBusinessNotification(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id,
 					new AsyncCallback<Void>() {
+
 						@Override
 						public void onSuccess(Void result) {
 							// TODO Auto-generated method stub
@@ -586,7 +611,7 @@ public class ExplorerPanel extends Composite {
 						if (tbs != null && result.attributes != null && result.values.size() > 0) {
 							for (Tab tab : tbs) {
 								ScrollPanel sp = new ScrollPanel();
-								//sp.setSize("100%","100%");
+								// sp.setSize("100%","100%");
 								Grid g = new Grid(tab.row, tab.col);
 								for (Attribute att : result.attributes) {
 									if (tab.getId().equals(att.tabId)) {
@@ -600,12 +625,20 @@ public class ExplorerPanel extends Composite {
 										try {
 											g.setWidget(att.row, att.col, fa);
 										} catch (Exception ex) {
-											MainPanel.log("Error putting attribute: " + att.dcmtAttName + " to tab: " + tab.getId() + " row:" + att.row + " col: " + att.col);
+											MainPanel
+													.log("Error putting attribute: " + att.dcmtAttName + " to tab: " + tab.getId() + " row:" + att.row + " col: " + att.col);
 										}
 										fa.setWidth("95%");
 									}
 								}
 								sp.add(g);
+								g.getElement().setId("grid");
+								sp.getElement().setId("scrollPanel");
+								g.setSize("100%", "100%");
+								// MainPanel.log(Window.getClientHeight() + " " +
+								// ExplorerPanel.this.getAbsoluteTop() +"-100");
+								int height = Window.getClientHeight() - ExplorerPanel.this.getAbsoluteTop() - 100;
+								sp.setSize("100%", height + "px");
 								tpAtts.add(sp, tab.getParameter());
 
 							}

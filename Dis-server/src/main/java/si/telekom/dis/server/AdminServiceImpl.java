@@ -507,7 +507,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		ret.add(new Action("folder.useForAiTraining", "uporabi za ai učenje", permit.READ));
 
 		ret.add(new Action("template.editCollIds", "uredi polja", permit.NONE));
-		ret.add(new Action("template.updateBusinessNotification", "ažuriraj poslovne<br>notifikacije", permit.NONE));
+		ret.add(new Action("template.updateBusinessNotification", "ažuriraj bussines<br>notification", permit.NONE));
+		ret.add(new Action("template.syncTemplate", "sinhroniziraj eRender<br>predlogo", permit.NONE));
 
 		return ret;
 	}
@@ -3248,19 +3249,14 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return doctypes.get(type);
 	}
 
-	public List<List<String>> getColIdsForTemplate(String loginName, String loginPass, int templateId, int rowNo, int pageSize) throws ServerException {
-		Logger.getLogger(this.getClass()).info(String.format("[%s] getColIdsForTemplate started for templateId: %s", loginName, templateId));
+	public List<List<String>> getColIdsForTemplate(int templateId, int rowNo, int pageSize) throws ServerException {
+		Logger.getLogger(this.getClass()).info(String.format("getColIdsForTemplate started for templateId: %s", templateId));
 		List<List<String>> ret = new ArrayList<List<String>>();
 		Connection con = null;
 		Statement stmt = null;
 		ResultSet rs = null;
 
 		try {
-			if (loginName == null)
-				throw new Exception("LoginName should not be null");
-			if (loginPass == null)
-				throw new Exception("Password should not be null");
-
 			String sql = "select col_id, col_name from mobile.t_subscription_inet_col where type_id = " + templateId + " order by col_id";
 
 			String pagedSql = "";
@@ -3288,7 +3284,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				pagedSql = sql;
 			}
 
-			Logger.getLogger(this.getClass()).info(String.format("[%s] sql for retrieving fields: %s", loginName, pagedSql));
+			Logger.getLogger(this.getClass()).info(String.format(" sql for retrieving fields: %s", pagedSql));
 
 			con = getDbConnection();
 			stmt = con.createStatement();
@@ -3297,7 +3293,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			rs = stmt.executeQuery(pagedSql);
 			long t2 = System.currentTimeMillis();
 			String durationStr = String.format(Locale.ROOT, "%.3fs", (t2 - t1) / 1000.0);
-			Logger.getLogger(this.getClass()).info(String.format("[%s] sql query done in: %s", loginName, durationStr));
+			Logger.getLogger(this.getClass()).info(String.format("sql query done in: %s", durationStr));
 
 			int lineCount = 0;
 			while (rs.next()) {
@@ -3307,7 +3303,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				ret.add(cols);
 				lineCount++;
 			}
-			Logger.getLogger(this.getClass()).info(String.format("[%s] getColIdsForTemplate retrieved %d lines.", loginName, lineCount));
+			Logger.getLogger(this.getClass()).info(String.format("getColIdsForTemplate retrieved %d lines.", lineCount));
 		} catch (Exception ex) {
 			ByteArrayOutputStream byteAOs = new ByteArrayOutputStream();
 			PrintWriter pw = new PrintWriter(byteAOs);
