@@ -1568,8 +1568,8 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 				int y = tp.getAbsoluteTop();
 
 				if (calcHeight > 0) {
-					int calcHeight2 = Window.getClientHeight() - tpAtts.getAbsoluteTop();
 					tp.setHeight(calcHeight + "px");
+					int calcHeight2 = Window.getClientHeight() - tpAtts.getAbsoluteTop() - 70;
 					for (String key : gridAtts.keySet()) {
 						Grid g = gridAtts.get(key);
 						ScrollPanel sp = (ScrollPanel) g.getParent();
@@ -1712,6 +1712,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 
 	public void insertRow(ProfileAttribute profileAttribute) {
 		String tabId = profileAttribute.attr.tabId;
+		int selectedTab = tp.getTabBar().getSelectedTab();
 
 		// get max row and max col
 		int maxr = -1;
@@ -1728,6 +1729,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 			for (si.telekom.dis.shared.Attribute a : arsw.attributes) {
 				if (a.tabId == tab.getId()) {
 					if (a.row == profileAttribute.attr.row) {
+						MainPanel.log(a.tabId + " " + a.dcmtAttName);
 						a.row = a.row + 1;
 					}
 				}
@@ -1736,6 +1738,7 @@ public class NewProfile extends ActionDialogBox implements ClickHandler {
 		}
 
 		refreshAttsStatesRoles();
+		tp.selectTab(selectedTab);
 
 	}
 

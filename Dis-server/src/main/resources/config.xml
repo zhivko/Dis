@@ -1682,6 +1682,19 @@ DATEDIFF(day,"mob_valid_from", date(today))&gt;0 and any r_version_label in ('dr
             <orderBys/>
             <filterClass/>
          </query>
+         <query name="Duplikati predlog po object_name">SELECT r_object_id from mob_form_template where object_name in (select object_name FROM mob_form_template where folder('/MOB/Standard/Template/eForm') GROUP BY object_name HAVING count(*) &gt; 1) ENABLE (return_range 1 10 'object_name')<userGroups>
+               <userGroup id="dm_world" name="dm_world"/>
+            </userGroups>
+            <orderBys/>
+            <filterClass/>
+         </query>
+         <query name="ebiller dokumenti">select r_object_id from mob_document where owner_name='ebiller' enable (return_range 1 10 'r_object_id')
+<userGroups>
+               <userGroup id="dm_world" name="dm_world"/>
+            </userGroups>
+            <orderBys/>
+            <filterClass/>
+         </query>
       </queries>
    </docbase>
 </config>
