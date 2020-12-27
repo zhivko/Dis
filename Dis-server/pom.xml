@@ -178,7 +178,7 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>2.10.3</version>
-		</dependency>	
+		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -464,7 +464,7 @@
 							</bindingFiles>
 						</configuration>
 					</execution>
-					
+
 					<execution>
 						<id>generate-stubs-eRender</id>
 						<phase>generate-sources</phase>
@@ -498,7 +498,7 @@
 							</bindingFiles>
 						</configuration>
 					</execution>
-					
+
 				</executions>
 			</plugin>
 		</plugins>

@@ -2173,6 +2173,21 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						} else {
 							throw new Exception("Object is not current, new version exists. Check SHOW Versions.");
 						}
+					}  else if (sa.kind.equalsIgnoreCase(StandardAction.types.ADD_VERSION_LABEL.type)) {
+						boolean ok = false;
+						ArrayList<String> allVersionLabels = new ArrayList<String>();
+						for (int i = 0; i < dfSysObject.getVersionLabelCount(); i++) {
+							allVersionLabels.add(dfSysObject.getVersionLabel(i));
+							if (dfSysObject.getVersionLabel(i).equals("CURRENT")) {
+								ok = true;
+							}
+						}
+						if (ok) {
+							dfSysObject.mark(sa.parameter);
+							dfSysObject.save();
+						} else {
+							throw new Exception("Object is not current, new version exists. Check SHOW Versions.");
+						}
 					} else if (sa.kind.equalsIgnoreCase(StandardAction.types.APPLY_CAS_RETENTION.type)) {
 
 						// What to check if RPS retention is not being propagated to

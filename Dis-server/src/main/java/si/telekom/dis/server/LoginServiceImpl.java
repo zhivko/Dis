@@ -130,12 +130,10 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 				loginName = "drizvic";
 
-
-
-				loginName = "zivkovick";
-				loginName = "ikovacic";
 				loginName = "ttaks";
 				loginName = "zivkovick";
+				loginName = "ikovacic";
+				loginName = "zivkovick";				
 				
 				ret[0] = loginName;
 				adminSession = AdminServiceImpl.getInstance().getAdminSession();

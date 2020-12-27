@@ -2376,8 +2376,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			if (!allMandatoryFilled) {
 				String object_name = persObj.getString("object_name");
 				String relNo = persObj.hasAttr("mob_releaseno") ? persObj.getString("mob_releaseno") : "";
-				throw new ServerException("Obvezni atributi za r_object_id: " + persObj.getId("r_object_id").toString() + "object_name: " + object_name
-						+ "mob_release_no: " + relNo + "(" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
+				throw new ServerException("Obvezni atributi za r_object_id: " + persObj.getId("r_object_id").toString() + " object_name: " + object_name
+						+ " mob_release_no: " + relNo + " (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
 			}
 
 			query
@@ -3401,11 +3401,21 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		Statement stmt = null;
 		ResultSet rs = null;
 		IDfSession userSession = null;
+		String sql = "";
+
 		try {
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			IDfSysObject sysObject = (IDfSysObject) userSession.getObject(new DfId(r_object_id));
 
+			IDfAuditTrailManager mgr = userSession.getAuditTrailManager();
+
+			InetAddress host = InetAddress.getByName(this.getThreadLocalRequest().getRemoteAddr());
+			String dnsName = host.getHostName();
+
+			String[] arg2 = { this.getThreadLocalRequest().getRemoteAddr(), dnsName, this.getThreadLocalRequest().getRemoteUser() };
+			mgr.createAudit(new DfId(sysObject.getId("r_object_id").toString()), "updateBusinessNotification", arg2, null);			
+			
 			String msg_template_id = sysObject.getString("mob_template_id").toString();
 			String msg_template_type = sysObject.getString("bn_template_type").toString();
 			int topic_id = sysObject.getInt("bn_topic_id");
@@ -3446,8 +3456,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				String jdbcPassword = userAndPassword.split("[//]")[2];
 				String realUrl1 = driverUrl.split("~")[1];
 
-				String alias = DigestUtils.sha1Hex(realUrl1);
-
+				String alias = DigestUtils.sha1Hex(driverUrl);
+				Logger.getLogger(this.getClass()).info("Updating bn with oracle user: " + jdbcUser + " alias: " + alias + " jdbcUrl: " + realUrl1);
 				try {
 					// DriverManager.setLogStream(System.out);
 					lconn = DriverManager.getConnection("proxool." + alias);
@@ -3490,7 +3500,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				stmt = lconn.createStatement();
 				// @formatter:off
-				String sql = "MERGE INTO "+scheme+".T_MSG_TEMPLATE USING dual ON ( msg_template_id="
+				sql = "MERGE INTO "+scheme+".T_MSG_TEMPLATE USING dual ON ( msg_template_id="
 						+ msg_template_id + " )"
 						+ "	WHEN MATCHED THEN UPDATE SET msg_template_type='" + msg_template_type + "', topic_id= " + topic_id +
 						"	WHEN NOT MATCHED THEN " 
@@ -3501,7 +3511,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				rs = stmt.executeQuery(sql);
 
 				// @formatter:off
-				String sql1 = "MERGE INTO "+scheme+".T_MSG_TEMPLATE_TOPIC USING dual ON ( msg_template_id="
+				sql = "MERGE INTO "+scheme+".T_MSG_TEMPLATE_TOPIC USING dual ON ( msg_template_id="
 						+ msg_template_id + " )"
 						+ "	WHEN MATCHED THEN UPDATE SET msg_template_description='" + msg_template_description + "'," +
 																						"process_point='" + process_point + "'," +
@@ -3513,11 +3523,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						+ ",'" + process_point + "'"
 						+ ",'" + rules_conditions + "')";
 				// @formatter:on
-				rs = stmt.executeQuery(sql1);
+				rs = stmt.executeQuery(sql);
 
 				// lets delete deplate_default for this template_id
-				sql1 = "delete " + scheme + ".T_MSG_TEMPLATE_DEFAULT where msg_template_id=" + msg_template_id;
-				stmt.execute(sql1);
+				sql = "delete " + scheme + ".T_MSG_TEMPLATE_DEFAULT where msg_template_id=" + msg_template_id;
+				stmt.execute(sql);
 
 				int valueCount = sysObject.getValueCount("bn_template_key");
 				for (int i = 0; i < valueCount; i++) {
@@ -3541,15 +3551,19 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				String msg = "Updated business notification on: " + realUrl1;
 				WsServer.log(loginName, msg);
 				Logger.getLogger(this.getClass()).info(msg);
-				userSession.getSessionManager().release(userSession);
 
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
+			Logger.getLogger(this.getClass()).error("sql: " + sql);
 			StringWriter errorStringWriter = new StringWriter();
 			PrintWriter pw = new PrintWriter(errorStringWriter);
 			e.printStackTrace(pw);
 			Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
+			WsServer.log(loginName, "ERROR: " + e.getMessage());
 		} finally {
+			if (userSession != null)
+				if (userSession.isConnected())
+					userSession.getSessionManager().release(userSession);
 		}
 
 		return null;
@@ -4100,9 +4114,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				String folderPath = fold.getAllRepeatingStrings("r_folder_path", "");
 
 // @formatter:off				
-				IDfQuery q = new DfQuery("select r_object_id from dm_document where folder('" + folderPath + "') and a_content_type='pdf' union " +
-																 "select r_object_id from dm_document where folder('" + folderPath + "') and a_content_type='tiff' union " +
-																 "select r_object_id from dm_document where folder('" + folderPath + "') and a_content_type='msg'"				
+				IDfQuery q = new DfQuery("select r_object_id from dm_document where folder('" + folderPath + "') and (a_content_type='pdf' or " +
+																																																						 "a_content_type='tiff' or " +
+																																																						 "a_content_type='msg' or " +
+																																																						 "a_content_type='odt' or " +
+																																																						 "a_content_type='csv' or " +
+																																																						 "a_content_type='tiff' or " +
+																																																						 "a_content_type='tiff')"
 						);
 // @formatter:on				
 				IDfCollection coll = q.execute(userSession, IDfQuery.DF_READ_QUERY);
@@ -4161,7 +4179,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					// if (f != null && Files.size(f.toPath()) > 0) {
 					// // "curl -T testpdf.pdf http://localhost:9998/tika";
 					//
-					// Runtime rt = Runtime.getRuntime();
+					// Runtime rt = Runtime.getRuntime();s
 					// String[] commands = { "curl", "-T", f.getAbsolutePath(),
 					// "http://localhost:9998/tika" };
 					// Process proc = rt.exec(commands);
@@ -4248,8 +4266,43 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				// msg.setName("process.milestones");
 
 				client.syncTemplate(r_object_id);
-				
+
 				Logger.getLogger(this.getClass()).error("Synced template on: " + wsdlEndpoint + " endpoint.");
+			} catch (Exception ex) {
+				String stackTrace = ExceptionUtils.getStackTrace(ex);
+				Logger.getLogger(this.getClass()).error("Error calling syncTemplate for user: " + loginName);
+				Logger.getLogger(this.getClass()).error(stackTrace);
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public Void configureERender(String loginName, String password, String xml) throws ServerException {
+
+		String[] allEndpoints = {
+
+				"http://localhost:8081/PdfGenerator/services?wsdl"
+				/*
+				 * "http://erender-test.ts.telekom.si:8080/PdfGeneratorStaging/services?wsdl",
+				 * "http://erender-test.ts.telekom.si:8080/PdfGeneratorSb1/services?wsdl",
+				 * "http://erender-test.ts.telekom.si:9080/PdfGeneratorSb2/services?wsdl",
+				 * "http://bpl1-kaksisa1-v.ts.telekom.si:8080/PdfGenerator/services?wsdl",
+				 * "http://bpl2-kaksisa2-v.ts.telekom.si:8080/PdfGenerator/services?wsdl"
+				 */
+		};
+
+		QName qname = new QName("http://templates.mobitel.com/", "PdfGeneratorImplService");
+
+		for (String wsdlEndpoint : allEndpoints) {
+
+			try {
+				URL serviceUrl = new URL(wsdlEndpoint);
+				PdfGeneratorImplService pdfGeneratorImplService = new PdfGeneratorImplService(serviceUrl, qname);
+				PdfGenerator client = pdfGeneratorImplService.getPdfGeneratorImplPort();
+				Logger.getLogger(this.getClass()).error("configureERender on: " + wsdlEndpoint + " endpoint started.");
+				client.configureERender(xml);
+				Logger.getLogger(this.getClass()).error("configureERender on: " + wsdlEndpoint + " endpoint completed.");
 			} catch (Exception ex) {
 				String stackTrace = ExceptionUtils.getStackTrace(ex);
 				Logger.getLogger(this.getClass()).error("Error calling syncTemplate for user: " + loginName);

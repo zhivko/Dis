@@ -18,6 +18,7 @@ public class StandardAction implements HasIdName, com.google.gwt.user.client.rpc
 			MOVE_ALL_FOLDER_LINKS("move_all_folder_links"),
 			START_WORKFLOW("start_workflow"),
 			REPLACE_VERSION_LABEL("replace_version_label"),
+			ADD_VERSION_LABEL("add_version_label"),
 			SET_ATTRIBUTE("set_attribute"),
 			CLEAR_ATTRIBUTES("clear_attributes"),
 			APPLY_CAS_RETENTION("apply_cas_retention");

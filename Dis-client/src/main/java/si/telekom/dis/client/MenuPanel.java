@@ -42,6 +42,7 @@ import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import si.telekom.dis.client.action.AdminConfigureERender;
 import si.telekom.dis.client.action.EditRegisteredTable;
 import si.telekom.dis.client.action.ExplorerSettings;
 import si.telekom.dis.client.action.ImportDocument;
@@ -128,6 +129,24 @@ public class MenuPanel extends Composite {
 					// search
 				} else if (index == 3) {
 					if (MainPanel.getInstance().loginRole.equalsIgnoreCase("administrator")) {
+						
+						// add admin actions onl if adminpanel is not loaded already
+						if(spDocTypes==null)
+						{
+							//first time
+							Button actionConfigureERender = new Button("Configure ERender");
+							actionConfigureERender.addClickHandler(new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									MainPanel.clearPanel();
+									AdminConfigureERender configERender = new AdminConfigureERender();
+									MainPanel.getPanel().add(configERender);
+								}
+							});
+							adminPanel.add(actionConfigureERender);
+						}
+						
+						
 						MainPanel.log("Loading doctypes...");
 						if (spDocTypes == null) {
 							MainPanel.log("First time creating doctypes...");
