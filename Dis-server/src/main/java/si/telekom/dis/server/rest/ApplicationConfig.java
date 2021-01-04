@@ -33,9 +33,6 @@ public class ApplicationConfig extends Application {
         resources.add(si.telekom.dis.shared.Profile.class);
         resources.add(si.telekom.dis.shared.Role.class);
         resources.add(si.telekom.dis.server.rest.DisRest.class);
-        resources.add(si.telekom.dis.server.rest.AttValue.class);
-        resources.add(si.telekom.dis.server.rest.AttValueList.class);
-        
 
         //==> we could also choose packages, see below getProperties()
         
