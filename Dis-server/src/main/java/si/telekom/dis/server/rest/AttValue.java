@@ -8,7 +8,7 @@ import javax.ws.rs.QueryParam;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@JsonInclude(Include.NON_EMPTY)
+@JsonInclude(Include.ALWAYS)
 public class AttValue {
 		@QueryParam("attributeName")
 		public String attName;

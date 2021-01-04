@@ -2173,7 +2173,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						} else {
 							throw new Exception("Object is not current, new version exists. Check SHOW Versions.");
 						}
-					}  else if (sa.kind.equalsIgnoreCase(StandardAction.types.ADD_VERSION_LABEL.type)) {
+					} else if (sa.kind.equalsIgnoreCase(StandardAction.types.ADD_VERSION_LABEL.type)) {
 						boolean ok = false;
 						ArrayList<String> allVersionLabels = new ArrayList<String>();
 						for (int i = 0; i < dfSysObject.getVersionLabelCount(); i++) {
@@ -3940,6 +3940,49 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	public static void beginTransaction(IDfSession userSession) throws Exception {
 		userSession.beginTrans();
+	}
+
+	synchronized public String getLoginTicket(String userDomain, String userLoginName, String docbaseName) throws ServerException {
+		String ret = null;
+		String ticket = null;
+
+		Logger.getLogger(AdminServiceImpl.class)
+				.info(String.format("'getloginTicket' called for user: %s domain:%s docbase:%s", userLoginName, userDomain, docbaseName));
+
+		IDfSession dfSuperUserSession = null;
+
+		try {
+
+			dfSuperUserSession = getSuperUserSession(docbaseName);
+
+			ticket = dfSuperUserSession.getLoginTicketEx(userDomain + "\\" + userLoginName, "docbase", 0, false, null);
+
+			// username - the supplied username
+			// scope - docbase
+			// timeout - no value (this defaults to the value in
+			// login_ticket_timeout
+			// in dm_server_config)
+			// singleUse - false
+			// serverName - no value
+
+			// ticket = session.getLoginTicketForUser(userLoginName);
+			ret = ticket;
+			Logger.getLogger(AdminServiceImpl.class)
+					.info(String.format("'getloginTicket' for user: %s domain:%s docbase:%s ... END.", userLoginName, userDomain, docbaseName));
+		} catch (Exception ex) {
+			ByteArrayOutputStream byteAOs = new ByteArrayOutputStream();
+			PrintWriter pw = new PrintWriter(byteAOs);
+			ex.printStackTrace(pw);
+			pw.flush();
+			Logger.getLogger(AdminServiceImpl.class)
+					.error("Error getting authTicket for user " + userDomain + "\\" + userLoginName + ". " + ex.getMessage());
+			throw new ServerException(ex);
+		} finally {
+			if (dfSuperUserSession != null)
+				dfSuperUserSession.getSessionManager().release(dfSuperUserSession);
+		}
+
+		return ret;
 	}
 
 }

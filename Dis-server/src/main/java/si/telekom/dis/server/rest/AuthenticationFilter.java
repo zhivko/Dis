@@ -1,15 +1,14 @@
 package si.telekom.dis.server.rest;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.annotation.Priority;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
@@ -17,14 +16,25 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.log4j.Logger;
+
 import jcifs.util.Base64;
+import si.telekom.dis.server.LoginServiceImpl;
 
 /**
  * This filter verify the access permissions for a user based on username and
- * passowrd provided in request
+ * password provided in request
  */
+
+// http://localhost:8080/Dis-server/rest/disRest/newDocument
+
+
 @Provider
+@Priority(Priorities.AUTHENTICATION) // needs to happen before authorization
 public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequestFilter {
+
+	@Context
+	private HttpServletRequest servletRequest;
 
 	@Context
 	private ResourceInfo resourceInfo;
@@ -34,11 +44,14 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) {
-		return;
-	}
-	
-	public void filter2(ContainerRequestContext requestContext) {
 		Method method = resourceInfo.getResourceMethod();
+		
+    //We do allow wadl to be retrieve
+		String path = requestContext.getUriInfo().getPath(true);
+    if(method.getName().equals("getWadl") && (path.equals("application.wadl") || path.equals("application.wadl/xsd0.xsd"))){
+        return;
+    }
+    
 		// Access allowed for all
 		if (!method.isAnnotationPresent(PermitAll.class)) {
 			// Access denied for all
@@ -64,7 +77,6 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 
 			// Decode username and password
 			String usernameAndPassword = new String(Base64.decode(encodedUserPassword));
-			;
 
 			// Split username and password tokens
 			final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
@@ -72,40 +84,50 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 			final String password = tokenizer.nextToken();
 
 			// Verifying Username and password
-			System.out.println(username);
-			System.out.println(password);
+			Logger.getLogger(this.getClass().getName()).info("Authenticating user: " + username);
 
-			// Verify user access
-			if (method.isAnnotationPresent(RolesAllowed.class)) {
-				RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
-				Set<String> rolesSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
-
-				// Is user valid?
-				if (!isUserAllowed(username, password, rolesSet)) {
-					requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("You cannot access this resource").build());
-					return;
-				}
+			/*
+			 * // Verify user access if
+			 * (method.isAnnotationPresent(RolesAllowed.class)) { RolesAllowed
+			 * rolesAnnotation = method.getAnnotation(RolesAllowed.class); Set<String>
+			 * rolesSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
+			 * 
+			 * // Is user valid? if (!isUserAllowed(username, password, rolesSet)) {
+			 * requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).
+			 * entity("You cannot access this resource").build()); return; } }
+			 */
+			// Is user valid?
+			if (!isUserAllowed(username, password)) {
+				requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("You cannot access this resource").build());
+				return;
 			}
+			Logger.getLogger(this.getClass().getName()).info("Authenticating user: " + username + " ... authenticated.");
+
+      // We configure your Security Context here
+      String scheme = requestContext.getUriInfo().getRequestUri().getScheme();
+      
+      User us = new User();
+      us.setId(username);
+      us.setPassword(password);
+      
+      requestContext.setSecurityContext(new MyApplicationSecurityContext(us, scheme));
+      
 		}
 	}
 
-	private boolean isUserAllowed(final String username, final String password, final Set<String> rolesSet) {
+	private boolean isUserAllowed(final String username, final String password) {
 		boolean isAllowed = false;
 
-		// Step 1. Fetch password from database and match with password in argument
-		// If both match then get the defined role for user from database and
-		// continue; else return isAllowed [false]
-		// Access the database and do this part yourself
-		// String userRole = userMgr.getUserRole(username);
-
-		if (username.equals("howtodoinjava") && password.equals("password")) {
-			String userRole = "ADMIN";
-
-			// Step 2. Verify user role
-			if (rolesSet.contains(userRole)) {
-				isAllowed = true;
-			}
+		try {
+			LoginServiceImpl loginServiceImpl = new LoginServiceImpl();
+			String clientIp = servletRequest.getRemoteAddr();
+			loginServiceImpl.checkPassword(username, org.apache.commons.codec.binary.Base64.encodeBase64String(password.getBytes()), clientIp);
+			isAllowed = true;
+			return isAllowed;
+		} catch (Exception ex) {
+			Logger.getLogger(this.getClass()).warn("User " + username + " cannot login: " + ex.getMessage());
 		}
-		return isAllowed;
+		return false;
 	}
+
 }

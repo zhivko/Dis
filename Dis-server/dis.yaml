@@ -1,0 +1,329 @@
+openapi: 3.0.3
+servers:
+  - url: https://erender-test.ts.telekom.si:8445/api/v1/dis-dev
+    description: Test server
+  - url: https://erender-test.ts.telekom.si:8445/api/v1/dis-test
+    description: Test server
+  - url: https://erender-test.ts.telekom.si:8445/api/v1/dis
+    description: Prod server
+info:
+  version: "1.0.4"
+  title: Dis provisioning API
+paths:
+  /documents:
+    post:
+      tags:
+       - provisioning
+      summary: creates a new document
+      operationId: createDocument
+      description: creates a new document in Dis
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: header
+          name: 'X-Transaction-Id'
+          schema:
+            type: string
+          example: '123e4567-e89b-12d3-a456-426614174000'
+      responses:
+        '400':
+          description: 'invalid input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: 'invalid state (code 11 - document with this barcode already exist)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                'document barcode conflict':
+                  value:
+                    code: "11"
+                    reason: "document with this barcode already exist"
+        '500':
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+              
+  /documents/{r_object_id}/promote:
+    post:
+      tags:
+       - provisioning
+      summary: promote document
+      operationId: promoteDocument
+      description: promote the document in Dis platform
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: header
+          name: 'X-Transaction-Id'
+          schema:
+            type: string
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        - in: path
+          name: r_object_id
+          description: unique document identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterUserResponse'
+        '400':
+          description: 'invalid input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: 'invalid state'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                'already in last state':
+                  value:
+                    code: "21"
+                    reason: "document is already in latest state"
+        '500':
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromoteDocumentResponse'
+  /documents/{r_object_id}/demote:
+    post:
+      tags:
+       - provisioning
+      summary: demote document
+      operationId: demoteDocument
+      description: demote the document in Dis platform
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: header
+          name: 'X-Transaction-Id'
+          schema:
+            type: string
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        - in: path
+          name: r_object_id
+          description: unique document identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoteDocumentResponse'
+        '400':
+          description: 'invalid input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: 'invalid state'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                'already in last state':
+                  value:
+                    code: "21"
+                    reason: "document is already in latest state"
+        '500':
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'              
+              
+  /users/{userId}:
+    get:
+      tags:
+       - provisioning
+      summary: queries user information
+      operationId: getUser
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: header
+          name: 'X-Transaction-Id'
+          schema:
+            type: string
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        - in: path
+          name: userId
+          description: unique user identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: user object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: 'user not found'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+       - provisioning
+      summary: removes user with their subscriptions
+      operationId: removeUser
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: header
+          name: 'X-Transaction-Id'
+          schema:
+            type: string
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        - in: path
+          name: userId
+          description: unique user identifier
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: anonymize
+          description: anonimize user information
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '404':
+          description: 'user not found'
+        '405':
+          description: 'invalid state'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  headers:
+    XTransactionId:
+      description: Global transaction identifier
+      schema:
+        type: string
+      example: '123e4567-e89b-12d3-a456-426614174000'
+  schemas:
+    CreateUserRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          description: unique user identifier 
+          example: "17236242"
+        subscription:
+          type: string
+          description: user subscription type
+          example: "basic"
+    RegisterUserRequest:
+      type: object
+      required:
+        - username
+        - password
+        - mobilePhoneNumber
+      properties:
+        username:
+          type: string
+          description: unique user's username, used for login
+          example: "user1"
+        password:
+          type: string
+          description: user's password, used for login
+          example: "secret password"
+        mobilePhoneNumber:
+          type: string
+          description: mobile phone number in international format
+          example: "+38641700700"
+    RegisterUserResponse:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          description: user refresh token that can be used for automatic login
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: unique user identifier 
+          example: "17236242"
+        username:
+          type: string
+          description: unique user's username, used for login
+          example: "user1"
+        mobilePhoneNumber:
+          type: string
+          description: mobile phone number in international format
+          example: "+38641700700"
+        registered:
+          type: boolean
+          description: mobile phone number in international format
+    Error:
+      required:
+        - code
+        - reason
+      properties:
+        code:
+          type: string
+          description: Application related code.
+        reason:
+          type: string
+          description: Text that explains the reason for error.
+        message:
+          type: string
+          description: (optional) Text that provides more details and corrective actions related to the error.
+        referenceError:
+          $ref: '#/components/schemas/Error'

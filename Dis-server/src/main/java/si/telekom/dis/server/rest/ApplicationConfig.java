@@ -7,6 +7,8 @@ import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
+
+import org.glassfish.jersey.filter.LoggingFilter;
 //https://www.nabisoft.com/tutorials/java-ee/producing-and-consuming-json-or-xml-in-java-rest-services-with-jersey-and-jackson
 @ApplicationPath("/rest")
 public class ApplicationConfig extends Application {
@@ -22,7 +24,10 @@ public class ApplicationConfig extends Application {
         //this will register Jackson JSON providers
         resources.add(org.glassfish.jersey.jackson.JacksonFeature.class);
         //we could also use this:
-        //resources.add(com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider.class);
+        resources.add(com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider.class);
+        
+        resources.add(LoggingFilter.class);
+        //resources.add(GsonMessageBodyHandler.class);        
         
         //instead let's do it manually:
         resources.add(si.telekom.dis.shared.Profile.class);
@@ -31,6 +36,7 @@ public class ApplicationConfig extends Application {
         resources.add(si.telekom.dis.server.rest.AttValue.class);
         resources.add(si.telekom.dis.server.rest.AttValueList.class);
         
+
         //==> we could also choose packages, see below getProperties()
         
         System.out.println("REST configuration ended successfully.");
@@ -57,6 +63,7 @@ public class ApplicationConfig extends Application {
         //explicitly in getClasses():
         properties.put("jersey.config.server.provider.packages", "si.telekom.dis.server.rest");
         
+
         
         return properties;
     }    

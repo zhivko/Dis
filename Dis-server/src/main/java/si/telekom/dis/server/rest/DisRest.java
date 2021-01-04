@@ -3,16 +3,22 @@ package si.telekom.dis.server.rest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Named;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
+
+import org.apache.commons.codec.binary.Base64;
 
 import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
@@ -45,71 +51,131 @@ public class DisRest {
 	}
 
 	@GET
-	@Consumes( MediaType.APPLICATION_JSON )
-	@Produces( MediaType.APPLICATION_JSON )
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/getSampleNewDocumentArg")
+	// public String newDocument(@QueryParam("loginName") String loginName,
+	// @QueryParam("passwordEncrypted") String passwordEncrypted,
+	// @QueryParam("profileId") String profileId, @BeanParam HashMap<String,
+	// ArrayList<String>> attributes, @BeanParam HashMap<String,
+	// ArrayList<String>> roles,
+	// @QueryParam("templateObjectNameOrFolder") String
+	// templateObjectNameOrFolder) {
+	public NewDocumentArg getSampleNewDocumentArg(@Context SecurityContext sc) {
+		NewDocumentArg ndArg = new NewDocumentArg();
+
+		ndArg.setProfileId("test");
+
+		HashMap<String, String[]> attributes = new HashMap<String, String[]>();
+		String[] vals = { "v1", "v2", "v3" };
+		attributes.put("a1", vals);
+		ndArg.setAttribute(attributes);
+
+		HashMap<String, String[]> roles = new HashMap<String, String[]>();
+		String[] valsRoles = { "r1", "r2", "r3" };
+		roles.put("r1", valsRoles);
+		ndArg.setRoles(roles);
+
+		ndArg.setTemplateObjectNameOrFolder("");
+
+		return ndArg;
+	}
+
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/newDocument")
-//	public String newDocument(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
-//			@QueryParam("profileId") String profileId, @BeanParam HashMap<String, ArrayList<String>> attributes, @BeanParam HashMap<String, ArrayList<String>> roles,
-//			@QueryParam("templateObjectNameOrFolder") String templateObjectNameOrFolder) {
-public String newDocument(NewDocumentArg newDocumentArg) {
+	// public String newDocument(@QueryParam("loginName") String loginName,
+	// @QueryParam("passwordEncrypted") String passwordEncrypted,
+	// @QueryParam("profileId") String profileId, @BeanParam HashMap<String,
+	// ArrayList<String>> attributes, @BeanParam HashMap<String,
+	// ArrayList<String>> roles,
+	// @QueryParam("templateObjectNameOrFolder") String
+	// templateObjectNameOrFolder) {
+	public String newDocument(@Context SecurityContext sc, NewDocumentArg newDocumentArg) {
 		try {
 
-//			HashMap<String, List<String>> vals = new HashMap<String, List<String>>();
-//			for (AttValue attValue : attributes.attValueList) {
-//				vals.put(attValue.attName, attValue.values);
-//			}
-//
-//			HashMap<String, List<String>> rolesUsers = new HashMap<String, List<String>>();
-//			for (RoleValue roleValue : roles.roleValueList) {
-//				rolesUsers.put(roleValue.roleName, roleValue.values);
-//			}
-			
-//			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
-//			for (String attName :  attributes.keySet()) {
-//				ArrayList<String> values = new ArrayList<String>();
-//				for (String value : attributes.get(attName)) {
-//					values.add(value);
-//				}
-//				attributes_.put(attName, values);
-//			}
-//
-//			
-//			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
-//			for (String roleName :  attributes.keySet()) {
-//				ArrayList<String> values = new ArrayList<String>();
-//				for (String value : roles.get(roleName)) {
-//					values.add(value);
-//				}
-//				roles_.put(roleName, values);
-//			}
+			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
+			for (String attName : newDocumentArg.getAttributes().keySet()) {
+				ArrayList<String> values = new ArrayList<String>();
+				for (String value : newDocumentArg.getAttributes().get(attName)) {
+					values.add(value);
+				}
+				attributes_.put(attName, values);
+			}
 
+			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
+			for (String roleName : newDocumentArg.getRoles().keySet()) {
+				ArrayList<String> values = new ArrayList<String>();
+				for (String value : newDocumentArg.getRoles().get(roleName)) {
+					values.add(value);
+				}
+				roles_.put(roleName, values);
+			}
 
-			return ExplorerServiceImpl.getInstance().newDocument(newDocumentArg.getLoginName(), newDocumentArg.getPasswordEncrypted(), newDocumentArg.getProfileId(), newDocumentArg.getAttributes(), newDocumentArg.getRoles(), newDocumentArg.getTemplateObjectNameOrFolder());
+			User user = (User) sc.getUserPrincipal();
+
+// @formatter:off
+			return ExplorerServiceImpl.getInstance().newDocument(
+					user.getId(), 
+					Base64.encodeBase64String(user.getPassword().getBytes()),
+					newDocumentArg.getProfileId(), 
+					attributes_, 
+					roles_, 
+					newDocumentArg.getTemplateObjectNameOrFolder()
+			);
+// @formatter:on
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
 		}
 	}
 
-	@GET
-	@Consumes(MediaType.TEXT_HTML)
-	@Produces({ MediaType.APPLICATION_JSON })
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/importDocument")
-	public String importDocument(@QueryParam("loginName") String loginName, @QueryParam("encryptedPassword") String encryptedPassword,
-			@QueryParam("folderRObjectId") String folderRObjectId, @QueryParam("profileId") String profileId, @BeanParam AttValueList attributes,
-			@BeanParam RoleValueList roles, @QueryParam("base64content") String base64Content, @QueryParam("format") String format) {
+	// public String newDocument(@QueryParam("loginName") String loginName,
+	// @QueryParam("passwordEncrypted") String passwordEncrypted,
+	// @QueryParam("profileId") String profileId, @BeanParam HashMap<String,
+	// ArrayList<String>> attributes, @BeanParam HashMap<String,
+	// ArrayList<String>> roles,
+	// @QueryParam("templateObjectNameOrFolder") String
+	// templateObjectNameOrFolder) {
+	public String importDocument(@Context SecurityContext sc, ImportDocumentArg importDocumentArg) {
 		try {
-			HashMap<String, List<String>> vals_ = new HashMap<String, List<String>>();
-			for (AttValue attValue : attributes.attValueList) {
-				vals_.put(attValue.attName, attValue.values);
+
+			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
+			for (String attName : importDocumentArg.getAttributes().keySet()) {
+				ArrayList<String> values = new ArrayList<String>();
+				for (String value : importDocumentArg.getAttributes().get(attName)) {
+					values.add(value);
+				}
+				attributes_.put(attName, values);
 			}
 
-			HashMap<String, List<String>> rolesUsers_ = new HashMap<String, List<String>>();
-			for (RoleValue roleValue : roles.roleValueList) {
-				rolesUsers_.put(roleValue.roleName, roleValue.values);
+			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
+			for (String roleName : importDocumentArg.getRoles().keySet()) {
+				ArrayList<String> values = new ArrayList<String>();
+				for (String value : importDocumentArg.getRoles().get(roleName)) {
+					values.add(value);
+				}
+				roles_.put(roleName, values);
 			}
-			byte[] base64Content_ = base64Content.getBytes();
-			return ExplorerServiceImpl.getInstance().importDocument(loginName, encryptedPassword, folderRObjectId, profileId, vals_, rolesUsers_,
-					base64Content_, format);
+
+			User user = (User) sc.getUserPrincipal();
+
+// @formatter:off
+			return ExplorerServiceImpl.getInstance().importDocument(
+					user.getId(), 
+					Base64.encodeBase64String(user.getPassword().getBytes()),
+					importDocumentArg.getFolderId(), 
+					importDocumentArg.getProfileId(), 
+					attributes_, 
+					roles_, 
+					importDocumentArg.getContentBase64().getBytes(),
+					importDocumentArg.getFormat());
+// @formatter:on
+
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
 		}

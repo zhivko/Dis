@@ -98,17 +98,24 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	}
 
 	public String[] checkPassword(String loginName, String passwordHashed) throws Exception {
+		return checkPassword(loginName, passwordHashed, null);
+	}
+
+	public String[] checkPassword(String loginName, String passwordHashed, String ip) throws Exception {
 		String ret[] = { "", "", "", "", "", "" };
 
 		IDfSession adminSession = null;
 		IDfSession userSess = null;
 
 		try (final DatagramSocket socket = new DatagramSocket()) {
-			final String ip = getThreadLocalRequest().getRemoteHost();
+
+			if (ip == null)
+				ip = getThreadLocalRequest().getRemoteHost();
+
 			InetAddress addr = InetAddress.getByName(ip);
 			String hostName = addr.getHostName();
 
-			boolean tryDevelop=true;
+			boolean tryDevelop = true;
 			if (tryDevelop && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 5000;
@@ -133,8 +140,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				loginName = "ttaks";
 				loginName = "zivkovick";
 				loginName = "ikovacic";
-				loginName = "zivkovick";				
-				
+				loginName = "zivkovick";
+
 				ret[0] = loginName;
 				adminSession = AdminServiceImpl.getInstance().getAdminSession();
 				IDfUser dcmtUser = (IDfUser) adminSession.getObjectByQualification("dm_user where user_login_name='" + loginName + "'");

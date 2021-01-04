@@ -12,7 +12,7 @@ import javax.ws.rs.ext.ParamConverter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@JsonInclude(Include.NON_EMPTY)
+@JsonInclude(Include.ALWAYS)
 public class AttValueList {
 	@QueryParam("attValueList")
 	public List<AttValue> attValueList;

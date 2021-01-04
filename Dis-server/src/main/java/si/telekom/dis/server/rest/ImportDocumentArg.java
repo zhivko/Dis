@@ -10,14 +10,16 @@ import com.sun.xml.txw2.annotation.XmlElement;
 
 @XmlRootElement
 @JsonInclude(Include.ALWAYS)
-public class NewDocumentArg {
+public class ImportDocumentArg {
 
 	private String profileId;
+	private String folderId;
 	private Map<String, String[]> attributes;
 	private Map<String, String[]> roles;
-	private String templateObjectNameOrFolder;
+	private String contentBase64;
+	private String format;
 
-	public NewDocumentArg()
+	public ImportDocumentArg()
 	{
 		
 	}
@@ -30,6 +32,16 @@ public class NewDocumentArg {
 	public void setProfileId(String profileId) {
 		this.profileId = profileId;
 	}
+	
+	@XmlElement(value="folderId")
+	public String getFolderId() {
+		return folderId;
+	}
+
+	public void setFolderId(String folderId) {
+		this.folderId = folderId;
+	}	
+	
 
 	@XmlElement(value="attributes")
 	public Map<String, String[]> getAttributes() {
@@ -49,11 +61,22 @@ public class NewDocumentArg {
 		this.roles = roles;
 	}
 
-	public String getTemplateObjectNameOrFolder() {
-		return templateObjectNameOrFolder;
+	@XmlElement(value="contentBase64")
+	public String getContentBase64() {
+		return contentBase64;
 	}
 
-	public void setTemplateObjectNameOrFolder(String templateObjectNameOrFolder) {
-		this.templateObjectNameOrFolder = templateObjectNameOrFolder;
+	public void setContentBase64(String contentBase64) {
+		this.contentBase64 = contentBase64;
 	}
+
+	@XmlElement(value="format")
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
+	}
+
 }

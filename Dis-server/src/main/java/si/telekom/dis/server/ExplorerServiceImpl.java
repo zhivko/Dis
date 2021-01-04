@@ -3016,6 +3016,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				throw new Exception("LoginName should not be null");
 			if (password == null)
 				throw new Exception("Password should not be null");
+			if (templateObjectNameOrFolder.equals("") || templateObjectNameOrFolder == null) {
+				throw new ServerException("No such folder or template with object_name='" + templateObjectNameOrFolder + "'");
+			}
+			Profile prof = AdminServiceImpl.profiles.get(profileId);
+			if (prof == null) {
+				throw new ServerException("No such profile: " + profileId);
+			}
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			AdminServiceImpl.beginTransaction(userSession);
@@ -3026,8 +3033,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			} else {
 				dqlOfObjects = "select r_object_id from dm_document where folder('" + templateObjectNameOrFolder + "')";
 			}
-
-			Profile prof = AdminServiceImpl.profiles.get(profileId);
 
 			IDfQuery query = new DfQuery();
 			query.setDQL(dqlOfObjects);
@@ -3155,7 +3160,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
 
 			try {
-				userSession.abortTrans();
+				if (userSession!=null && userSession.isTransactionActive())
+					userSession.abortTrans();
 			} catch (Exception ex1) {
 				errorStringWriter = new StringWriter();
 				pw = new PrintWriter(errorStringWriter);
@@ -3414,8 +3420,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			String dnsName = host.getHostName();
 
 			String[] arg2 = { this.getThreadLocalRequest().getRemoteAddr(), dnsName, this.getThreadLocalRequest().getRemoteUser() };
-			mgr.createAudit(new DfId(sysObject.getId("r_object_id").toString()), "updateBusinessNotification", arg2, null);			
-			
+			mgr.createAudit(new DfId(sysObject.getId("r_object_id").toString()), "updateBusinessNotification", arg2, null);
+
 			String msg_template_id = sysObject.getString("mob_template_id").toString();
 			String msg_template_type = sysObject.getString("bn_template_type").toString();
 			int topic_id = sysObject.getInt("bn_topic_id");
