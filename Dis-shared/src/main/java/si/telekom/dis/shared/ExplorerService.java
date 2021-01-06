@@ -44,7 +44,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		String newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String templateObjectName) throws ServerException;
 		Void classifyDocument(String loginName, String password, String r_object_id, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers) throws ServerException;
 		
-		String importDocument(String loginName, String password, String objectId, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] contentBase64, String format) throws ServerException;
+		String importDocument(String loginName, String password, String objectId, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] contentBase64, String format) throws ServerException;
 		
 		List<Document> runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length) throws ServerException;
 		List<List<String>> showPdfTags(String loginName, String loginPassword, String r_object_id) throws ServerException;

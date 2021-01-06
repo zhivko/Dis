@@ -2117,11 +2117,14 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 							IDfFolder dfFold = (IDfFolder) userSess.getObject(dfSysObject.getFolderId(k));
 							if (dfFold.getId("r_object_id").equals(dfId)) {
 								alreadyLinked = true;
+								Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " already linked to folder: " + folder);
 								break;
 							}
 						}
 						if (!alreadyLinked) {
+							Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " linking to folder: " + folder + "...");
 							dfSysObject.link(folder);
+							Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " linking to folder: " + folder + "...Done.");
 							dfSysObject.save();
 						}
 					} else if (sa.kind.equalsIgnoreCase(StandardAction.types.MOVE_ALL_FOLDER_LINKS.type)) {
@@ -2130,6 +2133,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 							IDfFolder dfFold = (IDfFolder) userSess.getObject(dfSysObject.getFolderId(i));
 							String folderPath = dfFold.getAllRepeatingStrings("r_folder_path", "/");
 							dfSysObject.unlink(folderPath);
+							Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " unlinked from folder: " + folderPath);
 						}
 
 						IDfId dfId = AdminServiceImpl.getOrCreateFolder(folder);
@@ -2138,12 +2142,15 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 							IDfFolder dfFold = (IDfFolder) userSess.getObject(dfSysObject.getFolderId(k));
 							if (dfFold.getId("r_object_id").equals(dfId)) {
 								alreadyLinked = true;
+								Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " already linked in folder: " + folder);
 								break;
 							}
 						}
 						if (!alreadyLinked) {
+							Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " linking to folder: " + folder + "...");
 							dfSysObject.link(folder);
 							dfSysObject.save();
+							Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " linking to folder: " + folder + "...Done.");
 						}
 
 					} else if (sa.kind.equalsIgnoreCase(StandardAction.types.UNLINK_FROM_FOLDER.type)) {
@@ -2161,14 +2168,18 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 								ok = true;
 							}
 						}
+						Logger.getLogger(AdminServiceImpl.class).info("REPLACE_VERSION_LABEL is OK? " + ok);
 						if (ok) {
 							for (String ver : allVersionLabels) {
 								if (!ver.equals("CURRENT") && !isNumeric(ver)) {
 									dfSysObject.unmark(ver);
+									Logger.getLogger(AdminServiceImpl.class).info("REPLACE_VERSION_LABEL unmarked: " + ver);
 								}
 							}
 							dfSysObject.mark(sa.parameter);
+							Logger.getLogger(AdminServiceImpl.class).info("REPLACE_VERSION_LABEL marked: " + sa.parameter);
 							dfSysObject.save();
+							Logger.getLogger(AdminServiceImpl.class).info("REPLACE_VERSION_LABEL saved.");
 							// sysObj.checkin (false, "");
 						} else {
 							throw new Exception("Object is not current, new version exists. Check SHOW Versions.");

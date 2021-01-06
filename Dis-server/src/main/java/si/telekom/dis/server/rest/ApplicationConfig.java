@@ -24,14 +24,14 @@ public class ApplicationConfig extends Application {
         //this will register Jackson JSON providers
         resources.add(org.glassfish.jersey.jackson.JacksonFeature.class);
         //we could also use this:
-        resources.add(com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider.class);
-        
-        resources.add(LoggingFilter.class);
+				resources.add(com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider.class);
+
+				resources.add(LoggingFilter.class);
         //resources.add(GsonMessageBodyHandler.class);        
         
         //instead let's do it manually:
-        resources.add(si.telekom.dis.shared.Profile.class);
-        resources.add(si.telekom.dis.shared.Role.class);
+//        resources.add(si.telekom.dis.shared.Profile.class);
+//        resources.add(si.telekom.dis.shared.Role.class);
         resources.add(si.telekom.dis.server.rest.DisRest.class);
 
         //==> we could also choose packages, see below getProperties()

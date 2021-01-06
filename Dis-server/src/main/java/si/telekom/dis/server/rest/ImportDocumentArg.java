@@ -15,10 +15,11 @@ public class ImportDocumentArg {
 	private String profileId;
 	private String folderId;
 	private Map<String, String[]> attributes;
-	private Map<String, String[]> roles;
+	private Map<String, String[]> rolesUsers;
 	private String contentBase64;
 	private String format;
-
+	private String stateId;
+	
 	public ImportDocumentArg()
 	{
 		
@@ -28,6 +29,16 @@ public class ImportDocumentArg {
 	public String getProfileId() {
 		return profileId;
 	}
+	
+	
+	@XmlElement(value = "stateId")
+	public String getStateId() {
+		return stateId;
+	}
+
+	public void setStateId(String stateId) {
+		this.stateId = stateId;
+	}	
 
 	public void setProfileId(String profileId) {
 		this.profileId = profileId;
@@ -54,11 +65,11 @@ public class ImportDocumentArg {
 
 	@XmlElement(value="rolesUsers")
 	public Map<String, String[]> getRoles() {
-		return roles;
+		return rolesUsers;
 	}
 
-	public void setRoles(Map<String, String[]> roles) {
-		this.roles = roles;
+	public void setRoles(Map<String, String[]> rolesUsers) {
+		this.rolesUsers = rolesUsers;
 	}
 
 	@XmlElement(value="contentBase64")

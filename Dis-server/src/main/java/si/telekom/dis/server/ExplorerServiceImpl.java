@@ -64,9 +64,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
-import javax.xml.ws.Binding;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.handler.Handler;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -123,24 +120,14 @@ import com.documentum.fc.common.IDfList;
 import com.documentum.fc.common.IDfLoginInfo;
 import com.documentum.fc.common.IDfTime;
 import com.documentum.fc.common.IDfValue;
-import com.documentum.operations.DfFormatRecognizer;
 import com.documentum.operations.IDfCopyOperation;
-import com.documentum.operations.IDfFormatRecognizer;
 import com.documentum.operations.IDfOperationError;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.itextpdf.text.pdf.PdfReader;
 
-import si.telekom.dis.server.jaxwsClient.catalogService.CatalogService;
-import si.telekom.dis.server.jaxwsClient.catalogService.CatalogValue;
-import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogRequestMsg;
-import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogResponseMsg;
-import si.telekom.dis.server.jaxwsClient.catalogService.ICatalogService;
-import si.telekom.dis.server.jaxwsClient.catalogService.RequestMessageHeader;
 import si.telekom.dis.server.jaxwsClient.eRender.PdfGenerator;
 import si.telekom.dis.server.jaxwsClient.eRender.PdfGeneratorImplService;
-import si.telekom.dis.server.jaxwsClient.eRender.SyncTemplate;
 import si.telekom.dis.server.reports.IIncludeInReport;
-import si.telekom.dis.server.rest.CatalogServiceClient.SecurityHandler;
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.Attribute;
 import si.telekom.dis.shared.AttributeRoleStateWizards;
@@ -1707,6 +1694,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 						coll.close();
 					}
+					coll2.close();
 				}
 
 				if (allVersions)
@@ -2424,17 +2412,34 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		int count = persObj.getValueCount("mob_supersedes");
 		for (int j = 0; j < count; j++) {
 			String objectNameToSupersede = persObj.getRepeatingString("mob_supersedes", j);
-			IDfSysObject objToSupersede = (IDfSysObject) userSession
-					.getObjectByQualification("mob_document where object_name='" + objectNameToSupersede + "'");
-			if (objToSupersede == null)
-				objToSupersede = (IDfSysObject) userSession.getObjectByQualification("mob_form_template where object_name='" + objectNameToSupersede + "'");
+			IDfSysObject objToSupersede = null;
+			if (objectNameToSupersede.contains("/")) {
+				String objectName = objectNameToSupersede.split("/")[0];
+				String mobReleaseNo = objectNameToSupersede.split("/")[1];
+				objToSupersede = (IDfSysObject) userSession
+						.getObjectByQualification("mob_document where object_name='" + objectName + "' and mob_releaseno=" + mobReleaseNo);
+				if (objToSupersede == null)
+					objToSupersede = (IDfSysObject) userSession
+							.getObjectByQualification("mob_form_template where object_name='" + objectName + "' and mob_releaseno=" + mobReleaseNo);
 
-			if (!objToSupersede.getId("r_object_id").equals(persObj.getId("r_object_id"))) {
-				Object[] profileAndRolesOfUserAndState = getProfileAndUserRolesAndState(objToSupersede, userSession.getLoginInfo().getUser(), userSession);
-				moveToState(userSession, objToSupersede.getId("r_object_id").toString(), "archive", profileAndRolesOfUserAndState, false);
+			} else {
+				objToSupersede = (IDfSysObject) userSession.getObjectByQualification("mob_document where object_name='" + objectNameToSupersede + "'");
+				if (objToSupersede == null)
+					objToSupersede = (IDfSysObject) userSession.getObjectByQualification("mob_form_template where object_name='" + objectNameToSupersede);
+			}
 
+			if (objToSupersede != null) {
+				if (!objToSupersede.getId("r_object_id").equals(persObj.getId("r_object_id"))) {
+					Object[] profileAndRolesOfUserAndState = getProfileAndUserRolesAndState(objToSupersede, userSession.getLoginInfo().getUser(), userSession);
+					moveToState(userSession, objToSupersede.getId("r_object_id").toString(), "archive", profileAndRolesOfUserAndState, false);
+				} else {
+					Logger.getLogger(this.getClass()).warn("Object is same.");
+				}
+			} else {
+				Logger.getLogger(this.getClass()).info("Could not get objectNameToSupersede.");
 			}
 		}
+
 	}
 
 	@Override
@@ -2829,7 +2834,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return null;
 	}
 
-	public synchronized String importDocument(String loginName, String password, String folderRObjectId, String profileId,
+	public synchronized String importDocument(String loginName, String password, String folderRObjectId, String profileId, String stateId,
 			Map<String, List<String>> attributes, Map<String, List<String>> rolesUsers, byte[] base64Content, String format) throws ServerException {
 
 		Logger.getLogger(this.getClass()).info("ImportDocument started.");
@@ -2917,15 +2922,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			try {
 
-				String newStateId = null;
-				for (int j = 0; j < prof.states.size(); j++) {
-					if (!prof.states.get(j).getId().equals("unclassified")) {
-						newStateId = prof.states.get(j).getId();
-						break;
+				if (stateId == null)
+					for (int j = 0; j < prof.states.size(); j++) {
+						if (!prof.states.get(j).getId().equals("unclassified")) {
+							stateId = prof.states.get(j).getId();
+							break;
+						}
 					}
-				}
 				persObject.save();
-				setStateForObject(userSession, persObject, prof, newStateId);
+				setStateForObject(userSession, persObject, prof, stateId);
 				setUsersForRoles(userSession, persObject, rolesUsers);
 				persObject.fetch("dm_document");
 
@@ -3160,7 +3165,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
 
 			try {
-				if (userSession!=null && userSession.isTransactionActive())
+				if (userSession != null && userSession.isTransactionActive())
 					userSession.abortTrans();
 			} catch (Exception ex1) {
 				errorStringWriter = new StringWriter();
@@ -3773,7 +3778,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				int releaseNo = 0;
 				releaseNo = dfSysObject.getInt("mob_releaseno") + 1;
 				copiedObject.setInt("mob_releaseno", releaseNo);
-				copiedObject.setRepeatingString("mob_supersedes", 0, dfSysObject.getObjectName());
+				if (dfSysObject.hasAttr("mob_releaseno"))
+					copiedObject.setRepeatingString("mob_supersedes", 0, dfSysObject.getObjectName() + "/" + dfSysObject.getInt("mob_releaseno"));
+				else
+					copiedObject.setRepeatingString("mob_supersedes", 0, dfSysObject.getObjectName());
 
 				try {
 					copiedObject.setTime("mob_valid_from", DfTime.DF_NULLDATE);
@@ -3842,12 +3850,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				al.add("ods");
 			else if (filetype.equals("application/xhtml+xml"))
 				al.add("html");
+			// else if (filetype.equals("application/vnd.ms-excel"))
+			// al.add("xls");
 			else if (filetype.equals("text/html"))
 				al.add("html");
 			else {
-				String mimeType = Files.probeContentType(tempFile.toPath());
+				// String mimeType = Files.probeContentType(tempFile.toPath());
 				sess = AdminServiceImpl.getAdminSession();
-				query.setDQL("select name from dm_format where mime_type='" + mimeType + "'");
+				query.setDQL("select name from dm_format where mime_type='" + filetype + "'");
 				collection = query.execute(sess, DfQuery.DF_READ_QUERY);
 
 				while (collection.next()) {

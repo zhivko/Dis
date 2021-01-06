@@ -42,6 +42,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MultiValueSelectBox;
+import si.telekom.dis.client.MyListBox;
 import si.telekom.dis.client.WindowBox;
 import si.telekom.dis.client.item.FormAttribute;
 import si.telekom.dis.shared.AdminService;
@@ -51,6 +52,7 @@ import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
 import si.telekom.dis.shared.Profile;
 import si.telekom.dis.shared.Role;
+import si.telekom.dis.shared.State;
 import si.telekom.dis.shared.UserGroup;
 
 public class ImportDocument extends WindowBox {
@@ -60,7 +62,7 @@ public class ImportDocument extends WindowBox {
 	public static ImportDocument instance;
 
 	int wizardTab = 0;
-	int maxWizardTab = 3;
+	int maxWizardTab = 5;
 	Button nextB;
 	Button previousB;
 	TabPanel tpWizard;
@@ -79,6 +81,8 @@ public class ImportDocument extends WindowBox {
 
 	ListBox possibleFormats;
 
+	MyListBox states;
+
 	public ImportDocument(String r_object_id) {
 		this();
 		this.r_object_id = r_object_id;
@@ -87,7 +91,7 @@ public class ImportDocument extends WindowBox {
 	public ImportDocument() {
 		super();
 		setText("Čarovnik za uvoz dokumenta");
-		
+
 		getOkButton().setEnabled(false);
 
 		allFaAl = new ArrayList<FormAttribute>();
@@ -98,6 +102,7 @@ public class ImportDocument extends WindowBox {
 		// tpWizard.add(new VerticalPanel(), "Vsebina");
 		tpWizard.add(new VerticalPanel(), "Atributi");
 		tpWizard.add(new VerticalPanel(), "Vloge in uporabniki");
+		tpWizard.add(new VerticalPanel(), "Stanje dokumenta");
 
 		tpWizard.selectTab(0);
 		tpWizard.addSelectionHandler(new SelectionHandler<Integer>() {
@@ -107,7 +112,6 @@ public class ImportDocument extends WindowBox {
 				// TODO Auto-generated method stub
 				wizardTab = event.getSelectedItem();
 				enableDisableButtons();
-				refreshTabs();
 			}
 		});
 
@@ -139,8 +143,9 @@ public class ImportDocument extends WindowBox {
 					// {
 					if (checkMandatoryAttributes()) {
 						refreshUsersAndRoles();
-						getOkButton().setEnabled(true);
 					}
+				} else if (wizardTab == 4) {
+					refreshStates();
 				}
 				ImportDocument.this.center();
 			}
@@ -153,7 +158,6 @@ public class ImportDocument extends WindowBox {
 				// TODO Auto-generated method stub
 				wizardTab--;
 				enableDisableButtons();
-				refreshTabs();
 				tpWizard.selectTab(wizardTab);
 				centerWindowBox();
 			}
@@ -259,9 +263,8 @@ public class ImportDocument extends WindowBox {
 	protected void refreshUsersAndRoles() {
 		// TODO Auto-generated method stub
 		tpUsers = new TabPanel();
-		
+
 		ArrayList<String> filledRoles = new ArrayList<String>();
-		
 
 		rolesAndUsers = new HashMap<String, ListBox>();
 		for (Role role : prof.roles) {
@@ -321,10 +324,11 @@ public class ImportDocument extends WindowBox {
 								rolesAndUsers.put(role.getId(), lb);
 
 								tpUsers.selectTab(0);
-								
+
 								filledRoles.add(role.getId());
-								if(filledRoles.size()==prof.roles.size())
-									getOkButton().setEnabled(true);
+								//MainPanel.log(filledRoles.size() + "   " + prof.roles.size());
+								if (filledRoles.size() == prof.roles.size()-1) // unclassified role not showed
+									nextB.setEnabled(true);
 							}
 
 							@Override
@@ -349,8 +353,8 @@ public class ImportDocument extends WindowBox {
 		}
 
 		tpWizard.remove(3);
-		tpWizard.add(tpUsers, "Uporabniki in vloge");
-		tpWizard.selectTab(3);
+		tpWizard.insert(tpUsers, "Uporabniki in vloge",3);
+		tpWizard.selectTab(3);	
 	}
 
 	protected void uploadContent() {
@@ -375,11 +379,6 @@ public class ImportDocument extends WindowBox {
 
 	}
 
-	private void refreshTabs() {
-		nextB.setEnabled(false);
-
-	}
-
 	private Widget getClassify() {
 		VerticalPanel classifyVp = new VerticalPanel();
 		classifyVp.setStyleName("");
@@ -389,7 +388,7 @@ public class ImportDocument extends WindowBox {
 		hp.add(new Label("Izberi klasifikacijski znak:"));
 
 		si.telekom.dis.shared.Attribute att = new si.telekom.dis.shared.Attribute();
-		att.dqlValueListDefinition = 
+		att.dqlValueListDefinition =
 //@formatter:off	
 				"SELECT tc.\"code\", tc.\"name\" FROM dbo.T_CLASSIFICATION_PLAN tcp, dbo.T_CLASSIFICATION tc " +
 				"WHERE "
@@ -619,6 +618,7 @@ public class ImportDocument extends WindowBox {
 				+ "loginName=" + MainPanel.getInstance().loginName
 				+ "&loginPassword=" + MainPanel.getInstance().loginPass
 				+ "&profileId=" + prof.id
+				+ "&stateId=" + states.getItemValue()
 				+ "&attributes=" + serializeHashMap(attributes)
 				+ "&roleUsersHm=" + serializeHashMap(roleUsersHm)
 				+ "&objectId=" + r_object_id
@@ -669,5 +669,33 @@ public class ImportDocument extends WindowBox {
 		reader.readAsDataURL(image);
 		//}
 	}-*/;
+
+	private void refreshStates() {
+
+		VerticalPanel vp = new VerticalPanel();
+
+		states = new MyListBox("Izberi stanje dokumenta v katerega bo postavljen dokument", true);
+		states.addChangeHandler(new ChangeHandler() {
+
+			@Override
+			public void onChange(ChangeEvent event) {
+				// TODO Auto-generated method stub
+				if (states.getSelectedIndex() > -1)
+					getOkButton().setEnabled(true);
+				else
+					getOkButton().setEnabled(false);
+			}
+		});
+
+		for (State sta : prof.states) {
+			states.addItem(sta.getParameter(), sta.getId());
+		}
+
+		vp.add(states);
+		tpWizard.remove(4);
+		tpWizard.add(vp, "Stanje dokumenta");
+		tpWizard.selectTab(4);
+
+	}
 
 }

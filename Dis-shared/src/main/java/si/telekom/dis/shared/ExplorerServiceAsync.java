@@ -41,7 +41,7 @@ public interface ExplorerServiceAsync {
 	void removeVersionLabel(String loginName, String loginPass, List<String> r_object_id_, String labelVersion, AsyncCallback<Void> asyncCallback) throws IllegalArgumentException;
 	
 	void newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String templateObjectNameOrFolder, AsyncCallback<String> callback) throws IllegalArgumentException;
-	void importDocument(String loginName, String password, String objectId, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] base64Content, String format, AsyncCallback<String> callback) throws IllegalArgumentException;
+	void importDocument(String loginName, String password, String objectId, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] base64Content, String format, AsyncCallback<String> callback) throws IllegalArgumentException;
 	
 	void runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length, AsyncCallback<List<Document>> asyncCallback);
 	

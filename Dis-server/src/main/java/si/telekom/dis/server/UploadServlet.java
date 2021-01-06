@@ -1,41 +1,26 @@
 package si.telekom.dis.server;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.fileupload.FileItem;
@@ -45,11 +30,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.DfVersionPolicy;
@@ -66,8 +47,6 @@ import com.documentum.fc.common.IDfId;
 import com.documentum.operations.IDfCheckinNode;
 import com.documentum.operations.IDfCheckinOperation;
 import com.documentum.operations.IDfOperationError;
-import com.sun.org.apache.xml.internal.serialize.OutputFormat;
-import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 import si.telekom.dis.shared.Profile;
 import si.telekom.dis.shared.ServerException;
@@ -236,6 +215,7 @@ public class UploadServlet extends HttpServlet {
 							if (fmt != null) {
 
 								String objectId = req.getParameter("objectId");
+								String stateId = req.getParameter("stateId");
 								if (objectId.equals("undefined")) {
 									// importing new document
 									String profileId = req.getParameter("profileId");
@@ -245,7 +225,7 @@ public class UploadServlet extends HttpServlet {
 
 									ExplorerServiceImpl explorerImpl = new ExplorerServiceImpl();
 									byte[] encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(tempFile));
-									explorerImpl.importDocument(loginName, loginPassword, null, profileId, attributes, roleUsersHm, encoded, fmt.getName());
+									explorerImpl.importDocument(loginName, loginPassword, null, profileId, stateId, attributes, roleUsersHm, encoded, fmt.getName());
 								} else {
 									IDfPersistentObject persObj = userSession.getObject(new DfId(objectId));
 									if (persObj.getType().getName().equals("dm_folder")) {
@@ -257,7 +237,7 @@ public class UploadServlet extends HttpServlet {
 
 										ExplorerServiceImpl explorerImpl = new ExplorerServiceImpl();
 										byte[] encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(tempFile));
-										explorerImpl.importDocument(loginName, loginPassword, objectId, profileId, attributes, roleUsersHm, encoded, fmt.getName());
+										explorerImpl.importDocument(loginName, loginPassword, objectId, profileId, stateId, attributes, roleUsersHm, encoded, fmt.getName());
 									} else {
 										// checkin or addrendition action for existing document
 

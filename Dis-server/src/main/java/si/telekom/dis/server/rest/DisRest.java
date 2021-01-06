@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Named;
-import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -26,7 +25,11 @@ import si.telekom.dis.shared.Profile;
 
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
 // http://localhost:8080/Dis-server/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
-// http://localhost:8080/Dis-server/rest/application.wadl
+// http://localhost:8080/Dis-server/rest/application.wadl?detail=true
+// http://localhost:8080/Dis-server/rest/disRest/importDocument
+
+
+
 @Named
 @Path("/disRest")
 public class DisRest {
@@ -169,7 +172,8 @@ public class DisRest {
 					user.getId(), 
 					Base64.encodeBase64String(user.getPassword().getBytes()),
 					importDocumentArg.getFolderId(), 
-					importDocumentArg.getProfileId(), 
+					importDocumentArg.getProfileId(),
+					importDocumentArg.getStateId(), 
 					attributes_, 
 					roles_, 
 					importDocumentArg.getContentBase64().getBytes(),
@@ -185,11 +189,18 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/getProfilesForClassSign")
-	public List<String> getProfilesForClassSign(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
+	public List<String> getProfilesForClassSign(@Context SecurityContext sc,
 			@QueryParam("classSign") String classSign, @QueryParam("wizzardType") String wizardType) {
 		ArrayList<String> ret = new ArrayList<String>();
 		try {
-			List<Profile> profiles = AdminServiceImpl.getInstance().getProfilesForClassSign(loginName, passwordEncrypted, classSign, wizardType);
+			User user = (User) sc.getUserPrincipal();
+			
+			List<Profile> profiles = AdminServiceImpl.getInstance().getProfilesForClassSign(
+					
+					user.getId(), 
+					Base64.encodeBase64String(user.getPassword().getBytes()),
+
+					classSign, wizardType);
 			for (Profile profile : profiles) {
 				ret.add(profile.id);
 			}

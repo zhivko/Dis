@@ -1,5 +1,6 @@
 package si.telekom.dis.client;
 
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -11,7 +12,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class MyListBox extends Composite {
@@ -24,10 +24,19 @@ public class MyListBox extends Composite {
 	}
 
 	public MyListBox(String captionTxt) {
-		this(captionTxt,false);
+		this(captionTxt, false);
 	}
 	
-	
+	public void addItem(String value, String txt)
+	{
+		listBox.addItem(value, txt);
+	}
+
+
+	public void addChangeHandler(ChangeHandler handler) {
+		listBox.addChangeHandler(handler);
+	}
+
 	public MyListBox(String captionTxt, boolean noAddButton) {
 		Panel p = new VerticalPanel();
 
@@ -79,6 +88,10 @@ public class MyListBox extends Composite {
 		return null;
 	}
 
+	public String getItemValue() {
+		return this.listBox.getSelectedValue();
+	}
+	
 	public ListBox getListBox() {
 		return this.listBox;
 	}
@@ -95,15 +108,13 @@ public class MyListBox extends Composite {
 	public void addItem(String value) {
 		this.listBox.addItem(value);
 	}
-	
-	public void setSelectedIndex(int i)
-	{
+
+	public void setSelectedIndex(int i) {
 		this.listBox.setSelectedIndex(i);
 	}
 
-	public int getSelectedIndex()
-	{
+	public int getSelectedIndex() {
 		return this.listBox.getSelectedIndex();
-	}	
-	
+	}
+
 }
