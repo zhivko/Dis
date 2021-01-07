@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	version="2.5" metadata-complete="false">
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5" metadata-complete="false">
 
 	<!-- Servlets -->
 	<servlet>
@@ -146,5 +144,13 @@
 		<param-name>configPath</param-name>
 		<param-value>${configPath}</param-value>
 	</context-param>
+
+
+	<context-param>
+		<description>Starts job to move documents to effective state base on mob_valid_from attribute</description>
+		<param-name>MOVE_TO_EFFECTIVE_JOB_ENABLED</param-name>
+		<param-value>${MOVE_TO_EFFECTIVE_JOB_ENABLED}</param-value>
+	</context-param>
+	
 
 </web-app>

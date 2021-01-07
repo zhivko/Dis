@@ -2231,13 +2231,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 			String nextStateId = AdminServiceImpl.getNextStateId(prof, stateInd);
 			if (nextStateId != null) {
-				boolean shouldSupersede;
-				if (nextStateId.equals("effective"))
-					shouldSupersede = true;
-				else
-					shouldSupersede = false;
+
 				userSession.beginTrans();
-				moveToState(userSession, r_object_id, nextStateId, profileAndRolesOfUserAndState, shouldSupersede);
+				moveToState(userSession, r_object_id, nextStateId, profileAndRolesOfUserAndState);
 				userSession.commitTrans();
 			} else
 				throw new ServerException("Cannot promote, already last state.");
@@ -2279,17 +2275,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return null;
 	}
 
-	public Void moveToState(String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState, boolean shouldSupersede, IDfSession userSession)
+	public Void moveToState(String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState, IDfSession userSession)
 			throws ServerException {
-		return moveToState(userSession, r_object_id, stateId, profileAndRolesOfUserAndState, shouldSupersede);
+		return moveToState(userSession, r_object_id, stateId, profileAndRolesOfUserAndState);
 	}
 
-	public Void moveToState(String loginName, String password, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState,
-			boolean shouldSupersede) throws ServerException {
+	public Void moveToState(String loginName, String password, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState) throws ServerException {
 		IDfSession userSession;
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			return moveToState(userSession, r_object_id, stateId, profileAndRolesOfUserAndState, shouldSupersede);
+			return moveToState(userSession, r_object_id, stateId, profileAndRolesOfUserAndState);
 		} catch (ServerException e) {
 			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(e);
 			Logger.getLogger(this.getClass()).error(e.getMessage());
@@ -2301,7 +2296,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		}
 	}
 
-	public Void moveToState(IDfSession userSession, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState, boolean shouldSupersede)
+	public Void moveToState(IDfSession userSession, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState)
 			throws ServerException {
 		IDfQuery query = new DfQuery();
 
@@ -2309,7 +2304,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			Logger.getLogger(this.getClass())
 					.info("moveToState for triggered by user: " + userSession.getLoginInfo().getUser() + " for: " + r_object_id + " toState: " + stateId);
-
+			
 			boolean startedTransaction = false;
 			if (!userSession.isTransactionActive()) {
 				AdminServiceImpl.beginTransaction(userSession);
@@ -2318,7 +2313,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 
-			Profile prof = (Profile) profileAndRolesOfUserAndState[1];
+			Profile prof = (Profile) profileAndRolesOfUserAndState[1];		
 
 			boolean foundState = false;
 			int stateNo = 0;
@@ -2336,6 +2331,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			ArrayList<String> rolesOfUser = (ArrayList<String>) profileAndRolesOfUserAndState[2];
 			String currentStateId = (String) profileAndRolesOfUserAndState[3];
+			
+			boolean shouldSupersede;
+			if (stateId.equals("effective") && !currentStateId.equals("archive"))
+				shouldSupersede = true;
+			else
+				shouldSupersede = false;				
+			
 
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 
@@ -2413,25 +2415,27 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		for (int j = 0; j < count; j++) {
 			String objectNameToSupersede = persObj.getRepeatingString("mob_supersedes", j);
 			IDfSysObject objToSupersede = null;
-			if (objectNameToSupersede.contains("/")) {
-				String objectName = objectNameToSupersede.split("/")[0];
-				String mobReleaseNo = objectNameToSupersede.split("/")[1];
-				objToSupersede = (IDfSysObject) userSession
-						.getObjectByQualification("mob_document where object_name='" + objectName + "' and mob_releaseno=" + mobReleaseNo);
-				if (objToSupersede == null)
-					objToSupersede = (IDfSysObject) userSession
-							.getObjectByQualification("mob_form_template where object_name='" + objectName + "' and mob_releaseno=" + mobReleaseNo);
 
+			String objectName = null;
+			int mobReleaseNo;
+
+			if (objectNameToSupersede.contains("/")) {
+				objectName = objectNameToSupersede.split("/")[0];
+				mobReleaseNo = Integer.valueOf(objectNameToSupersede.split("/")[1]);
 			} else {
-				objToSupersede = (IDfSysObject) userSession.getObjectByQualification("mob_document where object_name='" + objectNameToSupersede + "'");
-				if (objToSupersede == null)
-					objToSupersede = (IDfSysObject) userSession.getObjectByQualification("mob_form_template where object_name='" + objectNameToSupersede);
+				objectName = objectNameToSupersede.split("/")[0];
+				mobReleaseNo = persObj.getInt("mob_releaseno") - 1;
 			}
+			objToSupersede = (IDfSysObject) userSession
+					.getObjectByQualification("mob_document where object_name='" + objectName + "' and mob_releaseno=" + mobReleaseNo);
+			if (objToSupersede == null)
+				objToSupersede = (IDfSysObject) userSession
+						.getObjectByQualification("mob_form_template where object_name='" + objectName + "' and mob_releaseno=" + mobReleaseNo);
 
 			if (objToSupersede != null) {
 				if (!objToSupersede.getId("r_object_id").equals(persObj.getId("r_object_id"))) {
 					Object[] profileAndRolesOfUserAndState = getProfileAndUserRolesAndState(objToSupersede, userSession.getLoginInfo().getUser(), userSession);
-					moveToState(userSession, objToSupersede.getId("r_object_id").toString(), "archive", profileAndRolesOfUserAndState, false);
+					moveToState(userSession, objToSupersede.getId("r_object_id").toString(), "archive", profileAndRolesOfUserAndState);
 				} else {
 					Logger.getLogger(this.getClass()).warn("Object is same.");
 				}
@@ -2469,7 +2473,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 			String prevStateId = AdminServiceImpl.getPrevStateId(prof, stateInd);
 			if (prevStateId != null)
-				moveToState(userSession, r_object_id, prevStateId, profileAndRolesOfUserAndState, false);
+				moveToState(userSession, r_object_id, prevStateId, profileAndRolesOfUserAndState);
 			else
 				throw new ServerException("Cannot promote, already first state.");
 			userSession.commitTrans();
@@ -2866,6 +2870,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			for (String attName : attributes.keySet()) {
 				Logger.getLogger(this.getClass()).info("Updating attribute: " + attName);
 				Attribute att = wizardAttributes.get(attName);
+				
+				if(att==null)
+					throw new ServerException("No such attribute: "+attName+" in profile: " + prof.id);
+				
 				DcmtAttribute dcmtAttribute = AdminServiceImpl.getInstance().findAttribute(prof.objType, attName);
 
 				if (dcmtAttribute == null)
@@ -2982,16 +2990,17 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			WsServer.log(loginName, msg);
 
 		} catch (Exception ex) {
+			StringWriter errorStringWriter = new StringWriter();
+			PrintWriter pw = new PrintWriter(errorStringWriter);
+			ex.printStackTrace(pw);
+			Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
+			WsServer.log(loginName, ex.getMessage());
 			try {
 				userSession.abortTrans();
 			} catch (Exception ex1) {
-				StringWriter errorStringWriter = new StringWriter();
-				PrintWriter pw = new PrintWriter(errorStringWriter);
-				ex.printStackTrace(pw);
 				Logger.getLogger(ExplorerServiceImpl.class).error("Error rolling back transaction.");
-				Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
 			}
-			WsServer.log(loginName, ex.getMessage());
+
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {

@@ -200,12 +200,12 @@
 		<!-- jersey dependencies END -->
 
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
-	<dependency>
-		<groupId>org.json</groupId>
-		<artifactId>json</artifactId>
-		<version>20190722</version>
-	</dependency>
-	
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20190722</version>
+		</dependency>
+
 
 		<!-- jersey dependencies END -->
 
@@ -371,12 +371,13 @@
 		</dependency>
 
 
+
+
 	</dependencies>
 
 
 
 	<build>
-
 		<resources>
 			<resource>
 				<directory>${basedir}/src/main/webapp</directory>
@@ -401,6 +402,47 @@
 		</resources>
 
 		<plugins>
+			<plugin>
+				<groupId>io.swagger</groupId>
+				<artifactId>swagger-codegen-maven-plugin</artifactId>
+				<version>3.0.0-rc0</version>
+				<configuration>
+					<inputSpec>${basedir}/src/main/resources/dis.yaml</inputSpec>
+					<output>target/generated-sources</output>
+					<language>spring</language>
+					<generateApis>false</generateApis>
+					<modelPackage>si.telekom.dis.server.rest</modelPackage>
+					<apiPackage>si.telekom.dis.server.rest.api</apiPackage>
+					<configOptions>
+						<sourceFolder>swagger</sourceFolder>
+						<library>spring-mvc</library>
+						<interfaceOnly>true</interfaceOnly>
+						<useBeanValidation>true</useBeanValidation>
+						<dateLibrary>java8</dateLibrary>
+						<java8>true</java8>
+					</configOptions>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>io.swagger</groupId>
+						<artifactId>swagger-codegen-generators</artifactId>
+						<version>1.0.0-SNAPSHOT</version>
+					</dependency>
+					<dependency>
+						<groupId>org.openapitools</groupId>
+						<artifactId>openapi-generator-maven-plugin</artifactId>
+						<version>3.3.4</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>

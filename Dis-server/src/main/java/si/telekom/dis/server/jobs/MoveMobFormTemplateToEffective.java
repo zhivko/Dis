@@ -1,5 +1,10 @@
 package si.telekom.dis.server.jobs;
 
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 import org.apache.log4j.Logger;
 
 import com.documentum.fc.client.DfQuery;
@@ -8,7 +13,6 @@ import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfQuery;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
-import com.documentum.fc.common.DfId;
 
 import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
@@ -16,26 +20,52 @@ import si.telekom.dis.server.ExplorerServiceImpl;
 public class MoveMobFormTemplateToEffective implements Runnable {
 
 	public void run() {
-		IDfSession sess = null;
+
+		// prevent running on development machine
+		try (final DatagramSocket socket = new DatagramSocket()) {
+			socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+			String ip = socket.getLocalAddress().getHostAddress();
+			if (ip.equals("10.115.4.149")) {
+				Logger.getLogger(this.getClass()).warn("MoveMobFormTemplateToEffective exited because code runs on development machine.");
+				return;
+			}
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SocketException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		IDfSession userSession = null;
 		IDfCollection coll = null;
+		Thread.currentThread().setName("job_MoveMobFormTemplateToEffective");
 		try {
-			sess = AdminServiceImpl.getAdminSession();
+			userSession = AdminServiceImpl.getAdminSession();
 
 			String dql = "select r_object_id from mob_form_template where not mob_valid_from is nulldate and "
 					+ "DATEDIFF(day,\"mob_valid_from\", date(today)) > 0 and any r_version_label in ('draft') group by r_object_id enable (return_range 1 30 'r_object_id')";
-			
+
 			Logger.getLogger(this.getClass()).info("Dql: " + dql);
-			
+
 			IDfQuery q = new DfQuery(dql);
 
-			coll = q.execute(sess, DfQuery.READ_QUERY);
+			coll = q.execute(userSession, DfQuery.READ_QUERY);
 			while (coll.next()) {
-				IDfPersistentObject persObj = sess.getObject(coll.getId("r_object_id"));
-				Logger.getLogger(this.getClass()).info(
-						"move from draft to effective, barcode: " + persObj.getString("object_name") + " r_object_id: " + coll.getId("r_object_id").toString());
-				ExplorerServiceImpl.getInstance().promote(sess, coll.getId("r_object_id").toString());
-			}
+				IDfPersistentObject persObj = userSession.getObject(coll.getId("r_object_id"));
+				Logger.getLogger(this.getClass()).info("About to move from draft to effective, barcode: " + persObj.getString("object_name")
+						+ " r_object_id: " + coll.getId("r_object_id").toString());
+				
+				Object[] profileAndRolesOfUserAndState = ExplorerServiceImpl.getInstance().getProfileAndUserRolesAndState(persObj,
+						userSession.getLoginInfo().getUser(), userSession);
 
+				userSession.beginTrans();
+				ExplorerServiceImpl.getInstance().moveToState(userSession, coll.getId("r_object_id").getId(), "effective", profileAndRolesOfUserAndState);
+				userSession.commitTrans();
+			}
+			if(userSession.isTransactionActive())
+				userSession.abortTrans();
+			
 		} catch (Throwable ex) {
 			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
 			Logger.getLogger(MoveMobFormTemplateToEffective.class).error(ex.getMessage());
@@ -49,8 +79,8 @@ public class MoveMobFormTemplateToEffective implements Runnable {
 					Logger.getLogger(MoveMobFormTemplateToEffective.class).error(ex.getMessage());
 				}
 			}
-			if (sess != null && sess.isConnected())
-				sess.getSessionManager().release(sess);
+			if (userSession != null && userSession.isConnected())
+				userSession.getSessionManager().release(userSession);
 		}
 
 	}

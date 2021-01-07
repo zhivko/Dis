@@ -255,6 +255,19 @@ components:
         type: string
       example: '123e4567-e89b-12d3-a456-426614174000'
   schemas:
+    NewDocumentRequest:
+      type: object
+      required:
+        - attributes
+      properties:
+        userId:
+          type: string
+          description: unique user identifier 
+          example: "17236242"
+        subscription:
+          type: string
+          description: user subscription type
+          example: "basic"  
     CreateUserRequest:
       type: object
       required:

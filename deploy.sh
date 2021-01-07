@@ -51,3 +51,4 @@ echo "deleting ...Done."
 echo "copying dev..."
 scp -i ~/.ssh/id_rsa ./Dis-server/target/Dis-server-1.0-SNAPSHOT.war zivkovick@erender-test.ts.telekom.si:/app/render/apache-tomcat-8.5.45/webapps/Dis-dev.war
 
+mvn package -P prod

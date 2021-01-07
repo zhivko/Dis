@@ -27,6 +27,8 @@ import si.telekom.dis.shared.Profile;
 // http://localhost:8080/Dis-server/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
 // http://localhost:8080/Dis-server/rest/application.wadl?detail=true
 // http://localhost:8080/Dis-server/rest/disRest/importDocument
+// https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/importDocument
+// mvn clean package -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
 
 
 

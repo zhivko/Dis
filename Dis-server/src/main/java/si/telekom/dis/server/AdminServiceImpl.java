@@ -178,6 +178,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public static String BARCODE_SQL_SERVER_HOST = "bpw-docsql.ts.telekom.si";
 	public static String BARCODE_SQL_SERVER_PORT = "1433";
 	public static String BARCODE_SQL_SERVER_DB_NAME = "DM_Mobitel_docbase";
+	public static boolean MOVE_TO_EFFECTIVE_JOB_ENABLED = false;
 
 	public static DfClientX CX;
 	static Document docConfig;
@@ -195,6 +196,27 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public static HashMap<String, IDfGroup> allGroups = new HashMap<String, IDfGroup>();
 
 	static {
+		
+		ServletContext servletContext = WebappContext.getServletContext();
+
+		AdminServiceImpl.BARCODE_SQL_SERVER_DB_NAME = servletContext.getInitParameter("barcode.database");
+		AdminServiceImpl.BARCODE_SQL_SERVER_HOST = servletContext.getInitParameter("barcode.sqlHost");
+		AdminServiceImpl.BARCODE_SQL_SERVER_PORT = servletContext.getInitParameter("barcode.sqlPort");
+		AdminServiceImpl.BARCODE_USER = servletContext.getInitParameter("barcode.user");
+		AdminServiceImpl.BARCODE_PASSWORD = servletContext.getInitParameter("barcode.password");
+
+		AdminServiceImpl.MOVE_TO_EFFECTIVE_JOB_ENABLED = Boolean.valueOf(servletContext.getInitParameter("MOVE_TO_EFFECTIVE_JOB_ENABLED"));
+
+		AdminServiceImpl.repositoryName = servletContext.getInitParameter("documentum.docbaseName");
+		AdminServiceImpl.superUserName = servletContext.getInitParameter("documentum.superUserLogin");
+		AdminServiceImpl.superUserPassword = servletContext.getInitParameter("documentum.superUserPassword");
+		AdminServiceImpl.userDomain = servletContext.getInitParameter("documentum.userDomain");
+		AdminServiceImpl.superUserDomain = servletContext.getInitParameter("documentum.superUserDomain");
+
+		AdminServiceImpl.retentionAddUnit = servletContext.getInitParameter("retention.addUnit");
+
+		AdminServiceImpl.configPath = servletContext.getInitParameter("configPath");		
+		
 		Thread t = new Thread(new Runnable() {
 
 			@Override
@@ -205,23 +227,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				long timeMs1 = System.currentTimeMillis();
 
 				CX = new DfClientX();
-				ServletContext servletContext = WebappContext.getServletContext();
-
-				AdminServiceImpl.BARCODE_SQL_SERVER_DB_NAME = servletContext.getInitParameter("barcode.database");
-				AdminServiceImpl.BARCODE_SQL_SERVER_HOST = servletContext.getInitParameter("barcode.sqlHost");
-				AdminServiceImpl.BARCODE_SQL_SERVER_PORT = servletContext.getInitParameter("barcode.sqlPort");
-				AdminServiceImpl.BARCODE_USER = servletContext.getInitParameter("barcode.user");
-				AdminServiceImpl.BARCODE_PASSWORD = servletContext.getInitParameter("barcode.password");
-
-				AdminServiceImpl.repositoryName = servletContext.getInitParameter("documentum.docbaseName");
-				AdminServiceImpl.superUserName = servletContext.getInitParameter("documentum.superUserLogin");
-				AdminServiceImpl.superUserPassword = servletContext.getInitParameter("documentum.superUserPassword");
-				AdminServiceImpl.userDomain = servletContext.getInitParameter("documentum.userDomain");
-				AdminServiceImpl.superUserDomain = servletContext.getInitParameter("documentum.superUserDomain");
-
-				AdminServiceImpl.retentionAddUnit = servletContext.getInitParameter("retention.addUnit");
-
-				AdminServiceImpl.configPath = servletContext.getInitParameter("configPath");
 
 				TransformerFactory transformerFactory = TransformerFactory.newInstance();
 				try {
@@ -395,10 +400,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		t1.setName("SyncGroups");
 		t1.start();
 
-		MoveMobFormTemplateToEffective job = new MoveMobFormTemplateToEffective();
-		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-		scheduler.scheduleAtFixedRate(job, 10, 60, TimeUnit.MINUTES);
-
+		if (MOVE_TO_EFFECTIVE_JOB_ENABLED) {
+			Logger.getLogger(AdminServiceImpl.class).info("Starting MOVE_TO_EFFECTIVE_JOB");
+			MoveMobFormTemplateToEffective job = new MoveMobFormTemplateToEffective();
+			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+			scheduler.scheduleAtFixedRate(job, 0, 60, TimeUnit.MINUTES);
+		}
 		// correctAcls();
 
 	}
@@ -2129,11 +2136,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						}
 					} else if (sa.kind.equalsIgnoreCase(StandardAction.types.MOVE_ALL_FOLDER_LINKS.type)) {
 						String folder = evaluateFolderExpression(sa.parameter, persObject);
+
+						ArrayList<String> foldersToUnlinkFrom = new ArrayList<String>();
 						for (int i = 0; i < dfSysObject.getFolderIdCount(); i++) {
 							IDfFolder dfFold = (IDfFolder) userSess.getObject(dfSysObject.getFolderId(i));
 							String folderPath = dfFold.getAllRepeatingStrings("r_folder_path", "/");
-							dfSysObject.unlink(folderPath);
-							Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " unlinked from folder: " + folderPath);
+							if (!folderPath.equalsIgnoreCase(folder))
+								foldersToUnlinkFrom.add(folderPath);
 						}
 
 						IDfId dfId = AdminServiceImpl.getOrCreateFolder(folder);
@@ -2149,9 +2158,15 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						if (!alreadyLinked) {
 							Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " linking to folder: " + folder + "...");
 							dfSysObject.link(folder);
-							dfSysObject.save();
 							Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " linking to folder: " + folder + "...Done.");
 						}
+
+						// unlink
+						for (String folderToUnlink : foldersToUnlinkFrom) {
+							dfSysObject.unlink(folderToUnlink);
+							Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " unlinked from folder: " + folderToUnlink);
+						}
+						dfSysObject.save();
 
 					} else if (sa.kind.equalsIgnoreCase(StandardAction.types.UNLINK_FROM_FOLDER.type)) {
 						for (int i = 0; i < dfSysObject.getFolderIdCount(); i++) {

@@ -1695,6 +1695,12 @@ DATEDIFF(day,"mob_valid_from", date(today))&gt;0 and any r_version_label in ('dr
             <orderBys/>
             <filterClass/>
          </query>
+         <query name="form templates with mob_supersedes">select r_object_id from mob_form_template group by r_object_id having count(mob_supersedes)&gt;0 enable (return_range 1 10 'r_object_id')<userGroups>
+               <userGroup id="dm_world" name="dm_world"/>
+            </userGroups>
+            <orderBys/>
+            <filterClass/>
+         </query>
       </queries>
    </docbase>
 </config>

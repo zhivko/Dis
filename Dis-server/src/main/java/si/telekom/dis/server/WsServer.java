@@ -141,6 +141,8 @@ public class WsServer {
 	}
 
 	public synchronized static void log(String toUser, String message) {
+		if(message==null)
+			return;
 		try {
 			if (toUser != null)
 				if (toUser.contentEquals("_all_")) {
