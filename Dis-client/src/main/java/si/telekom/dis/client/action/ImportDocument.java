@@ -326,8 +326,10 @@ public class ImportDocument extends WindowBox {
 								tpUsers.selectTab(0);
 
 								filledRoles.add(role.getId());
-								//MainPanel.log(filledRoles.size() + "   " + prof.roles.size());
-								if (filledRoles.size() == prof.roles.size()-1) // unclassified role not showed
+								// MainPanel.log(filledRoles.size() + " " + prof.roles.size());
+								if (filledRoles.size() == prof.roles.size() - 1) // unclassified
+																																	// role not
+																																	// showed
 									nextB.setEnabled(true);
 							}
 
@@ -353,8 +355,8 @@ public class ImportDocument extends WindowBox {
 		}
 
 		tpWizard.remove(3);
-		tpWizard.insert(tpUsers, "Uporabniki in vloge",3);
-		tpWizard.selectTab(3);	
+		tpWizard.insert(tpUsers, "Uporabniki in vloge", 3);
+		tpWizard.selectTab(3);
 	}
 
 	protected void uploadContent() {
@@ -688,7 +690,8 @@ public class ImportDocument extends WindowBox {
 		});
 
 		for (State sta : prof.states) {
-			states.addItem(sta.getParameter(), sta.getId());
+			if (!sta.getId().equals("unclassified"))
+				states.addItem(sta.getParameter(), sta.getId());
 		}
 
 		vp.add(states);

@@ -31,4 +31,8 @@ public class UserSettings implements Serializable {
 	// @JacksonXmlProperty(localName = "searchReturnResultCount")
 	@XmlElement(name="searchReturnResultCount")
 	public int searchReturnResultCount;
+	
+	@XmlElement(name="auditTrailPerPageCount")
+	public int auditTrailPerPageCount;
+
 }

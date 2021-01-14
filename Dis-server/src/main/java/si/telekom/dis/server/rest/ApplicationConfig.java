@@ -9,10 +9,23 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 import org.glassfish.jersey.filter.LoggingFilter;
+
+import io.swagger.jaxrs.config.BeanConfig;
 //https://www.nabisoft.com/tutorials/java-ee/producing-and-consuming-json-or-xml-in-java-rest-services-with-jersey-and-jackson
 @ApplicationPath("/rest")
 public class ApplicationConfig extends Application {
  
+		public ApplicationConfig()
+		{
+      BeanConfig beanConfig = new BeanConfig();
+      beanConfig.setVersion("1.0.2");
+      beanConfig.setSchemes(new String[]{"http"});
+      beanConfig.setHost("localhost:8080");
+      beanConfig.setBasePath("/rest");
+      beanConfig.setResourcePackage("io.swagger.resources");
+      beanConfig.setScan(true);			
+		}
+	
     @Override
     public Set<Class<?>> getClasses() {
         
@@ -31,7 +44,8 @@ public class ApplicationConfig extends Application {
         
         //instead let's do it manually:
 //        resources.add(si.telekom.dis.shared.Profile.class);
-//        resources.add(si.telekom.dis.shared.Role.class);
+				
+				resources.add(io.swagger.v3.jaxrs2.integration.resources.OpenApiResource.class);
         resources.add(si.telekom.dis.server.rest.DisRest.class);
 
         //==> we could also choose packages, see below getProperties()
@@ -58,7 +72,7 @@ public class ApplicationConfig extends Application {
         
         //we could also use something like this instead of adding each of our resources
         //explicitly in getClasses():
-        properties.put("jersey.config.server.provider.packages", "si.telekom.dis.server.rest");
+        //properties.put("jersey.config.server.provider.packages", "si.telekom.dis.server.rest");
         
 
         

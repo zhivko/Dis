@@ -30,9 +30,9 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import si.telekom.dis.client.ActionDialogBox;
 import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MultiValueSelectBox;
+import si.telekom.dis.client.WindowBox;
 import si.telekom.dis.client.item.FormAttribute;
 import si.telekom.dis.shared.AdminService;
 import si.telekom.dis.shared.AdminServiceAsync;
@@ -45,7 +45,7 @@ import si.telekom.dis.shared.Template;
 import si.telekom.dis.shared.TemplateFolder;
 import si.telekom.dis.shared.UserGroup;
 
-public class NewDocument extends ActionDialogBox {
+public class NewDocument extends WindowBox {
 	private final AdminServiceAsync adminService = GWT.create(AdminService.class);
 	private final ExplorerServiceAsync explorerService = GWT.create(ExplorerService.class);
 	protected String classification_id = "";
@@ -225,7 +225,7 @@ public class NewDocument extends ActionDialogBox {
 						});
 			}
 		});
-
+		centerWindowBox();
 		instance = this;
 	}
 
@@ -368,7 +368,7 @@ public class NewDocument extends ActionDialogBox {
 				if (object_names.length() > 0) {
 					object_names = object_names.substring(0, object_names.length() - 1);
 
-					String dql = "select object_name,mob_short_name from mob_form_template where object_name in (" + object_names + ")";
+					String dql = "select r_object_id, object_name + mob_short_name from mob_form_template where object_name in (" + object_names + ")";
 
 					try {
 						explorerService.dqlLookup(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, dql,

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -40,7 +39,7 @@
 					<launcherDir>${project.build.directory}/gwt/launcherDir</launcherDir>
 				</configuration>
 			</plugin>
-			
+
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -51,6 +50,7 @@
 					<configuration>
 						<source>1.8</source>
 						<target>1.8</target>
+						<useIncrementalCompilation>false</useIncrementalCompilation>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -90,7 +90,7 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 	<modules>
 		<module>Dis-client</module>
 		<module>Dis-shared</module>
@@ -120,7 +120,7 @@
 				<activeByDefault>false</activeByDefault>
 				<property>
 					<name>env</name>
-					<value>prod</value>
+					<value>localhost-windows</value>
 				</property>
 			</activation>
 			<build>
@@ -165,7 +165,7 @@
 				<activeByDefault>false</activeByDefault>
 				<property>
 					<name>env</name>
-					<value>test</value>
+					<value>dev</value>
 				</property>
 			</activation>
 			<build>

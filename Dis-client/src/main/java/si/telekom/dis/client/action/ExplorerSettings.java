@@ -32,15 +32,22 @@ public class ExplorerSettings extends WindowBox {
 		MyTxtBox searchResultSize = new MyTxtBox("Search result size");
 		searchResultSize.setValue(String.valueOf(MainPanel.getInstance().us.searchReturnResultCount));
 
+		MyTxtBox auditTrailPerPageCount = new MyTxtBox("Audittrail per page count");
+		auditTrailPerPageCount.setValue(String.valueOf(MainPanel.getInstance().us.auditTrailPerPageCount));
+		
+		
 		getContentPanel().add(explorerResultSize);
 		getContentPanel().add(searchResultSize);
-
+		getContentPanel().add(auditTrailPerPageCount);
+		
+		
 		this.getOkButton().addClickHandler(new ClickHandler() {
 
 			@Override
 			public void onClick(ClickEvent event) {
 				MainPanel.getInstance().us.explorerReturnResultCount = Integer.valueOf(explorerResultSize.getValue());
 				MainPanel.getInstance().us.searchReturnResultCount = Integer.valueOf(searchResultSize.getValue());
+				MainPanel.getInstance().us.auditTrailPerPageCount = Integer.valueOf(auditTrailPerPageCount.getValue());
 				try {
 					loginService.saveUserSettings(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, MainPanel.getInstance().us,
 							new AsyncCallback<Void>() {

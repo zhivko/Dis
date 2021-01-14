@@ -1,3 +1,4 @@
+//https://github.com/swagger-api/swagger-core/wiki/Swagger-Core-Jersey-2.X-Project-Setup-1.5
 package si.telekom.dis.server.rest;
 
 import java.util.ArrayList;
@@ -29,8 +30,6 @@ import si.telekom.dis.shared.Profile;
 // http://localhost:8080/Dis-server/rest/disRest/importDocument
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/importDocument
 // mvn clean package -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
-
-
 
 @Named
 @Path("/disRest")
@@ -66,24 +65,34 @@ public class DisRest {
 	// ArrayList<String>> roles,
 	// @QueryParam("templateObjectNameOrFolder") String
 	// templateObjectNameOrFolder) {
-	public NewDocumentArg getSampleNewDocumentArg(@Context SecurityContext sc) {
-		NewDocumentArg ndArg = new NewDocumentArg();
+	public NewDocumentRequest getSampleNewDocumentArg(@Context SecurityContext sc) {
+		NewDocumentRequest ndReq = new NewDocumentRequest();
 
-		ndArg.setProfileId("test");
+		ndReq.setProfileId("test");
 
-		HashMap<String, String[]> attributes = new HashMap<String, String[]>();
-		String[] vals = { "v1", "v2", "v3" };
-		attributes.put("a1", vals);
-		ndArg.setAttribute(attributes);
+		List<Attribute> attributes = new ArrayList<Attribute>();
+		Attribute att1 = new Attribute();
+		att1.setName("title");
+		att1.addValuesItem("moj title");
+		attributes.add(att1);
+		ndReq.setAttributes(attributes);
 
-		HashMap<String, String[]> roles = new HashMap<String, String[]>();
-		String[] valsRoles = { "r1", "r2", "r3" };
-		roles.put("r1", valsRoles);
-		ndArg.setRoles(roles);
+		List<RoleUsers> roleUsers = new ArrayList<RoleUsers>();
+		RoleUsers rolUser1 = new RoleUsers();
+		rolUser1.setRoleName("coordinator");
+		rolUser1.addValuesItem("zivkovick");
+		rolUser1.addValuesItem("kovacevicr");
+		roleUsers.add(rolUser1);
+		RoleUsers rolUser2 = new RoleUsers();
+		rolUser2.setRoleName("user");
+		rolUser2.addValuesItem("dm_world");
+		roleUsers.add(rolUser2);
 
-		ndArg.setTemplateObjectNameOrFolder("");
+		ndReq.setRolesUsers(roleUsers);
 
-		return ndArg;
+		ndReq.setTemplateObjectRObjectId("0900000191cfbdf8");
+
+		return ndReq;
 	}
 
 	@POST
@@ -97,38 +106,29 @@ public class DisRest {
 	// ArrayList<String>> roles,
 	// @QueryParam("templateObjectNameOrFolder") String
 	// templateObjectNameOrFolder) {
-	public String newDocument(@Context SecurityContext sc, NewDocumentArg newDocumentArg) {
+	public String newDocument(@Context SecurityContext sc, NewDocumentRequest ndReq) {
 		try {
+			User user = (User) sc.getUserPrincipal();
 
 			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
-			for (String attName : newDocumentArg.getAttributes().keySet()) {
-				ArrayList<String> values = new ArrayList<String>();
-				for (String value : newDocumentArg.getAttributes().get(attName)) {
-					values.add(value);
-				}
-				attributes_.put(attName, values);
+			for (Attribute att : ndReq.getAttributes()) {
+				attributes_.put(att.getName(), att.getValues());
 			}
 
 			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
-			for (String roleName : newDocumentArg.getRoles().keySet()) {
-				ArrayList<String> values = new ArrayList<String>();
-				for (String value : newDocumentArg.getRoles().get(roleName)) {
-					values.add(value);
-				}
-				roles_.put(roleName, values);
+			for (RoleUsers role : ndReq.getRolesUsers()) {
+				roles_.put(role.getRoleName(), role.getValues());
 			}
-
-			User user = (User) sc.getUserPrincipal();
 
 // @formatter:off
 			return ExplorerServiceImpl.getInstance().newDocument(
 					user.getId(), 
 					Base64.encodeBase64String(user.getPassword().getBytes()),
-					newDocumentArg.getProfileId(), 
+					ndReq.getProfileId(), 
 					attributes_, 
 					roles_, 
-					newDocumentArg.getTemplateObjectNameOrFolder()
-			);
+					ndReq.getTemplateObjectRObjectId());
+			
 // @formatter:on
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
@@ -146,42 +146,32 @@ public class DisRest {
 	// ArrayList<String>> roles,
 	// @QueryParam("templateObjectNameOrFolder") String
 	// templateObjectNameOrFolder) {
-	public String importDocument(@Context SecurityContext sc, ImportDocumentArg importDocumentArg) {
+	public String importDocument(@Context SecurityContext sc, ImportDocumentRequest importDocumentReq) {
 		try {
+			User user = (User) sc.getUserPrincipal();
 
 			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
-			for (String attName : importDocumentArg.getAttributes().keySet()) {
-				ArrayList<String> values = new ArrayList<String>();
-				for (String value : importDocumentArg.getAttributes().get(attName)) {
-					values.add(value);
-				}
-				attributes_.put(attName, values);
+			for (Attribute att : importDocumentReq.getAttributes()) {
+				attributes_.put(att.getName(), att.getValues());
 			}
 
 			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
-			for (String roleName : importDocumentArg.getRoles().keySet()) {
-				ArrayList<String> values = new ArrayList<String>();
-				for (String value : importDocumentArg.getRoles().get(roleName)) {
-					values.add(value);
-				}
-				roles_.put(roleName, values);
+			for (RoleUsers role : importDocumentReq.getRolesUsers()) {
+				roles_.put(role.getRoleName(), role.getValues());
 			}
-
-			User user = (User) sc.getUserPrincipal();
 
 // @formatter:off
 			return ExplorerServiceImpl.getInstance().importDocument(
 					user.getId(), 
-					Base64.encodeBase64String(user.getPassword().getBytes()),
-					importDocumentArg.getFolderId(), 
-					importDocumentArg.getProfileId(),
-					importDocumentArg.getStateId(), 
+					user.getPassword(), 
+					importDocumentReq.getProfileId(),
+					null,
+					importDocumentReq.getStateId(), 
 					attributes_, 
 					roles_, 
-					importDocumentArg.getContentBase64().getBytes(),
-					importDocumentArg.getFormat());
+					importDocumentReq.getContentBase64().getBytes(),
+					importDocumentReq.getFormat());
 // @formatter:on
-
 		} catch (Exception ex) {
 			throw new WebApplicationException(ex.getMessage());
 		}
@@ -191,18 +181,22 @@ public class DisRest {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/getProfilesForClassSign")
-	public List<String> getProfilesForClassSign(@Context SecurityContext sc,
-			@QueryParam("classSign") String classSign, @QueryParam("wizzardType") String wizardType) {
+	public List<String> getProfilesForClassSign(@Context SecurityContext sc, @QueryParam("classSign") String classSign,
+			@QueryParam("wizzardType") String wizardType) {
 		ArrayList<String> ret = new ArrayList<String>();
 		try {
 			User user = (User) sc.getUserPrincipal();
+//@formatter:on
+			List<Profile> profiles = 
+					AdminServiceImpl.getInstance().getProfilesForClassSign
+					(
+							user.getId(), 
+							Base64.encodeBase64String(user.getPassword().getBytes()),
+							classSign,
+							wizardType
+					);
+//@formatter:off
 			
-			List<Profile> profiles = AdminServiceImpl.getInstance().getProfilesForClassSign(
-					
-					user.getId(), 
-					Base64.encodeBase64String(user.getPassword().getBytes()),
-
-					classSign, wizardType);
 			for (Profile profile : profiles) {
 				ret.add(profile.id);
 			}

@@ -41,7 +41,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		Void addVersionLabel(String loginName, String password, List<String> r_object_id, String labelVersion) throws ServerException;
 		Void removeVersionLabel(String loginName, String password, List<String> r_object_id, String labelVersion) throws ServerException;
 		
-		String newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String templateObjectName) throws ServerException;
+		String newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String rObjectIdOfObjectOrFolder) throws ServerException;
 		Void classifyDocument(String loginName, String password, String r_object_id, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers) throws ServerException;
 		
 		String importDocument(String loginName, String password, String objectId, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] contentBase64, String format) throws ServerException;

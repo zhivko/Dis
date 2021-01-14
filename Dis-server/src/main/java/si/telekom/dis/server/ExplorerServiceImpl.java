@@ -822,7 +822,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			coll3.close();
 			Logger.getLogger(this.getClass()).info("Inserted into T_DOCMAN_S");
 
-			AdminServiceImpl.runStandardActions(persObject, indexOfDraftState, userSession);
+			AdminServiceImpl.runStandardActions(persObject, stateId, userSession);
 
 			// }
 			// coll2.close();
@@ -2374,7 +2374,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
 			collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 
-			AdminServiceImpl.runStandardActions(persObj, stateNo, userSession);
+			AdminServiceImpl.runStandardActions(persObj, prof.states.get(stateNo).getId(), userSession);
 
 			if (shouldSupersede)
 				supersede(persObj, userSession);
@@ -2942,8 +2942,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				setUsersForRoles(userSession, persObject, rolesUsers);
 				persObject.fetch("dm_document");
 
-				int stateInd = AdminServiceImpl.getStateIndex(prof, "draft");
-				AdminServiceImpl.runStandardActions(persObject, stateInd, userSession);
+				AdminServiceImpl.runStandardActions(persObject, stateId, userSession);
 				persObject.fetch("dm_document");
 
 				// check if passed object is folder and if it is link it to this folder
@@ -3015,8 +3014,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return ret;
 	}
 
+	
+	@Override
 	public String newDocument(String loginName, String password, String profileId, Map<String, List<String>> attributes,
-			Map<String, List<String>> rolesUsers, String templateObjectNameOrFolder) throws ServerException {
+			Map<String, List<String>> rolesUsers, String rObjectIdOfObjectOrFolder) throws ServerException {
 		String ret = null;
 		Logger.getLogger(this.getClass()).info("NewDocument started for " + loginName);
 
@@ -3030,8 +3031,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				throw new Exception("LoginName should not be null");
 			if (password == null)
 				throw new Exception("Password should not be null");
-			if (templateObjectNameOrFolder.equals("") || templateObjectNameOrFolder == null) {
-				throw new ServerException("No such folder or template with object_name='" + templateObjectNameOrFolder + "'");
+			if (rObjectIdOfObjectOrFolder.equals("") || rObjectIdOfObjectOrFolder == null) {
+				throw new ServerException("Teplate not specified '" + rObjectIdOfObjectOrFolder + "'");
 			}
 			Profile prof = AdminServiceImpl.profiles.get(profileId);
 			if (prof == null) {
@@ -3042,10 +3043,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			AdminServiceImpl.beginTransaction(userSession);
 
 			String dqlOfObjects = "";
-			if (!templateObjectNameOrFolder.startsWith("/")) {
-				dqlOfObjects = "select r_object_id from dm_document where object_name='" + templateObjectNameOrFolder + "'";
+			if (!rObjectIdOfObjectOrFolder.startsWith("/")) {
+				dqlOfObjects = "select r_object_id from dm_document where r_object_id='" + rObjectIdOfObjectOrFolder + "'";
 			} else {
-				dqlOfObjects = "select r_object_id from dm_document where folder('" + templateObjectNameOrFolder + "')";
+				dqlOfObjects = "select r_object_id from dm_document where folder('" + rObjectIdOfObjectOrFolder + "')";
 			}
 
 			IDfQuery query = new DfQuery();
@@ -3055,7 +3056,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			while (collection.next()) {
 				long milis2 = System.currentTimeMillis();
 
-				IDfId dfId = new DfId(collection.getString("r_object_id"));
+				IDfId dfId = new DfId(rObjectIdOfObjectOrFolder);
 				IDfPersistentObject objTemplate = (IDfPersistentObject) userSession.getObject(dfId);
 				String msg = "Copying: " + objTemplate.getString("title");
 				Logger.getLogger(this.getClass()).info("\t" + msg);
@@ -3150,22 +3151,21 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					}
 				}
 				setStateForObject(userSession, persObject, prof, newStateId);
-				int stateInd = AdminServiceImpl.getStateIndex(prof, newStateId);
 
 				setUsersForRoles(userSession, persObject, rolesUsers);
-				AdminServiceImpl.runStandardActions(persObject, stateInd, userSession);
+				AdminServiceImpl.runStandardActions(persObject, newStateId, userSession);
 				persObject.save();
 				long milis3 = System.currentTimeMillis();
 				int timeSec = ((int) ((milis3 - milis2) / 1000));
 				Logger.getLogger(this.getClass()).info("Copying: " + objTemplate.getString("title") + " done in " + timeSec + " seconds.");
 				WsServer.log(loginName, "Documentum object " + barcode + "(" + persObject.getId("r_object_id") + ") created in: " + timeSec + " seconds.");
 			}
-
+			
 			userSession.commitTrans();
-			long milis2 = System.currentTimeMillis();
+			long milis4 = System.currentTimeMillis();
 
 			Logger.getLogger(this.getClass())
-					.info("NewDocument ended for " + loginName + ". Completed in " + ((int) ((milis2 - milis1) / 1000)) + " seconds.");
+					.info("NewDocument ended for " + loginName + ". Completed in " + ((int) ((milis4 - milis1) / 1000)) + " seconds.");
 
 		} catch (Throwable ex) {
 			StringWriter errorStringWriter = new StringWriter();
@@ -3992,7 +3992,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			setStateForObject(userSession, persObject, prof, stateId);
 			setUsersForRoles(userSession, persObject, rolesUsers);
 			persObject.fetch("dm_document");
-			AdminServiceImpl.runStandardActions(persObject, stateInd, userSession);
+			AdminServiceImpl.runStandardActions(persObject, stateId, userSession);
 			// persObject.save();
 			long milis3 = System.currentTimeMillis();
 			int timeSec = ((int) ((milis3 - milis1) / 1000));

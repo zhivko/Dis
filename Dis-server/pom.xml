@@ -13,8 +13,17 @@
 	<packaging>war</packaging>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<tomcat.version>7.0.86</tomcat.version>
-		<version.jersey>2.15</version.jersey>
+
+		<swagger-annotations-version>1.6.1</swagger-annotations-version>
+		<jersey-version>2.30.1</jersey-version>
+		<jackson-version>2.10.4</jackson-version>
+		<jackson-databind-version>2.10.4</jackson-databind-version>
+		<jackson-databind-nullable-version>0.2.1</jackson-databind-nullable-version>
+		<javax-annotation-version>1.3.2</javax-annotation-version>
+		<junit-version>4.13.1</junit-version>
+
 	</properties>
 
 	<dependencies>
@@ -31,6 +40,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -144,73 +154,11 @@
 			<version>8.2.2.jre8</version>
 		</dependency>
 
-
-		<!-- Jersey -->
-		<dependency>
-			<groupId>org.glassfish.jersey.containers</groupId>
-			<artifactId>jersey-container-servlet</artifactId>
-			<version>${version.jersey}</version>
-		</dependency>
-		<!-- do not use jettison, prefer jackson <dependency> <groupId>org.glassfish.jersey.media</groupId> <artifactId>jersey-media-json-jettison</artifactId> 
-			<version>${version.jersey}</version> </dependency> -->
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-json-jackson</artifactId>
-			<version>${version.jersey}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-json-processing</artifactId>
-			<version>${version.jersey}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-multipart</artifactId>
-			<version>${version.jersey}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-sse</artifactId>
-			<version>${version.jersey}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.10.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>2.10.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-moxy</artifactId>
-			<version>${version.jersey}</version>
-		</dependency>
-
-
-		<!-- if you are using Jersey client specific features -->
-		<!-- <dependency> <groupId>org.glassfish.jersey.core</groupId> <artifactId>jersey-client</artifactId> <version>${version.jersey}</version> </dependency> -->
-
-
-		<!-- jersey dependencies END -->
-
-		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20190722</version>
+			<version>20201115</version>
 		</dependency>
-
-
-		<!-- jersey dependencies END -->
-
-
-
 
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>
@@ -334,14 +282,6 @@
 		</dependency>
 
 
-		<!-- https://mvnrepository.com/artifact/com.cloudhopper.proxool/proxool -->
-		<!-- <dependency> -->
-		<!-- <groupId>com.cloudhopper.proxool</groupId> -->
-		<!-- <artifactId>proxool</artifactId> -->
-		<!-- <version>0.9.1</version> -->
-		<!-- </dependency> -->
-		<!-- https://mvnrepository.com/artifact/proxool/proxool -->
-		<!-- https://mvnrepository.com/artifact/com.cloudhopper.proxool/proxool -->
 		<dependency>
 			<groupId>com.cloudhopper.proxool</groupId>
 			<artifactId>proxool</artifactId>
@@ -370,12 +310,130 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>${swagger-annotations-version}</version>
+		</dependency>
+
+		<!-- @Nullable annotation -->
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+
+		<!-- HTTP client: jersey-client -->
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-multipart</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-jackson</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+
+		<!-- JSON processing: jackson -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${jackson-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson-databind-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openapitools</groupId>
+			<artifactId>jackson-databind-nullable</artifactId>
+			<version>${jackson-databind-nullable-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-joda</artifactId>
+			<version>${jackson-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>${jackson-version}</version>
+		</dependency>
+		<!-- Bean Validation API support -->
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>1.1.0.Final</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>${javax-annotation-version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.connectors</groupId>
+			<artifactId>jersey-apache-connector</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 	</dependencies>
-
-
 
 	<build>
 		<resources>
@@ -402,47 +460,146 @@
 		</resources>
 
 		<plugins>
+
 			<plugin>
-				<groupId>io.swagger</groupId>
-				<artifactId>swagger-codegen-maven-plugin</artifactId>
-				<version>3.0.0-rc0</version>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.6.1</version>
 				<configuration>
-					<inputSpec>${basedir}/src/main/resources/dis.yaml</inputSpec>
-					<output>target/generated-sources</output>
-					<language>spring</language>
-					<generateApis>false</generateApis>
-					<modelPackage>si.telekom.dis.server.rest</modelPackage>
-					<apiPackage>si.telekom.dis.server.rest.api</apiPackage>
-					<configOptions>
-						<sourceFolder>swagger</sourceFolder>
-						<library>spring-mvc</library>
-						<interfaceOnly>true</interfaceOnly>
-						<useBeanValidation>true</useBeanValidation>
-						<dateLibrary>java8</dateLibrary>
-						<java8>true</java8>
-					</configOptions>
+					<excludeDefaultDirectories>true</excludeDefaultDirectories>
+					<filesets>
+						<fileset>
+							<directory>${project.build.directory}</directory>
+							<excludes>
+								<exclude>generated-sources/swagger/.swagger-codegen-ignore</exclude>
+							</excludes>
+						</fileset>
+					</filesets>
 				</configuration>
+			</plugin>
+
+			<!-- <plugin> -->
+			<!-- <groupId>io.swagger</groupId> -->
+			<!-- <artifactId>swagger-codegen-maven-plugin</artifactId> -->
+			<!-- <version>3.0.0-rc0</version> -->
+			<!-- <configuration> -->
+			<!-- <inputSpec>${basedir}/src/main/resources/dis.yaml</inputSpec> -->
+			<!-- <output>${project.build.directory}/generated-sources</output> -->
+			<!-- <language>java</language> -->
+			<!-- <library>resttemplate</library> -->
+			<!-- <generateApis>false</generateApis> -->
+			<!-- <modelPackage>si.telekom.dis.server.rest</modelPackage> -->
+			<!-- <invokerPackage>si.telekom.dis.server.rest.invoke</invokerPackage> -->
+			<!-- <ignoreFileOverride>true</ignoreFileOverride> -->
+			<!-- <apiPackage>si.telekom.dis.server.rest.api</apiPackage> -->
+			<!-- <generateSupportingFiles>true</generateSupportingFiles> -->
+			<!-- <generateModels>true</generateModels> -->
+			<!-- <configOptions> -->
+			<!-- <sourceFolder>java</sourceFolder> -->
+			<!-- <library>jersey2</library> -->
+			<!-- <interfaceOnly>false</interfaceOnly> -->
+			<!-- <useBeanValidation>true</useBeanValidation> -->
+			<!-- <dateLibrary>joda</dateLibrary> -->
+			<!-- <java8>true</java8> -->
+			<!-- </configOptions> -->
+			<!-- </configuration> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <phase>generate-sources</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>generate</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- <dependencies> -->
+			<!-- <dependency> -->
+			<!-- <groupId>io.swagger</groupId> -->
+			<!-- <artifactId>swagger-codegen-generators</artifactId> -->
+			<!-- <version>1.0.0-SNAPSHOT</version> -->
+			<!-- </dependency> -->
+			<!-- </dependencies> -->
+			<!-- </plugin> -->
+
+
+
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>5.0.0</version>
 				<executions>
 					<execution>
-						<phase>compile</phase>
+<!-- 						<phase>generate-sources</phase> -->
 						<goals>
 							<goal>generate</goal>
 						</goals>
+						<configuration>
+<!-- 							<generatorName>java</generatorName> -->
+<!-- 							<language>java</language> -->
+<!-- 							<library>resttemplate</library> -->
+<!-- 							<generateApis>false</generateApis> -->
+<!-- 							<modelPackage>si.telekom.dis.server.rest</modelPackage> -->
+<!-- 							<invokerPackage>si.telekom.dis.server.rest.invoke</invokerPackage> -->
+<!-- 							<ignoreFileOverride>true</ignoreFileOverride> -->
+<!-- 							<apiPackage>si.telekom.dis.server.rest.api</apiPackage> -->
+<!-- 							<generateSupportingFiles>true</generateSupportingFiles> -->
+<!-- 							<generateModels>true</generateModels> -->
+<!-- 							<configOptions> -->
+<!-- 								<sourceFolder>java</sourceFolder> -->
+<!-- 								<library>jersey2</library> -->
+<!-- 								<interfaceOnly>false</interfaceOnly> -->
+<!-- 								<useBeanValidation>true</useBeanValidation> -->
+<!-- 								<java8>true</java8> -->
+<!-- 								<dateLibrary>java8-localdatetime</dateLibrary> -->
+<!-- 							</configOptions> -->
+
+							<generatorName>java</generatorName>
+							<generateModelTests>false</generateModelTests>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<generateModelDocumentation>false</generateModelDocumentation>
+							<inputSpec>${basedir}/src/main/resources/dis.yaml</inputSpec>
+							<output>${project.build.directory}/generated-sources</output>
+							
+							<configOptions>
+								<library>jersey2</library>
+								<hideGenerationTimestamp>true</hideGenerationTimestamp>
+								<delegatePattern>true</delegatePattern>
+								<java8>true</java8>
+								<dateLibrary>java8-localdatetime</dateLibrary>
+							</configOptions>
+							<additionalProperties>failOnEmptyBeans=false</additionalProperties>
+							<inputSpec />
+
+
+						</configuration>
 					</execution>
 				</executions>
 				<dependencies>
 					<dependency>
-						<groupId>io.swagger</groupId>
-						<artifactId>swagger-codegen-generators</artifactId>
-						<version>1.0.0-SNAPSHOT</version>
-					</dependency>
-					<dependency>
-						<groupId>org.openapitools</groupId>
-						<artifactId>openapi-generator-maven-plugin</artifactId>
-						<version>3.3.4</version>
+						<groupId>io.swagger.parser.v3</groupId>
+						<artifactId>swagger-parser</artifactId>
+						<version>2.0.23</version>
 					</dependency>
 				</dependencies>
 			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${project.build.directory}/generated-sources/java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>

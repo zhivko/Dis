@@ -10,12 +10,16 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -27,6 +31,7 @@ import com.google.gwt.view.client.Range;
 
 import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MySimplePager;
+import si.telekom.dis.client.MyTextArea;
 import si.telekom.dis.client.WindowBox;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
@@ -37,7 +42,6 @@ public class DocumentAuditTrail extends WindowBox {
 	CellTable<Row> cellTable;
 	String r_object_id;
 	List<Row> rows;
-	public int rowsPerPage = 100;
 
 	public DocumentAuditTrail(String r_object_id) {
 		// audited_obj_id, time_stamp, time_stamp_utc, event_name,
@@ -56,7 +60,7 @@ public class DocumentAuditTrail extends WindowBox {
 		MySimplePager pager;
 		MySimplePager.Resources pagerResources = GWT.create(SimplePager.Resources.class);
 		pager = new MySimplePager(TextLocation.RIGHT, pagerResources, false, 0, true);
-		pager.setPageSize(rowsPerPage);
+		pager.setPageSize(MainPanel.getInstance().us.auditTrailPerPageCount);
 		pager.setWidth("100%");
 
 		int ordinaryColWidth = 150;
@@ -69,10 +73,9 @@ public class DocumentAuditTrail extends WindowBox {
 				// TODO Auto-generated method stub
 				if (event.getNativeEvent().getType().equals(BrowserEvents.CLICK)) {
 					int column = event.getContext().getColumn();
-					//if (event.getContext().getSubIndex() > 0) {
-					if(column==1)
-					{
-						
+					// if (event.getContext().getSubIndex() > 0) {
+					if (column == 1) {
+
 						String r_object_id = event.getValue().getValues().get(column);
 						DocumentView view = new DocumentView(r_object_id);
 						view.show();
@@ -84,7 +87,7 @@ public class DocumentAuditTrail extends WindowBox {
 		cellTable.setTableLayoutFixed(true);
 		cellTable.setWidth("100%");
 		pager.setDisplay(cellTable);
-		cellTable.setPageSize(rowsPerPage);
+		cellTable.setPageSize(MainPanel.getInstance().us.auditTrailPerPageCount);
 
 		Column<Row, String> r_obj_id = new Column<Row, String>(new TextCell()) {
 			@Override
@@ -207,7 +210,7 @@ public class DocumentAuditTrail extends WindowBox {
 
 		rows = new ArrayList<Row>();
 
-		MyDataProvider dataProvider = new MyDataProvider(r_object_id, rows, this.rowsPerPage);
+		MyDataProvider dataProvider = new MyDataProvider(r_object_id, rows, MainPanel.getInstance().us.auditTrailPerPageCount);
 		dataProvider.addDataDisplay(cellTable);
 
 		ListHandler<Row> columnSortHandler = new ListHandler<Row>(rows);
@@ -239,6 +242,30 @@ public class DocumentAuditTrail extends WindowBox {
 		sp.setWidth(getMaxWidthPx());
 
 		getContentPanel().add(sp);
+
+		Button exportButton = new Button("CSV export");
+		exportButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				String data = "";
+				for (int j = 0; j<cellTable.getColumnCount(); j++) {
+					data = data + "\"" + cellTable.getHeader(j).getValue() + "\"\t";
+				}
+				data = data.substring(0, data.length() - 1);
+				data = data + "\n";
+				for (Row row : cellTable.getVisibleItems()) {
+					for (String cellData : row.values) {
+						data = data + "\"" + cellData + "\"\t";
+					}
+					data = data.substring(0, data.length() - 1);
+					data = data + "\n";
+				}
+				data = data.substring(0, data.length() - 1);
+				Window.alert(data);
+			}
+		});
+		this.getButtonPanel().add(exportButton);
 
 		// Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		// @Override

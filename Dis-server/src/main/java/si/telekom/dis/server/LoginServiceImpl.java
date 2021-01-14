@@ -39,7 +39,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import si.telekom.dis.shared.LoginService;
 import si.telekom.dis.shared.ServerException;
 import si.telekom.dis.shared.UserSettings;
-import si.telekom.dis.server.WsServer;
 
 /**
  * The server-side implementation of the RPC service.
@@ -403,6 +402,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				us = new UserSettings();
 				us.explorerReturnResultCount = 30;
 				us.searchReturnResultCount = 30;
+				us.auditTrailPerPageCount = 100;
 
 				Marshaller m = context.createMarshaller();
 				m.marshal(us, writer);

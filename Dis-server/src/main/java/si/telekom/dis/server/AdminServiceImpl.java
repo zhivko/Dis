@@ -2078,8 +2078,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 * @param targetStateNo
 	 *          ... target state
 	 */
-	public static void runStandardActions(IDfPersistentObject persObject, int targetStateNo, IDfSession userSess) throws Exception {
-		String msg = "Runing standard actions...";
+	public static void runStandardActions(IDfPersistentObject persObject, String stateId, IDfSession userSess) throws Exception {
+		String msg = "Runing standard actions for: " + persObject.getId("r_object_id").toString() + " to stateId: " + stateId;
 		WsServer.log(userSess.getLoginInfo().getUser(), msg);
 		Logger.getLogger(AdminServiceImpl.class).info(msg);
 		IDfCollection collection = null;
@@ -2108,10 +2108,19 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				String profileId = collection.getString("profile_id");
 
 				Profile prof = profiles.get(profileId);
+				int targetStateNo = 0;
+				for (State sta : prof.states) {
+					if(sta.getId().equals(stateId))
+					{
+						break;
+					}
+					targetStateNo++;
+				}
 
 				if (prof.states.get(targetStateNo) == null)
 					throw new Exception("No such state: " + targetStateNo + " in profile: " + prof.name + " (" + prof.id + ")");
-
+				Logger.getLogger(AdminServiceImpl.class).info("StateName: " + prof.states.get(targetStateNo).getId());
+				
 				for (StandardAction sa : prof.states.get(targetStateNo).standardActions) {
 					saKind = sa.kind;
 					Logger.getLogger(AdminServiceImpl.class).info("Above to execute standard action: " + saKind);
