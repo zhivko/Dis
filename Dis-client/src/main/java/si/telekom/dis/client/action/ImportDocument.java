@@ -693,6 +693,8 @@ public class ImportDocument extends WindowBox {
 			if (!sta.getId().equals("unclassified"))
 				states.addItem(sta.getParameter(), sta.getId());
 		}
+		states.setSelectedIndex(0);
+		getOkButton().setEnabled(true);
 
 		vp.add(states);
 		tpWizard.remove(4);
