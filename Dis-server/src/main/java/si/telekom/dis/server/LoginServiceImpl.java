@@ -146,7 +146,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				IDfUser dcmtUser = (IDfUser) adminSession.getObjectByQualification("dm_user where user_login_name='" + loginName + "'");
 
 				if (loginName.contentEquals("zivkovick"))
-					ret[1] = Base64Utils.toBase64("Doitman789012".getBytes());
+					ret[1] = Base64Utils.toBase64("Doitman890123".getBytes());
 				else
 					ret[1] = Base64Utils.toBase64(
 							AdminServiceImpl.getInstance().getAdminSession().getLoginTicketForUser(AdminServiceImpl.userDomain + "\\" + ret[0]).getBytes());
