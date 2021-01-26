@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -31,7 +30,6 @@ import si.telekom.dis.shared.Profile;
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/importDocument
 // mvn clean package -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
 
-@Named
 @Path("/disRest")
 public class DisRest {
 
@@ -50,7 +48,7 @@ public class DisRest {
 		try {
 			return ExplorerServiceImpl.getInstance().dqlLookup(loginName, passwordEncrypted, dql);
 		} catch (Exception ex) {
-			throw new WebApplicationException(ex.getMessage());
+			throw new WebApplicationException(ex);
 		}
 	}
 
@@ -131,7 +129,7 @@ public class DisRest {
 			
 // @formatter:on
 		} catch (Exception ex) {
-			throw new WebApplicationException(ex.getMessage());
+			throw new WebApplicationException(ex);
 		}
 	}
 
@@ -186,15 +184,9 @@ public class DisRest {
 		ArrayList<String> ret = new ArrayList<String>();
 		try {
 			User user = (User) sc.getUserPrincipal();
-//@formatter:on
-			List<Profile> profiles = 
-					AdminServiceImpl.getInstance().getProfilesForClassSign
-					(
-							user.getId(), 
-							Base64.encodeBase64String(user.getPassword().getBytes()),
-							classSign,
-							wizardType
-					);
+			//@formatter:on
+			List<Profile> profiles = AdminServiceImpl.getInstance().getProfilesForClassSign(user.getId(),
+					Base64.encodeBase64String(user.getPassword().getBytes()), classSign, wizardType);
 //@formatter:off
 			
 			for (Profile profile : profiles) {

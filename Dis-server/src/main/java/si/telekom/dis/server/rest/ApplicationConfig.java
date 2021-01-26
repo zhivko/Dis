@@ -8,7 +8,7 @@ import java.util.Set;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import org.glassfish.jersey.filter.LoggingFilter;
+import org.glassfish.jersey.logging.LoggingFeature;
 
 import io.swagger.jaxrs.config.BeanConfig;
 //https://www.nabisoft.com/tutorials/java-ee/producing-and-consuming-json-or-xml-in-java-rest-services-with-jersey-and-jackson
@@ -39,7 +39,7 @@ public class ApplicationConfig extends Application {
         //we could also use this:
 				resources.add(com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider.class);
 
-				resources.add(LoggingFilter.class);
+				resources.add(LoggingFeature.class);
         //resources.add(GsonMessageBodyHandler.class);        
         
         //instead let's do it manually:
@@ -60,7 +60,6 @@ public class ApplicationConfig extends Application {
         return Collections.emptySet();
     }
     
-    @Override
     public Map<String, Object> getProperties() {
         Map<String, Object> properties = new HashMap<>();
         
