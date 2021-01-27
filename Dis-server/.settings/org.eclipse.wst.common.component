@@ -34,7 +34,13 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/target/generated-sources/java"/>
                 
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/target/generated-sources/openapi/src/main/java"/>
-        <dependent-module deploy-path="/" handle="module:/overlay/var/M2_REPO/si/telekom/dis/Dis-client/1.0-SNAPSHOT/Dis-client-1.0-SNAPSHOT.war?unpackFolder=target/m2e-wtp/overlays&amp;includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
+        <dependent-module archiveName="Dis-shared-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Dis-shared/Dis-shared">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Dis-client-1.0-SNAPSHOT.war" deploy-path="/WEB-INF/lib" handle="module:/resource/Dis-client/Dis-client">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module deploy-path="/" handle="module:/overlay/prj/Dis-client?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
             <dependency-type>consumes</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/slf/?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
