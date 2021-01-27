@@ -196,7 +196,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public static HashMap<String, IDfGroup> allGroups = new HashMap<String, IDfGroup>();
 
 	static {
-		
+
 		ServletContext servletContext = WebappContext.getServletContext();
 
 		AdminServiceImpl.BARCODE_SQL_SERVER_DB_NAME = servletContext.getInitParameter("barcode.database");
@@ -215,8 +215,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		AdminServiceImpl.retentionAddUnit = servletContext.getInitParameter("retention.addUnit");
 
-		AdminServiceImpl.configPath = servletContext.getInitParameter("configPath");		
-		
+		AdminServiceImpl.configPath = servletContext.getInitParameter("configPath");
+
 		Thread t = new Thread(new Runnable() {
 
 			@Override
@@ -2110,8 +2110,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				Profile prof = profiles.get(profileId);
 				int targetStateNo = 0;
 				for (State sta : prof.states) {
-					if(sta.getId().equals(stateId))
-					{
+					if (sta.getId().equals(stateId)) {
 						break;
 					}
 					targetStateNo++;
@@ -2120,7 +2119,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				if (prof.states.get(targetStateNo) == null)
 					throw new Exception("No such state: " + targetStateNo + " in profile: " + prof.name + " (" + prof.id + ")");
 				Logger.getLogger(AdminServiceImpl.class).info("StateName: " + prof.states.get(targetStateNo).getId());
-				
+
 				for (StandardAction sa : prof.states.get(targetStateNo).standardActions) {
 					saKind = sa.kind;
 					Logger.getLogger(AdminServiceImpl.class).info("Above to execute standard action: " + saKind);
@@ -2967,6 +2966,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		if (lazy)
 			return ret;
 
+//		if (el.getAttribute("name").startsWith("ePredloge po naz")) {
+//			System.out.println("oop");
+//		}
+
 		XPath xpath = xpathFac.newXPath();
 		XPathExpression expr3 = xpath.compile(".//userGroup");
 		NodeList groupList3 = (NodeList) expr3.evaluate(el, XPathConstants.NODESET);
@@ -3003,6 +3006,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					// try to parse label
 					String escapedGroup0 = m.group(0).replaceAll("\\%", "[%]");
 					String toCompile = ".*" + attName + " \\((.*?)\\)(.*)" + escapedGroup0;
+					
+					//Logger.getLogger(this.getClass()).info("trying: " + toCompile);
+					
 					Pattern p1 = Pattern.compile(toCompile, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 					Matcher m1 = p1.matcher(dqlQuery);
 

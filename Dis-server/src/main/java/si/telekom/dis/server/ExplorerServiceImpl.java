@@ -2275,12 +2275,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return null;
 	}
 
-	public Void moveToState(String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState, IDfSession userSession)
-			throws ServerException {
+	public Void moveToState(String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState, IDfSession userSession) throws ServerException {
 		return moveToState(userSession, r_object_id, stateId, profileAndRolesOfUserAndState);
 	}
 
-	public Void moveToState(String loginName, String password, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState) throws ServerException {
+	public Void moveToState(String loginName, String password, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState)
+			throws ServerException {
 		IDfSession userSession;
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
@@ -2296,15 +2296,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		}
 	}
 
-	public Void moveToState(IDfSession userSession, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState)
-			throws ServerException {
+	public Void moveToState(IDfSession userSession, String r_object_id, String stateId, Object[] profileAndRolesOfUserAndState) throws ServerException {
 		IDfQuery query = new DfQuery();
 
 		IDfCollection collection = null;
 		try {
 			Logger.getLogger(this.getClass())
 					.info("moveToState for triggered by user: " + userSession.getLoginInfo().getUser() + " for: " + r_object_id + " toState: " + stateId);
-			
+
 			boolean startedTransaction = false;
 			if (!userSession.isTransactionActive()) {
 				AdminServiceImpl.beginTransaction(userSession);
@@ -2313,7 +2312,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 
-			Profile prof = (Profile) profileAndRolesOfUserAndState[1];		
+			Profile prof = (Profile) profileAndRolesOfUserAndState[1];
 
 			boolean foundState = false;
 			int stateNo = 0;
@@ -2331,13 +2330,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			ArrayList<String> rolesOfUser = (ArrayList<String>) profileAndRolesOfUserAndState[2];
 			String currentStateId = (String) profileAndRolesOfUserAndState[3];
-			
+
 			boolean shouldSupersede;
 			if (stateId.equals("effective") && !currentStateId.equals("archive"))
 				shouldSupersede = true;
 			else
-				shouldSupersede = false;				
-			
+				shouldSupersede = false;
 
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 
@@ -2870,10 +2868,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			for (String attName : attributes.keySet()) {
 				Logger.getLogger(this.getClass()).info("Updating attribute: " + attName);
 				Attribute att = wizardAttributes.get(attName);
-				
-				if(att==null)
-					throw new ServerException("No such attribute: "+attName+" in profile: " + prof.id);
-				
+
+				if (att == null)
+					throw new ServerException("No such attribute: " + attName + " in profile: " + prof.id);
+
 				DcmtAttribute dcmtAttribute = AdminServiceImpl.getInstance().findAttribute(prof.objType, attName);
 
 				if (dcmtAttribute == null)
@@ -3014,7 +3012,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return ret;
 	}
 
-	
 	@Override
 	public String newDocument(String loginName, String password, String profileId, Map<String, List<String>> attributes,
 			Map<String, List<String>> rolesUsers, String rObjectIdOfObjectOrFolder) throws ServerException {
@@ -3160,7 +3157,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				Logger.getLogger(this.getClass()).info("Copying: " + objTemplate.getString("title") + " done in " + timeSec + " seconds.");
 				WsServer.log(loginName, "Documentum object " + barcode + "(" + persObject.getId("r_object_id") + ") created in: " + timeSec + " seconds.");
 			}
-			
+
 			userSession.commitTrans();
 			long milis4 = System.currentTimeMillis();
 
@@ -4305,17 +4302,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	@Override
 	public Void configureERender(String loginName, String password, String xml) throws ServerException {
 
-		String[] allEndpoints = {
-
-				"http://localhost:8081/PdfGenerator/services?wsdl"
-				/*
-				 * "http://erender-test.ts.telekom.si:8080/PdfGeneratorStaging/services?wsdl",
-				 * "http://erender-test.ts.telekom.si:8080/PdfGeneratorSb1/services?wsdl",
-				 * "http://erender-test.ts.telekom.si:9080/PdfGeneratorSb2/services?wsdl",
-				 * "http://bpl1-kaksisa1-v.ts.telekom.si:8080/PdfGenerator/services?wsdl",
-				 * "http://bpl2-kaksisa2-v.ts.telekom.si:8080/PdfGenerator/services?wsdl"
-				 */
-		};
+		String[] allEndpoints = { "http://localhost:8081/PdfGenerator/services?wsdl",
+				"http://erender-test.ts.telekom.si:8080/PdfGeneratorStaging/services?wsdl",
+				"http://erender-test.ts.telekom.si:8080/PdfGeneratorSb1/services?wsdl",
+				"http://erender-test.ts.telekom.si:9080/PdfGeneratorSb2/services?wsdl",
+				"http://bpl1-kaksisa1-v.ts.telekom.si:8080/PdfGenerator/services?wsdl",
+				"http://bpl2-kaksisa2-v.ts.telekom.si:8080/PdfGenerator/services?wsdl" };
 
 		QName qname = new QName("http://templates.mobitel.com/", "PdfGeneratorImplService");
 

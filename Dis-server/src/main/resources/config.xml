@@ -1702,12 +1702,21 @@ DATEDIFF(day,"mob_valid_from", date(today))&gt;0 and any r_version_label in ('dr
             <filterClass/>
          </query>
          <query name="SODO dokumenti 10 dni stari">select r_object_id from mob_subscriber_document where owner_name='omssystemuser' and mob_classification_id=' ' and DATEDIFF(day, r_creation_date, date(NOW))&lt;10 ENABLE (RETURN_RANGE 1 100 'r_creation_date desc')
- <userGroups>
+ 
+            
+            
+         <userGroups>
                <userGroup id="dm_world" name="dm_world"/>
             </userGroups>
             <orderBys/>
             <filterClass/>
-         </query>       
+         </query>
+         <query name="ePredloge po nazivu">select r_object_id from mob_form_template where mob_short_name like '%&lt;1&gt;%' ENABLE (RETURN_RANGE 1 100 'r_modify_date desc')<userGroups>
+               <userGroup id="dm_world" name="dm_world"/>
+            </userGroups>
+            <orderBys/>
+            <filterClass/>
+         </query>
       </queries>
    </docbase>
 </config>
