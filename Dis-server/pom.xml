@@ -90,37 +90,39 @@
 		<dependency>
 			<groupId>com.rsa</groupId>
 			<artifactId>certj</artifactId>
-			<version>7.2.0240.0205</version>
-
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
 		</dependency>
+		
 		<dependency>
 			<groupId>com.rsa</groupId>
 			<artifactId>cryptojcommon</artifactId>
-			<version>7.2.0240.0205</version>
-
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
 		</dependency>
 		<dependency>
 			<groupId>com.rsa</groupId>
 			<artifactId>cryptojce</artifactId>
-			<version>7.2.0240.0205</version>
-
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
 		</dependency>
 		<dependency>
 			<groupId>jcifs</groupId>
-			<artifactId>jcifs</artifactId>
-			<version>7.2.0240.0205</version>
-
-		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectj</artifactId>
-			<version>7.2.0240.0205</version>
-
+			<artifactId>jcifs-krb5</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
 		</dependency>
 		<dependency>
 			<groupId>jcmfips</groupId>
 			<artifactId>jcmfips</artifactId>
-			<version>7.2.0240.0205</version>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
