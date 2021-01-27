@@ -93,7 +93,7 @@
 			<version>7.3.0090.0047</version>
 			<classifier>centos</classifier>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.rsa</groupId>
 			<artifactId>cryptojcommon</artifactId>
@@ -272,6 +272,8 @@
 			<groupId>com.oracle</groupId>
 			<artifactId>ojdbc7</artifactId>
 			<version>12.1.0.1</version>
+			<classifier>centos</classifier>
+			
 		</dependency>
 
 		<dependency>

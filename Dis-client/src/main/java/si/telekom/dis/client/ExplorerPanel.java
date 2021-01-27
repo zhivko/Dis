@@ -349,14 +349,14 @@ public class ExplorerPanel extends Composite {
 		} else if (actionId.equals("document.cancelCheckOut")) {
 			explorerService.cancelCheckout(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, new AsyncCallback<Void>() {
 
-				@Override
-				public void onSuccess(Void result) {
-					// TODO Auto-generated method stub
-					MainPanel.log("CancelCheckout succesfull");
-					MenuPanel.activeExplorerInstance.refreshLastSelectedNode();
-				}
+	@Override
+	public void onSuccess(Void result) {
+		// TODO Auto-generated method stub
+		MainPanel.log("CancelCheckout succesfull");
+		MenuPanel.activeExplorerInstance.refreshLastSelectedNode();
+	}
 
-				@Override
+	@Override
 				public void onFailure(Throwable caught) {
 					MainPanel.log("CancelCheckout error: " + caught.getMessage());
 				}
@@ -402,13 +402,13 @@ public class ExplorerPanel extends Composite {
 			explorerService.updateBusinessNotification(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id,
 					new AsyncCallback<Void>() {
 
-						@Override
-						public void onSuccess(Void result) {
-							// TODO Auto-generated method stub
-							MainPanel.log("updateBusinessNotification succesfull");
-						}
+	@Override
+	public void onSuccess(Void result) {
+		// TODO Auto-generated method stub
+		MainPanel.log("updateBusinessNotification succesfull");
+	}
 
-						@Override
+	@Override
 						public void onFailure(Throwable caught) {
 							MainPanel.log("updateBusinessNotification error: " + caught.getMessage());
 						}
@@ -668,5 +668,5 @@ public class ExplorerPanel extends Composite {
 	public void hideTxtFolder() {
 		vp.remove(hpFolder);
 	}
-
+	
 }

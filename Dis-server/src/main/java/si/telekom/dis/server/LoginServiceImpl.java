@@ -119,7 +119,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 5000;
 				ret[0] = "zivkovick";
-				ret[1] = Base64Utils.toBase64("Doitman890123".getBytes());
+				ret[1] = Base64Utils.toBase64("sdfs".getBytes());
 				ret[2] = "administrator";
 				ret[3] = "ZivkovicK";
 				ret[4] = AdminServiceImpl.repositoryName;
