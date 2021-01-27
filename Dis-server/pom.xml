@@ -71,7 +71,7 @@
 			<groupId>com.documentum.services</groupId>
 			<artifactId>configservice-impl</artifactId>
 			<version>7.3.0000.0205</version>
-			<classifier>windows</classifier>
+			<classifier>centos</classifier>
 		</dependency>
 
 		<dependency>
