@@ -308,7 +308,7 @@ public class ExplorerPanel extends Composite {
 		} else if (actionId.equals("document.edit")) {
 			String url = DocumentView.getUrl(r_object_id, "") + "&download=true";
 			String safeUriDocView = UriUtils.fromString(url).asString();
-			Window.open(URL.encode(safeUriDocView), "_self", "enabled");
+			Window.open(URL.encode(safeUriDocView), "_blank", "enabled");
 		} else if (actionId.equals("document.properties")) {
 			adb = new DocumentProperties(r_object_id);
 		} else if (actionId.equals("document.delete")) {

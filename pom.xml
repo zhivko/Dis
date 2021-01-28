@@ -25,17 +25,17 @@
 			</snapshots>
 		</repository>
 
-		<repository>
-			<id>for proxool</id>
-			<url> https://oss.sonatype.org/content/repositories/releases</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
+<!-- 		<repository> -->
+<!-- 			<id>for proxool</id> -->
+<!-- 			<url>https://oss.sonatype.org/content/repositories/releases</url> -->
+<!-- 			<layout>default</layout> -->
+<!-- 			<releases> -->
+<!-- 				<enabled>true</enabled> -->
+<!-- 			</releases> -->
+<!-- 			<snapshots> -->
+<!-- 				<enabled>true</enabled> -->
+<!-- 			</snapshots> -->
+<!-- 		</repository> -->
 
 
 
