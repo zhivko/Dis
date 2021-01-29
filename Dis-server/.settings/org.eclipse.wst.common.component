@@ -34,6 +34,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/target/generated-sources/java"/>
                 
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/target/generated-sources/openapi/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/target/generated-sources/openapi/src/gen/java"/>
         <dependent-module archiveName="Dis-shared-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Dis-shared/Dis-shared">
             <dependency-type>uses</dependency-type>
         </dependent-module>
