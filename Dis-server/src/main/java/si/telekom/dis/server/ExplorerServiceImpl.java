@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -63,6 +64,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -1988,6 +1991,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			String hostname = this.getServletContext().getVirtualServerName();
 
+			Client client = ClientBuilder.newClient();
+			String uri = client.target(restUrl).getUri().toString();
+			
 			int port = this.getThreadLocalRequest().getLocalPort();
 			String strUrl = "";
 			if (restUrl.contains("http:"))
@@ -1996,6 +2002,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				if (!restUrl.startsWith("/"))
 					restUrl = "/" + restUrl;
 
+				//Logger.getLogger(this.getClass()).info("rest base uri: " + CatalogServiceClient.baseUri.toURL().toString());
+				
 				String prot = this.getThreadLocalRequest().isSecure() ? "https" : "http";
 				String host = (hostname != null ? hostname : "127.0.0.1");
 				strUrl = getServerBase(this.getThreadLocalRequest()) + restUrl + URLEncoder.encode(likeString, "UTF-8");
@@ -2003,8 +2011,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			HttpURLConnection conn;
 			Logger.getLogger(this.getClass()).info("rest url: " + strUrl);
+			
 			URL url;
 			url = new URL(strUrl);
+			
+			String stUrl = URLEncoder.encode(strUrl, StandardCharsets.UTF_8.toString());
+			Logger.getLogger(this.getClass()).info("rest url encoded: " + stUrl);
 
 			if (this.getThreadLocalRequest().isSecure()) {
 
@@ -2039,6 +2051,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			conn.setAllowUserInteraction(false);
 			conn.setConnectTimeout(1000);
 			conn.setReadTimeout(10000);
+			
+			String auth = loginName + ":" + password;
+			byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+			
+			String authHeaderValue = "Basic " + new String(encodedAuth);
+			conn.setRequestProperty("Authorization", authHeaderValue);
+			
+			
 			conn.connect();
 
 			if (conn.getResponseCode() != 200) {
@@ -4254,7 +4274,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	public Void syncERenderTemplate(String loginName, String password, String r_object_id) throws ServerException {
 
 		String[] allEndpoints = {
-
+				"http://10.115.4.149:8081/PdfGenerator/services?wsdl",
 				"http://erender-test.ts.telekom.si:8080/PdfGenerator/services?wsdl",
 				"http://erender-test.ts.telekom.si:8080/PdfGeneratorStaging/services?wsdl",
 				"http://erender-test.ts.telekom.si:8080/PdfGeneratorSb1/services?wsdl",

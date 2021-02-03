@@ -98,9 +98,9 @@ public class UploadServlet extends HttpServlet {
 					// TODO Auto-generated method stub
 					// every 10% of uploaded size
 					int partsize = (int) (pBytesRead / pContentLength * 100.0);
-					if(partsize>2)
+					if (partsize > 2)
 						Logger.getLogger(this.getClass()).info("Items: " + pItems + " bytesread: " + pBytesRead + " content Length:" + pContentLength);
-						
+
 					if (pItems % 2 == 0 && pItems != 0)
 						Logger.getLogger(this.getClass()).info("Items: " + pItems + " bytesread: " + pBytesRead + " content Length:" + pContentLength);
 				}
@@ -237,7 +237,8 @@ public class UploadServlet extends HttpServlet {
 
 										ExplorerServiceImpl explorerImpl = new ExplorerServiceImpl();
 										byte[] encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(tempFile));
-										explorerImpl.importDocument(loginName, loginPassword, objectId, profileId, stateId, attributes, roleUsersHm, encoded, fmt.getName());
+										explorerImpl.importDocument(loginName, loginPassword, objectId, profileId, stateId, attributes, roleUsersHm, encoded,
+												fmt.getName());
 									} else {
 										// checkin or addrendition action for existing document
 
@@ -246,20 +247,23 @@ public class UploadServlet extends HttpServlet {
 										String prevVersLabels = "";
 										IDfSysObject sysObj = (IDfSysObject) persObj;
 										if (actionClass.endsWith("DocumentCheckin")) {
-											
-											int id = Integer.valueOf(sysObj.getString("mob_template_id")).intValue();
-											
-											ByteArrayInputStream baIs = new ByteArrayInputStream(FileUtils.readFileToByteArray(tempFile));
-											ByteArrayInputStream bacontentStreamIs = ExplorerServlet.makeSureAllFieldsExist(baIs, id);
-											
-									    int nRead;
-									    byte[] data1 = new byte[1024];
-									    ByteArrayOutputStream baOs = new ByteArrayOutputStream();
-									    while ((nRead = bacontentStreamIs.read(data1, 0, data1.length)) != -1) {
-									    	baOs.write(data1, 0, nRead);
-									    }
-									    baOs.flush();
-											
+											ByteArrayInputStream bacontentStreamIs;
+											if (sysObj.getType().equals("mob_form_template")) {
+												int id = Integer.valueOf(sysObj.getString("mob_template_id")).intValue();
+
+												ByteArrayInputStream baIs = new ByteArrayInputStream(FileUtils.readFileToByteArray(tempFile));
+												bacontentStreamIs = ExplorerServlet.makeSureAllFieldsExist(baIs, id);
+											} else {
+												bacontentStreamIs = new ByteArrayInputStream(FileUtils.readFileToByteArray(tempFile));
+											}
+											int nRead;
+											byte[] data1 = new byte[1024];
+											ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+											while ((nRead = bacontentStreamIs.read(data1, 0, data1.length)) != -1) {
+												baOs.write(data1, 0, nRead);
+											}
+											baOs.flush();
+
 											String allVersions = sysObj.getAllRepeatingStrings("r_version_label", ",");
 											for (String ver : allVersions.split(",")) {
 												Matcher m = p.matcher(ver);
@@ -272,15 +276,6 @@ public class UploadServlet extends HttpServlet {
 											userSession.beginTrans();
 											String msg = "";
 											try {
-												// needs to version DOCMAN_S and DOCMAN_R
-												Object[] profileAndRolesOfUserAndState = ExplorerServiceImpl.getInstance().getProfileAndUserRolesAndState(sysObj, loginName,
-														userSession);
-												Profile prof = (Profile) profileAndRolesOfUserAndState[1];
-												if (prof == null) {
-													// can happen if we have unclassified documents
-													prof = ExplorerServiceImpl.getInstance().findProfileForObjectType(sysObj);
-												}
-
 												if (!sysObj.isCheckedOut())
 													sysObj.checkout();
 
@@ -343,34 +338,45 @@ public class UploadServlet extends HttpServlet {
 												WsServer.log(loginName, "Checked in new version on object <strong>" + newSysObject.getObjectName() + "</strong> "
 														+ allVersionsAfter + " (" + newSysObject.getId("r_object_id").toString() + ") locked by: " + newSysObject.getLockOwner());
 
-												HashMap<String, List<String>> roleUserGroups = (HashMap<String, List<String>>) (profileAndRolesOfUserAndState[4]);
-												if (roleUserGroups.keySet().size() == 0) {
-													// in case of noclassified documents - lets pick
-													// default users in profile for every role
-													for (int i = 0; i < prof.roles.size(); i++) {
-														for (int k = 0; k < prof.roles.get(i).defaultUserGroups.size(); k++) {
-															UserGroup ug = prof.roles.get(i).defaultUserGroups.get(k);
-															if (!roleUserGroups.containsKey(prof.roles.get(i).getId()))
-																roleUserGroups.put(prof.roles.get(i).getId(), new ArrayList<String>());
+												// needs to version DOCMAN_S and DOCMAN_R
+												Object[] profileAndRolesOfUserAndState = ExplorerServiceImpl.getInstance().getProfileAndUserRolesAndState(sysObj, loginName,
+														userSession);
+												Profile prof = (Profile) profileAndRolesOfUserAndState[1];
+												// if (prof == null) {
+												// // can happen if we have unclassified documents
+												// prof =
+												// ExplorerServiceImpl.getInstance().findProfileForObjectType(sysObj);
+												// }
+												if (prof != null) {
+													HashMap<String, List<String>> roleUserGroups = (HashMap<String, List<String>>) (profileAndRolesOfUserAndState[4]);
+													if (roleUserGroups.keySet().size() == 0) {
+														// in case of noclassified documents - lets pick
+														// default users in profile for every role
+														for (int i = 0; i < prof.roles.size(); i++) {
+															for (int k = 0; k < prof.roles.get(i).defaultUserGroups.size(); k++) {
+																UserGroup ug = prof.roles.get(i).defaultUserGroups.get(k);
+																if (!roleUserGroups.containsKey(prof.roles.get(i).getId()))
+																	roleUserGroups.put(prof.roles.get(i).getId(), new ArrayList<String>());
 
-															roleUserGroups.get(prof.roles.get(i).getId()).add(ug.getId());
+																roleUserGroups.get(prof.roles.get(i).getId()).add(ug.getId());
+															}
 														}
+
 													}
 
-												}
-
-												IDfPersistentObject persObject = newSysObject;
-												String statId = (String) profileAndRolesOfUserAndState[3];
-												if (statId == null) {
-													for (State state : prof.states) {
-														if (!state.getParameter().equals("unclassified")) {
-															statId = state.getId();
-															break;
+													IDfPersistentObject persObject = newSysObject;
+													String statId = (String) profileAndRolesOfUserAndState[3];
+													if (statId == null) {
+														for (State state : prof.states) {
+															if (!state.getParameter().equals("unclassified")) {
+																statId = state.getId();
+																break;
+															}
 														}
 													}
+													ExplorerServiceImpl.getInstance().setStateForObject(userSession, persObject, prof, statId);
+													ExplorerServiceImpl.getInstance().setUsersForRoles(userSession, persObject, roleUserGroups);
 												}
-												ExplorerServiceImpl.getInstance().setStateForObject(userSession, persObject, prof, statId);
-												ExplorerServiceImpl.getInstance().setUsersForRoles(userSession, persObject, roleUserGroups);
 
 												if (userSession.isTransactionActive())
 													userSession.commitTrans();

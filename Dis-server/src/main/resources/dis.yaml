@@ -1,17 +1,17 @@
 openapi: 3.0.3
 servers:
-  - url: https://erender-test.ts.telekom.si:8445/api/v1/dis-dev
-    description: Test server
-  - url: https://erender-test.ts.telekom.si:8445/api/v1/dis-test
-    description: Test server
-  - url: https://erender-test.ts.telekom.si:8445/api/v1/dis
-    description: Prod server
+  - url: http://erender-test.ts.telekom.si:8445/api
+    description: Dis rest server
+#  - url: https://erender-test.ts.telekom.si:8445/api
+#    description: Test server
+#  - url: https://erender-test.ts.telekom.si:8445/api
+#    description: Prod server
 info:
   version: "1.0.1"
   title: Dis API
 paths:
   /documents:
-    post:
+    get:
       tags:
        - provisioning
       summary: gets documents
@@ -26,7 +26,7 @@ paths:
             type: string
           example: '123e4567-e89b-12d3-a456-426614174000'
         - in: query
-          name: r_object_id
+          name: rObjectId
           description: unique document identifier
           required: false
           schema:
@@ -51,7 +51,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /documents/{r_object_id}/getContent/{format}:
+  /documents/{rObjectId}/getContent/{format}:
     get:
       tags:
        - provisioning
@@ -67,7 +67,7 @@ paths:
             type: string
           example: '123e4567-e89b-12d3-a456-426614174000'
         - in: path
-          name: r_object_id
+          name: rObjectId
           description: unique document identifier
           required: true
           schema:
@@ -161,7 +161,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               
-  /documents/{r_object_id}/promote:
+  /documents/{rObjectId}/promote:
     post:
       tags:
        - provisioning
@@ -177,7 +177,7 @@ paths:
             type: string
           example: '123e4567-e89b-12d3-a456-426614174000'
         - in: path
-          name: r_object_id
+          name: rObjectId
           description: unique document identifier
           required: true
           schema:
@@ -196,7 +196,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
                 
-  /documents/{r_object_id}/demote:
+  /documents/{rObjectId}/demote:
     post:
       tags:
        - provisioning
@@ -212,7 +212,7 @@ paths:
             type: string
           example: '123e4567-e89b-12d3-a456-426614174000'
         - in: path
-          name: r_object_id
+          name: rObjectId
           description: unique document identifier
           required: true
           schema:
@@ -230,6 +230,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+                
 components:
   securitySchemes:
     BasicAuth:
@@ -267,7 +268,7 @@ components:
             $ref: "#/components/schemas/RoleUsers"
         templateObjectRObjectId:
           type: string
-          description: r_object_id of object
+          description: rObjectId of object
           example: 0900000191cfbdf8
         stateId:
           type: string

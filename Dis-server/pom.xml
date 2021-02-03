@@ -21,6 +21,7 @@
 		<swagger-core-version>1.5.18</swagger-core-version>
 		<beanvalidation-version>1.1.0.Final</beanvalidation-version>
 		<jersey2-version>2.22.2</jersey2-version>
+		<!-- <jersey2-version>2.27</jersey2-version> -->
 		<jackson-version>2.9.9</jackson-version>
 		<junit-version>4.13.1</junit-version>
 		<logback-version>1.1.7</logback-version>
@@ -370,6 +371,19 @@
 			<artifactId>servlet-api</artifactId>
 			<version>${servlet-api-version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-common</artifactId>
+			<version>${jersey2-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.bundles</groupId>
+			<artifactId>jaxrs-ri</artifactId>
+			<version>${jersey2-version}</version>
+		</dependency>
+
+
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
@@ -413,6 +427,45 @@
 			<version>1.1.0.Final</version>
 			<!-- <scope>provided</scope> -->
 		</dependency>
+
+		<!--sl4j to log4j bridge -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+		<!--java util to slf4j bridge -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+
+
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+
+		<!--java util to slf4j bridge -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+
 
 	</dependencies>
 
@@ -458,56 +511,13 @@
 				</configuration>
 			</plugin>
 
-			<!-- <plugin> -->
-			<!-- <groupId>io.swagger</groupId> -->
-			<!-- <artifactId>swagger-codegen-maven-plugin</artifactId> -->
-			<!-- <version>3.0.0-rc0</version> -->
-			<!-- <configuration> -->
-			<!-- <inputSpec>${basedir}/src/main/resources/dis.yaml</inputSpec> -->
-			<!-- <output>${project.build.directory}/generated-sources</output> -->
-			<!-- <language>java</language> -->
-			<!-- <library>resttemplate</library> -->
-			<!-- <generateApis>false</generateApis> -->
-			<!-- <modelPackage>si.telekom.dis.server.rest</modelPackage> -->
-			<!-- <invokerPackage>si.telekom.dis.server.rest.invoke</invokerPackage> -->
-			<!-- <ignoreFileOverride>true</ignoreFileOverride> -->
-			<!-- <apiPackage>si.telekom.dis.server.rest.api</apiPackage> -->
-			<!-- <generateSupportingFiles>true</generateSupportingFiles> -->
-			<!-- <generateModels>true</generateModels> -->
-			<!-- <configOptions> -->
-			<!-- <sourceFolder>java</sourceFolder> -->
-			<!-- <library>jersey2</library> -->
-			<!-- <interfaceOnly>false</interfaceOnly> -->
-			<!-- <useBeanValidation>true</useBeanValidation> -->
-			<!-- <dateLibrary>joda</dateLibrary> -->
-			<!-- <java8>true</java8> -->
-			<!-- </configOptions> -->
-			<!-- </configuration> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <phase>generate-sources</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>generate</goal> -->
-			<!-- </goals> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- <dependencies> -->
-			<!-- <dependency> -->
-			<!-- <groupId>io.swagger</groupId> -->
-			<!-- <artifactId>swagger-codegen-generators</artifactId> -->
-			<!-- <version>1.0.0-SNAPSHOT</version> -->
-			<!-- </dependency> -->
-			<!-- </dependencies> -->
-			<!-- </plugin> -->
-
-
-
 			<plugin>
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
 				<version>5.0.0</version>
 				<executions>
 					<execution>
+						<id>generate dis rest api</id>
 						<!-- <phase>generate-sources</phase> -->
 						<goals>
 							<goal>generate</goal>
@@ -531,6 +541,32 @@
 							<dateLibrary>java8</dateLibrary>
 						</configuration>
 					</execution>
+					
+					<execution>
+						<id>generate dis rest extra</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<generatorName>jaxrs-jersey</generatorName>
+							<language>java</language>
+							<library>jersey2</library>
+							<inputSpec>${basedir}/src/main/resources/dis_extra.yaml</inputSpec>
+							<generateApis>true</generateApis>
+							<modelPackage>si.telekom.dis.server.restExtra</modelPackage>
+							<invokerPackage>si.telekom.dis.server.restExtra.invoke</invokerPackage>
+							<ignoreFileOverride>true</ignoreFileOverride>
+							<apiPackage>si.telekom.dis.server.restExtra</apiPackage>
+							<generateSupportingFiles>true</generateSupportingFiles>
+							<generateModels>true</generateModels>
+							<sourceFolder>java</sourceFolder>
+							<interfaceOnly>false</interfaceOnly>
+							<useBeanValidation>true</useBeanValidation>
+							<java8>true</java8>
+							<dateLibrary>java8</dateLibrary>
+						</configuration>
+					</execution>					
+					
 				</executions>
 				<dependencies>
 					<dependency>

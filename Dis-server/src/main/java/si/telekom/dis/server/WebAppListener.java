@@ -1,7 +1,5 @@
 package si.telekom.dis.server;
 
-import java.util.Arrays;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
@@ -9,6 +7,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public final class WebAppListener implements ServletContextAttributeListener, ServletContextListener {
 
@@ -62,6 +61,7 @@ public final class WebAppListener implements ServletContextAttributeListener, Se
 		this.context = event.getServletContext();
 		try {
 			WebappContext.init(event.getServletContext());
+			SLF4JBridgeHandler.install();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

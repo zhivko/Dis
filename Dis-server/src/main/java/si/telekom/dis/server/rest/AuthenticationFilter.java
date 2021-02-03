@@ -121,7 +121,7 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 		try {
 			LoginServiceImpl loginServiceImpl = new LoginServiceImpl();
 			String clientIp = servletRequest.getRemoteAddr();
-			loginServiceImpl.checkPassword(username, org.apache.commons.codec.binary.Base64.encodeBase64String(password.getBytes()), clientIp);
+			loginServiceImpl.checkPassword(username, password, clientIp);
 			isAllowed = true;
 			return isAllowed;
 		} catch (Exception ex) {

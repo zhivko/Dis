@@ -1,0 +1,111 @@
+openapi: 3.0.3
+servers:
+  - url: http://erender-test.ts.telekom.si:8445/rest
+    description: Dis rest server
+info:
+  version: "1.0.1"
+  title: Dis API
+paths:
+  /catalogMilestonesSearch:
+    get:
+      tags:
+       - provisioning
+      summary: gets process milestones
+      operationId: getProcessMilestones
+      description: gets process milestones
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: header
+          name: 'X-Transaction-Id'
+          schema:
+            type: string
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        - in: query
+          name: partOfProcessMilisetoneName
+          description: part of process milestone name
+          required: true
+          schema:
+            type: string          
+      responses:
+        '200':
+          description: 'success'    
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '500':
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /customerSearch:
+    get:
+      tags:
+       - provisioning
+      summary: gets custsomers from MM CRM system
+      operationId: get customers by part of name
+      description: gets customers
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: header
+          name: 'X-Transaction-Id'
+          schema:
+            type: string
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        - in: query
+          name: partOfCustName
+          description: part of customer name
+          required: true
+          schema:
+            type: string          
+      responses:
+        '200':
+          description: 'success'    
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '500':
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  headers:
+    XTransactionId:
+      description: Global transaction identifier
+      schema:
+        type: string
+      example: '123e4567-e89b-12d3-a456-426614174000'
+  schemas:
+   Error:
+      type: object
+      required:
+        - code
+        - reason
+      properties:
+        code:
+          type: string
+          description: Application related code.
+        reason:
+          type: string
+          description: Text that explains the reason for error.
+        message:
+          type: string
+          description: (optional) Text that provides more details and corrective actions related to the error.
+        referenceError:
+          $ref: '#/components/schemas/Error'                

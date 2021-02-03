@@ -80,7 +80,7 @@ public class WebappContext {
 		WebappContext instance = new WebappContext(servletContext);
 		// instance.setConfigurationClasses(com.google.gwt.dev.shell.jetty.JettyLauncher.DEFAULT_CONFIG_CLASSES);
 		servletContext.setAttribute(KEY, instance);
-		
+
 	}
 
 	protected static void destroy(ServletContext servletContext) {
