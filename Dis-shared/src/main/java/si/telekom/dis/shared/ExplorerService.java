@@ -34,17 +34,16 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		Void unlock(String loginName, String password, String r_object_id) throws ServerException;
 	
 		List<Document> versions(String loginName, String password, String r_object_id) throws ServerException;
-		Void promote(String loginName, String password, String r_object_id) throws ServerException;
-		Void demote(String loginName, String password, String r_object_id) throws ServerException;
+		Document promote(String loginName, String password, String r_object_id) throws ServerException;
+		Document demote(String loginName, String password, String r_object_id) throws ServerException;
 		
-		List<List<String>> auditTrail(String loginName, String password, String r_object_id, int start, int length) throws ServerException;
+		List<List<String>> auditTrail(String loginName, String password, String r_object_id, String eventFilter, int start, int length) throws ServerException;
 		Void addVersionLabel(String loginName, String password, List<String> r_object_id, String labelVersion) throws ServerException;
 		Void removeVersionLabel(String loginName, String password, List<String> r_object_id, String labelVersion) throws ServerException;
 		
-		String newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String rObjectIdOfObjectOrFolder) throws ServerException;
-		Void classifyDocument(String loginName, String password, String r_object_id, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers) throws ServerException;
-		
-		String importDocument(String loginName, String password, String objectId, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] contentBase64, String format) throws ServerException;
+		Document newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String rObjectIdOfObjectOrFolder) throws ServerException;
+		Document importDocument(String loginName, String password, String objectId, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] contentBase64, String format) throws ServerException;
+		Document classifyDocument(String loginName, String password, String r_object_id, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers) throws ServerException;
 		
 		List<Document> runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length) throws ServerException;
 		List<List<String>> showPdfTags(String loginName, String loginPassword, String r_object_id) throws ServerException;

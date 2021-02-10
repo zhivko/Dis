@@ -35,7 +35,7 @@ import si.telekom.dis.client.MultiValueSelectBox;
 import si.telekom.dis.client.WindowBox;
 import si.telekom.dis.client.item.FormAttribute;
 import si.telekom.dis.shared.Attribute;
-import si.telekom.dis.shared.AttributeRoleStateWizards;
+import si.telekom.dis.shared.Document;
 import si.telekom.dis.shared.Profile;
 import si.telekom.dis.shared.ProfileAttributesAndValues;
 import si.telekom.dis.shared.Role;
@@ -177,7 +177,7 @@ public class ClassifyDocument extends WindowBox {
 				}
 
 				getExplorerService().classifyDocument(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, ClassifyDocument.this.r_object_id,
-						ClassifyDocument.this.prof.id, ClassifyDocument.this.state_id, attributes, roleUsersHm, new AsyncCallback<Void>() {
+						ClassifyDocument.this.prof.id, ClassifyDocument.this.state_id, attributes, roleUsersHm, new AsyncCallback<Document>() {
 
 							@Override
 							public void onFailure(Throwable caught) {
@@ -186,7 +186,7 @@ public class ClassifyDocument extends WindowBox {
 							}
 
 							@Override
-							public void onSuccess(Void result) {
+							public void onSuccess(Document result) {
 								MainPanel.log("Classified document.");
 								ClassifyDocument.this.hide(true);
 							}

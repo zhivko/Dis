@@ -37,6 +37,7 @@ import si.telekom.dis.client.item.FormAttribute;
 import si.telekom.dis.shared.AdminService;
 import si.telekom.dis.shared.AdminServiceAsync;
 import si.telekom.dis.shared.AttributeRoleStateWizards;
+import si.telekom.dis.shared.Document;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
 import si.telekom.dis.shared.Profile;
@@ -208,7 +209,7 @@ public class NewDocument extends WindowBox {
 				}
 
 				explorerService.newDocument(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, NewDocument.this.prof.id, attributes,
-						roleUsersHm, templateObjectNameOrFolder, new AsyncCallback<String>() {
+						roleUsersHm, templateObjectNameOrFolder, new AsyncCallback<Document>() {
 
 							@Override
 							public void onFailure(Throwable caught) {
@@ -217,8 +218,8 @@ public class NewDocument extends WindowBox {
 							}
 
 							@Override
-							public void onSuccess(String result) {
-								MainPanel.log("NewDocument created, object_name: " + result);
+							public void onSuccess(Document result) {
+								MainPanel.log("NewDocument created, object_name: " + result.object_name);
 								NewDocument.this.hide(true);
 							}
 

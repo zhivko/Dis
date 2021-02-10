@@ -31,17 +31,17 @@ public interface ExplorerServiceAsync {
 	void unlock(String loginName, String password, String r_object_id, AsyncCallback<Void> callback) throws IllegalArgumentException;
 
 	void versions(String loginName, String password, String r_object_id, AsyncCallback<List<Document>> callback) throws IllegalArgumentException;
-	void promote(String loginName, String password, String r_object_id, AsyncCallback<Void> callback) throws IllegalArgumentException;
-	void demote(String loginName, String password, String r_object_id, AsyncCallback<Void> callback) throws IllegalArgumentException;
+	void promote(String loginName, String password, String r_object_id, AsyncCallback<Document> callback) throws IllegalArgumentException;
+	void demote(String loginName, String password, String r_object_id, AsyncCallback<Document> callback) throws IllegalArgumentException;
 
 	
-	void auditTrail(String loginName, String password, String r_object_id, int start, int length, AsyncCallback<List<List<String>>> callback) throws IllegalArgumentException;
+	void auditTrail(String loginName, String password, String r_object_id, String eventFilter, int start, int length, AsyncCallback<List<List<String>>> callback) throws IllegalArgumentException;
 	void newFolder(String loginName, String password, String folderName, String pareFolderPath, AsyncCallback<Void> callback) throws IllegalArgumentException;
 	void addVersionLabel(String loginName, String loginPass, List<String> r_object_id_, String labelVersion, AsyncCallback<Void> asyncCallback) throws IllegalArgumentException;
 	void removeVersionLabel(String loginName, String loginPass, List<String> r_object_id_, String labelVersion, AsyncCallback<Void> asyncCallback) throws IllegalArgumentException;
 	
-	void newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String templateObjectNameOrFolder, AsyncCallback<String> callback) throws IllegalArgumentException;
-	void importDocument(String loginName, String password, String objectId, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] base64Content, String format, AsyncCallback<String> callback) throws IllegalArgumentException;
+	void newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String templateObjectNameOrFolder, AsyncCallback<Document> callback) throws IllegalArgumentException;
+	void importDocument(String loginName, String password, String objectId, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] base64Content, String format, AsyncCallback<Document> callback) throws IllegalArgumentException;
 	
 	void runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length, AsyncCallback<List<Document>> asyncCallback);
 	
@@ -55,7 +55,7 @@ public interface ExplorerServiceAsync {
 	
 	void removeRendition(String loginName, String password, String r_object_id, String format, AsyncCallback<Void> asyncCallback);
 
-	void classifyDocument(String loginName, String password, String r_object_id, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, AsyncCallback<Void> callback);
+	void classifyDocument(String loginName, String password, String r_object_id, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, AsyncCallback<Document> callback);
 	
 	void massDownloadContent(String loginName, String password, List<String> r_object_ids, AsyncCallback<String> callback);
 

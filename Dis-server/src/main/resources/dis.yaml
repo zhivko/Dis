@@ -1,113 +1,108 @@
 openapi: 3.0.3
 servers:
-  - url: http://erender-test.ts.telekom.si:8445/api
-    description: Dis rest server
-#  - url: https://erender-test.ts.telekom.si:8445/api
-#    description: Test server
-#  - url: https://erender-test.ts.telekom.si:8445/api
-#    description: Prod server
+- url: http://erender-test.ts.telekom.si:8445/api
+  description: Dis rest server
 info:
-  version: "1.0.1"
+  version: 1.0.1
   title: Dis API
 paths:
   /documents:
     get:
       tags:
-       - provisioning
+      - provisioning
       summary: gets documents
       operationId: getDocuments
       description: gets documents in Dis
       security:
-        - BasicAuth: []
+      - BasicAuth: [
+          ]
       parameters:
-        - in: header
-          name: 'X-Transaction-Id'
-          schema:
-            type: string
-          example: '123e4567-e89b-12d3-a456-426614174000'
-        - in: query
-          name: rObjectId
-          description: unique document identifier
-          required: false
-          schema:
-            type: string          
-        - in: query
-          name: dql
-          description: dql to retrieve document
-          required: false
-          schema:
-            type: string     
+      - in: header
+        name: X-Transaction-Id
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - in: query
+        name: dql
+        description: dql to retrieve document
+        required: false
+        schema:
+          type: string
       responses:
         '200':
-          description: 'success'    
+          description: success
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentsResponse'
         '500':
-          description: 'internal server error'
+          description: internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-  /documents/{rObjectId}/getContent/{format}:
+  /documents/getContent:
     get:
       tags:
-       - provisioning
+      - provisioning
       summary: get content url of document
       operationId: getContent
       description: retrieve content of document in Dis platform
       security:
-        - BasicAuth: []
+      - BasicAuth: [
+          ]
       parameters:
-        - in: header
-          name: 'X-Transaction-Id'
-          schema:
-            type: string
-          example: '123e4567-e89b-12d3-a456-426614174000'
-        - in: path
-          name: rObjectId
-          description: unique document identifier
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: format
-          description: format of document or null for primary content
-          required: true
-          schema:
-            type: string            
+      - in: header
+        name: X-Transaction-Id
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - in: path
+        name: rObjectId
+        description: unique document identifier
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: format
+        description: format of document or null for primary content if empty or null take primary content else renditions. format can be any of documentum formats like pdf, tiff, word, odf, xlsx11, xlsx12, ...
+        required: true
+        schema:
+          type: string
       responses:
         '200':
-          description: 'success'
+          description: success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentsResponse'
-          
+                type: object
+                properties:
+                  content:
+                    type: string
+                    format: byte
+                    description: Base64-encoded contents of the avatar image                
         '500':
-          description: 'internal server error'
+          description: internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
   /documents/newDocument:
     post:
       tags:
-       - provisioning
+      - provisioning
       summary: creates a new document
       operationId: createDocument
       description: creates a new document in Dis
       security:
-        - BasicAuth: []
+      - BasicAuth: [
+          ]
       parameters:
-        - in: header
-          name: 'X-Transaction-Id'
-          schema:
-            type: string
-          example: '123e4567-e89b-12d3-a456-426614174000'
+      - in: header
+        name: X-Transaction-Id
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
       requestBody:
         content:
           application/json:
@@ -115,33 +110,33 @@ paths:
               $ref: '#/components/schemas/NewDocumentRequest'
       responses:
         '200':
-          description: 'success'
+          description: success
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Document'
         '500':
-          description: 'internal server error'
+          description: internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
   /documents/importDocument:
     post:
       tags:
-       - provisioning
+      - provisioning
       summary: import a new document
       operationId: importDocument
       description: imports a new document in Dis
       security:
-        - BasicAuth: []
+      - BasicAuth: [
+          ]
       parameters:
-        - in: header
-          name: 'X-Transaction-Id'
-          schema:
-            type: string
-          example: '123e4567-e89b-12d3-a456-426614174000'
+      - in: header
+        name: X-Transaction-Id
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
       requestBody:
         content:
           application/json:
@@ -149,88 +144,87 @@ paths:
               $ref: '#/components/schemas/ImportDocumentRequest'
       responses:
         '200':
-          description: 'success'    
+          description: success
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Document'
         '500':
-          description: 'internal server error'
+          description: internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              
-  /documents/{rObjectId}/promote:
+  /documents/promote:
     post:
       tags:
-       - provisioning
+      - provisioning
       summary: promote document
       operationId: promoteDocument
       description: promote the document in Dis platform
       security:
-        - BasicAuth: []
+      - BasicAuth: [
+          ]
       parameters:
-        - in: header
-          name: 'X-Transaction-Id'
-          schema:
-            type: string
-          example: '123e4567-e89b-12d3-a456-426614174000'
-        - in: path
-          name: rObjectId
-          description: unique document identifier
-          required: true
-          schema:
-            type: string
+      - in: header
+        name: X-Transaction-Id
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - in: query
+        name: rObjectId
+        description: unique document identifier
+        required: true
+        schema:
+          type: string
       responses:
         '200':
-          description: 'success'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Document'          
-        '500':
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-                
-  /documents/{rObjectId}/demote:
-    post:
-      tags:
-       - provisioning
-      summary: demote document
-      operationId: demoteDocument
-      description: demote the document in Dis platform
-      security:
-        - BasicAuth: []
-      parameters:
-        - in: header
-          name: 'X-Transaction-Id'
-          schema:
-            type: string
-          example: '123e4567-e89b-12d3-a456-426614174000'
-        - in: path
-          name: rObjectId
-          description: unique document identifier
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 'success'
+          description: success
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Document'
         '500':
-          description: 'internal server error'
+          description: internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-                
+  /documents/demote:
+    post:
+      tags:
+      - provisioning
+      summary: demote document
+      operationId: demoteDocument
+      description: demote the document in Dis platform
+      security:
+      - BasicAuth: [
+          ]
+      parameters:
+      - in: header
+        name: X-Transaction-Id
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - in: query
+        name: rObjectId
+        description: unique document identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
     BasicAuth:
@@ -241,31 +235,31 @@ components:
       description: Global transaction identifier
       schema:
         type: string
-      example: '123e4567-e89b-12d3-a456-426614174000'
+      example: 123e4567-e89b-12d3-a456-426614174000
   schemas:
     NewDocumentRequest:
       type: object
       required:
-        - profileId
-        - attributes
-        - rolesUsers
-        - templateObjectRObjectId
-        - stateId        
+      - profileId
+      - attributes
+      - rolesUsers
+      - templateObjectRObjectId
+      - stateId
       properties:
         profileId:
           type: string
           description: id of profile in DIS sistem
-          example: "mob_subscriber_document"      
+          example: mob_subscriber_document
         attributes:
           type: array
           description: A list of attributes to be set on document
           items:
-            $ref: "#/components/schemas/Attribute"
+            $ref: '#/components/schemas/Attribute'
         rolesUsers:
           type: array
           description: A list of attributes to be set on document
           items:
-            $ref: "#/components/schemas/RoleUsers"
+            $ref: '#/components/schemas/RoleUsers'
         templateObjectRObjectId:
           type: string
           description: rObjectId of object
@@ -273,35 +267,35 @@ components:
         stateId:
           type: string
           description: target state of document to which neewdocument would be set to
-          example: any of "draft" "effective" "archive" or other state that is specied in profile for profile               
+          example: any of "draft" "effective" "archive" or other state that is specied in profile for profile
     ImportDocumentRequest:
       type: object
       required:
-        - profileId
-        - attributes
-        - rolesUsers
-        - contentBase64
-        - format
-        - stateId
+      - profileId
+      - attributes
+      - rolesUsers
+      - contentBase64
+      - format
+      - stateId
       properties:
         profileId:
           type: string
           description: id of profile in DIS sistem
-          example: "mob_subscriber_document"        
+          example: mob_subscriber_document
         attributes:
           type: array
           description: A list of attributes to be set on document
           items:
-            $ref: "#/components/schemas/Attribute"
+            $ref: '#/components/schemas/Attribute'
         rolesUsers:
           type: array
           description: A list of attributes to be set on document
           items:
-            $ref: "#/components/schemas/RoleUsers"
+            $ref: '#/components/schemas/RoleUsers'
         contentBase64:
           type: string
           description: content of document
-          example: 
+          example: null
         format:
           type: string
           description: documentum format of document
@@ -309,21 +303,22 @@ components:
         stateId:
           type: string
           description: target state of document to import to
-          example: any of "draft" "effective" "archive" or other state that is specied in profile for profile     
+          example: any of "draft" "effective" "archive" or other state that is specied in profile for profile
     Attribute:
       type: object
       properties:
         name:
           type: string
-          description: attribute name 
-          example: "title"
+          description: attribute name
+          example: title
         values:
           type: array
           description: values of atribute
-          example: { "value1", "value2" } 
+          example:
+            value1: null
+            value2: null
           items:
             type: string
-
     RoleUsers:
       type: object
       properties:
@@ -334,12 +329,14 @@ components:
         values:
           type: array
           description: name of users or groups from AD that are synced in content management system
-          example: { "raifk", "lokart", "dm_world", "" } 
+          example:
+            raifk: null
+            lokart: null
+            dm_world: null
+            ? ''
+            : null
           items:
             type: string
-
-
-            
     DocumentsResponse:
       type: object
       properties:
@@ -347,11 +344,9 @@ components:
           type: array
           description: array od documents
           items:
-            $ref: "#/components/schemas/Document"
+            $ref: '#/components/schemas/Document'
       required:
-        - documents     
-             
-
+      - documents
     Document:
       type: object
       description: Document from content management system
@@ -368,21 +363,16 @@ components:
           type: integer
           description: release nuber of docuent
           example: 0
-        
-    PromoteDemoteDocumentRequest:
-      type: object
-      description: reponse of promote and demote operation
-      properties:
-        rObjectId:
-          type: string
-          description: rObjectId unique identifier from content management system could be change during operation
-          example: 0900000191cdbe4c
-
+        attributes:
+          type: array
+          description: A list of attributes to be set on document
+          items:
+            $ref: '#/components/schemas/Attribute'
     Error:
       type: object
       required:
-        - code
-        - reason
+      - code
+      - reason
       properties:
         code:
           type: string

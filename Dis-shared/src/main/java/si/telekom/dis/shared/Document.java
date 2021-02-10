@@ -21,6 +21,7 @@ public class Document implements com.google.gwt.user.client.rpc.IsSerializable, 
 	public String lockOwner;
 	public String lockMachine;
 	public String r_version_label;
+	public int releaseNo;
 	
 	public boolean isHighlighted;
 

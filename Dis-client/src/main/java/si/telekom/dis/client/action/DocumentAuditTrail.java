@@ -10,6 +10,8 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -30,6 +32,7 @@ import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.view.client.Range;
 
 import si.telekom.dis.client.MainPanel;
+import si.telekom.dis.client.MyListBox;
 import si.telekom.dis.client.MySimplePager;
 import si.telekom.dis.client.MyTextArea;
 import si.telekom.dis.client.WindowBox;
@@ -42,6 +45,7 @@ public class DocumentAuditTrail extends WindowBox {
 	CellTable<Row> cellTable;
 	String r_object_id;
 	List<Row> rows;
+	public MyListBox eventFilter;
 
 	public DocumentAuditTrail(String r_object_id) {
 		// audited_obj_id, time_stamp, time_stamp_utc, event_name,
@@ -235,6 +239,35 @@ public class DocumentAuditTrail extends WindowBox {
 		centerMyPanel();
 
 		VerticalPanel vp = new VerticalPanel();
+
+		eventFilter = new MyListBox("event_name filter", true);
+		eventFilter.addItem("");
+
+		explorerService.getValuesFromDql(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, "",
+				"select event, event from dmi_registry where 1=1 group by event order by event", new AsyncCallback<List<String[]>>() {
+					@Override
+					public void onSuccess(List<String[]> result) {
+						for (String[] res : result) {
+							eventFilter.addItem(res[0]);
+						}
+					}
+
+					@Override
+					public void onFailure(Throwable caught) {
+						MainPanel.log(caught.getMessage());
+					}
+				});
+
+		eventFilter.addChangeHandler(new ChangeHandler() {
+
+			@Override
+			public void onChange(ChangeEvent event) {
+				dataProvider.setEventFilter(eventFilter.getItemValue());
+			}
+		});
+
+		vp.add(eventFilter);
+
 		vp.add(cellTable);
 		vp.add(pager);
 		ScrollPanel sp = new ScrollPanel(vp);
@@ -249,7 +282,7 @@ public class DocumentAuditTrail extends WindowBox {
 			@Override
 			public void onClick(ClickEvent event) {
 				String data = "";
-				for (int j = 0; j<cellTable.getColumnCount(); j++) {
+				for (int j = 0; j < cellTable.getColumnCount(); j++) {
 					data = data + "\"" + cellTable.getHeader(j).getValue() + "\"\t";
 				}
 				data = data.substring(0, data.length() - 1);
@@ -348,11 +381,19 @@ public class DocumentAuditTrail extends WindowBox {
 		List<Row> allRows;
 		String r_object_id;
 		int pageSize;
+		String eventFilter;
 
 		public MyDataProvider(String r_object_id, List<Row> rows, int pageSize) {
 			this.r_object_id = r_object_id;
 			allRows = rows;
 			this.pageSize = pageSize;
+		}
+
+		public void setEventFilter(String filter) {
+			this.eventFilter = filter;
+			onRangeChanged(DocumentAuditTrail.instance.cellTable);
+//			allRows.clear();
+//			DocumentAuditTrail.instance.cellTable.redraw();
 		}
 
 		@Override
@@ -366,13 +407,13 @@ public class DocumentAuditTrail extends WindowBox {
 			final int from = range.getStart() + 1;
 			final int to = range.getStart() + 1 + pageSize;
 
-			explorerService.auditTrail(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, from, to,
+			explorerService.auditTrail(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, eventFilter, from, to,
 					new AsyncCallback<List<List<String>>>() {
 
 						@Override
 						public void onSuccess(List<List<String>> result) {
 							// TODO Auto-generated method stub
-							// allRows.clear();
+							allRows.clear();
 							int i = 0;
 							for (List<String> row1 : result) {
 								Row row = new Row(row1);
@@ -382,6 +423,8 @@ public class DocumentAuditTrail extends WindowBox {
 
 							// if (range.getStart() < MyDataProvider.this.allRows.size()) {
 							updateRowData(from - 1, MyDataProvider.this.allRows.subList(from - 1, Math.min(to - 1, allRows.size())));
+							//display.setVisibleRange(new Range(from, Math.min(to - 1, allRows.size())));
+							updateRowCount(Math.min(to - 1, allRows.size()), true);
 							DocumentAuditTrail.instance.centerMyPanel();
 							// }
 

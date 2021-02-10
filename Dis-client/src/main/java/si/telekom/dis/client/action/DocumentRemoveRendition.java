@@ -34,29 +34,30 @@ public class DocumentRemoveRendition extends WindowBox {
 		// versionLabel = new MyTxtBox("Labela verzije");
 		renditions = new MyListBox("Rendicije", true);
 
-		explorerService.getRenditions(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id_, new AsyncCallback<List<String>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				MainPanel.log(caught.getMessage());
-			}
-			
-			public void onSuccess(List<String> result) {
-				for (String rendition : result) {
-					renditions.addItem(rendition);
-				}
-			}; 
-		});
+		explorerService.getRenditions(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id_,
+				new AsyncCallback<List<String>>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						MainPanel.log(caught.getMessage());
+					}
+
+					public void onSuccess(List<String> result) {
+						for (String rendition : result) {
+							renditions.addItem(rendition);
+						}
+					};
+				});
 
 		renditions.setSelectedIndex(-1);
-		
+
 		getContentPanel().add(renditions);
-		
+
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {
 				DocumentRemoveRendition.this.center();
 			}
-		});		
+		});
 
 		getOkButton().addClickHandler(new ClickHandler() {
 
@@ -70,8 +71,8 @@ public class DocumentRemoveRendition extends WindowBox {
 					labelVersion = customLabel.getValue();
 
 				if (labelVersion != null)
-					explorerService.removeRendition(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id_, renditions.getListBox().getSelectedItemText(),
-							new AsyncCallback<Void>() {
+					explorerService.removeRendition(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id_,
+							renditions.getListBox().getSelectedItemText(), new AsyncCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 									MainPanel.log("Brisanje rendicije uspešno.");
@@ -85,6 +86,13 @@ public class DocumentRemoveRendition extends WindowBox {
 								}
 							});
 
+			}
+		});
+
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				DocumentRemoveRendition.this.center();
 			}
 		});
 

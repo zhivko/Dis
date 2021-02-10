@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.HTML;
 import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MenuPanel;
 import si.telekom.dis.client.WindowBox;
+import si.telekom.dis.shared.Document;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
 
@@ -36,9 +37,9 @@ public class DocumentPromote extends WindowBox {
 			public void execute() {
 
 				explorerService.promote(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
-						r_object_id_, new AsyncCallback<Void>() {
+						r_object_id_, new AsyncCallback<Document>() {
 							@Override
-							public void onSuccess(Void result) {
+							public void onSuccess(Document result) {
 								html.setHTML("Promote succesfull.");
 								MenuPanel.activeExplorerInstance.refreshLastSelectedNode();
 								DocumentPromote.this.center();
