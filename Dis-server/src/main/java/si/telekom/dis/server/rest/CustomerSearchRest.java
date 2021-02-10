@@ -21,6 +21,7 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.apache.log4j.Logger;
 
+import io.swagger.annotations.Api;
 import si.telekom.dis.server.restExtra.CustomerSearchApi;
 import si.telekom.dis.server.restExtra.NotFoundException;
 import si.telekom.schemas.common.customer.v1.Customer;
@@ -42,6 +43,7 @@ import si.telekom.services.common.customer.v1.ICustomerService;
 
 // http://localhost:8080/Dis-server/api/v1/dis-dev/application.wadl
 // http://localhost:8080/Dis-server/rest/application.wadl
+@Api
 public class CustomerSearchRest extends CustomerSearchApi {
 
 	public CustomerSearchRest(ServletConfig servletContext) {

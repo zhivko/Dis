@@ -26,6 +26,7 @@ import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfId;
 
+import io.swagger.annotations.Api;
 import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
 import si.telekom.dis.server.WsServer;
@@ -42,6 +43,8 @@ import si.telekom.dis.server.rest.api.NotFoundException;
 
 // http://localhost:8080/Dis-server/rest/swagger/getListingYaml
 // http://localhost:8080/Dis-server/rest/application.wadl
+// http://localhost:8080/Dis-server/rest/swagger/getListingJson
+@Api
 public class DisRest extends DocumentsApiService {
 	public DisRest() {
 		super();

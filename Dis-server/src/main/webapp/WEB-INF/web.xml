@@ -14,12 +14,12 @@
 			<init-param>
 				<param-name>jersey.config.server.provider.packages</param-name>
 				<param-value>
-				io.swagger.jaxrs.listing,
-				si.telekom.dis.server.rest,
-				si.telekom.dis.server.rest.api,
-				si.telekom.dis.server.rest.api.factories,
-				si.telekom.dis.server.rest.api.impl,
-				io.swagger.v3.jaxrs2.integration.resources
+								io.swagger.jaxrs.listing,
+								si.telekom.dis.server.rest,
+								si.telekom.dis.server.rest.api,
+								si.telekom.dis.server.rest.api.factories,
+								si.telekom.dis.server.rest.api.impl,
+								io.swagger.v3.jaxrs2.integration.resources
 				</param-value>
 			</init-param>
 		<!-- <init-param> -->

@@ -24,6 +24,7 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.apache.log4j.Logger;
 
+import io.swagger.annotations.Api;
 import si.telekom.dis.server.jaxwsClient.catalogService.CatalogService;
 import si.telekom.dis.server.jaxwsClient.catalogService.CatalogValue;
 import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogRequestMsg;
@@ -42,6 +43,7 @@ import si.telekom.dis.server.restExtra.CatalogMilestonesSearchApi;
 
 // http://localhost:8080/Dis-server/api/v1/dis-dev/application.wadl
 // http://localhost:8080/Dis-server/rest/application.wadl
+@Api
 public class CatalogServiceRest extends CatalogMilestonesSearchApi {
 
 	public CatalogServiceRest(ServletConfig servletContext) {
