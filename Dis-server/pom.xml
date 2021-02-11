@@ -516,7 +516,7 @@
 							<modelPackage>si.telekom.dis.server.restExtra</modelPackage>
 							<invokerPackage>si.telekom.dis.server.restExtra.invoke</invokerPackage>
 							<ignoreFileOverride>true</ignoreFileOverride>
-							<apiPackage>si.telekom.dis.server.restExtra</apiPackage>
+							<apiPackage>si.telekom.dis.server.restExtra.api</apiPackage>
 							<generateSupportingFiles>true</generateSupportingFiles>
 							<generateModels>true</generateModels>
 							<sourceFolder>java</sourceFolder>

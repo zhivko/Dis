@@ -22,8 +22,8 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 import org.apache.log4j.Logger;
 
 import io.swagger.annotations.Api;
-import si.telekom.dis.server.restExtra.CustomerSearchApi;
-import si.telekom.dis.server.restExtra.NotFoundException;
+import si.telekom.dis.server.restExtra.api.CustomerSearchApi;
+import si.telekom.dis.server.restExtra.api.NotFoundException;
 import si.telekom.schemas.common.customer.v1.Customer;
 import si.telekom.schemas.common.party.v1.Individual;
 import si.telekom.schemas.common.party.v1.Organization;

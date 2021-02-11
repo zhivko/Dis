@@ -41,9 +41,9 @@ import si.telekom.dis.server.rest.api.NotFoundException;
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/importDocument
 // mvn clean package -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
 
-// http://localhost:8080/Dis-server/rest/swagger/getListingYaml
-// http://localhost:8080/Dis-server/rest/application.wadl
-// http://localhost:8080/Dis-server/rest/swagger/getListingJson
+// https://localhost:8445/Dis-server/api/swagger/getListingYaml
+// https://localhost:8445/Dis-server/api/application.wadl
+// https://localhost:8445/Dis-server/api/swagger/getListingJson
 @Api
 public class DisRest extends DocumentsApiService {
 	public DisRest() {

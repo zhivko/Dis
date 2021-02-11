@@ -1,6 +1,6 @@
 openapi: 3.0.3
 servers:
-- url: http://erender-test.ts.telekom.si:8445/api
+- url: https://erender-test.ts.telekom.si:8445/api
   description: Dis rest server
 info:
   version: 1.0.1
@@ -65,7 +65,7 @@ paths:
           type: string
       - in: path
         name: format
-        description: format of document or null for primary content if empty or null take primary content else renditions. format can be any of documentum formats like pdf, tiff, word, odf, xlsx11, xlsx12, ...
+        description: format of document or null for primary content if empty or null take primary content else renditions. format can be any of documentum formats like pdf tiff word odf xlsx11 xlsx12
         required: true
         schema:
           type: string

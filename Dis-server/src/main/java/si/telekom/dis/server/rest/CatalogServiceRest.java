@@ -31,7 +31,7 @@ import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogRequestMsg;
 import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogResponseMsg;
 import si.telekom.dis.server.jaxwsClient.catalogService.ICatalogService;
 import si.telekom.dis.server.jaxwsClient.catalogService.RequestMessageHeader;
-import si.telekom.dis.server.restExtra.CatalogMilestonesSearchApi;
+import si.telekom.dis.server.restExtra.api.CatalogMilestonesSearchApi;
 
 
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
@@ -52,7 +52,7 @@ public class CatalogServiceRest extends CatalogMilestonesSearchApi {
 
 	@Override
 	public Response getProcessMilestones(String partOfProcessMilisetoneName, String xTransactionId, SecurityContext securityContext)
-			throws si.telekom.dis.server.restExtra.NotFoundException {
+			throws si.telekom.dis.server.restExtra.api.NotFoundException {
 
 		List<String> ret = new ArrayList<String>();
 
