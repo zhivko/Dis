@@ -16,8 +16,8 @@
 			<param-value>
                 io.swagger.jaxrs.listing,
                 io.swagger.sample.resource,
-                si.telekom.dis.server.rest,
-                si.telekom.dis.server.restExtra
+                si.telekom.dis.server.rest.api,
+                si.telekom.dis.server.restExtra.api
             </param-value>
 		</init-param>
 		<init-param>
@@ -28,8 +28,16 @@
 			<param-name>jersey.config.server.wadl.disableWadl</param-name>
 			<param-value>false</param-value>
 		</init-param>
+		<init-param>
+			<param-name>DocumentsApi.implementation</param-name>
+			<param-value>si.telekom.dis.server.rest.DisRest</param-value>
+		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
+	<servlet-mapping>
+		<servlet-name>jersey</servlet-name>
+		<url-pattern>/api/*</url-pattern>
+	</servlet-mapping>
 
 	<servlet>
 		<servlet-name>Jersey2Config</servlet-name>
@@ -47,39 +55,57 @@
 			<param-value>https://erender-test.ts.telekom.si:8445/api</param-value>
 		</init-param>
 
+
 		<load-on-startup>2</load-on-startup>
 	</servlet>
+
 	<servlet>
 		<servlet-name>Bootstrap1</servlet-name>
-		<servlet-class>si.telekom.dis.server.restExtra.api.Bootstrap</servlet-class>
-		<load-on-startup>2</load-on-startup>
-	</servlet>
-	<servlet>
-		<servlet-name>Bootstrap2</servlet-name>
 		<servlet-class>si.telekom.dis.server.rest.api.Bootstrap</servlet-class>
 		<load-on-startup>2</load-on-startup>
+		<init-param>
+			<param-name>DocumentsApi.implementation</param-name>
+			<param-value>si.telekom.dis.server.rest.DisRest</param-value>
+		</init-param>
 	</servlet>
-	<servlet-mapping>
-		<servlet-name>jersey</servlet-name>
-		<url-pattern>/api/*</url-pattern>
-	</servlet-mapping>
-	
+
+	<servlet>
+		<servlet-name>Bootstrap2</servlet-name>
+		<servlet-class>si.telekom.dis.server.restExtra.api.Bootstrap</servlet-class>
+		<load-on-startup>2</load-on-startup>
+		<init-param>
+			<param-name>CatalogMilestonesSearchApi.implementation</param-name>
+			<param-value>si.telekom.dis.server.rest.CatalogServiceRest</param-value>
+		</init-param>
+	</servlet>
+
+	<servlet>
+		<servlet-name>Bootstrap3</servlet-name>
+		<servlet-class>si.telekom.dis.server.restExtra.api.Bootstrap</servlet-class>
+		<load-on-startup>2</load-on-startup>
+		<init-param>
+			<param-name>CustomerSearchApi.implementation</param-name>
+			<param-value>si.telekom.dis.server.rest.CustomerSearchRest</param-value>
+		</init-param>
+	</servlet>
+
+
 	<filter>
 		<filter-name>ApiOriginFilter1</filter-name>
 		<filter-class>si.telekom.dis.server.rest.api.ApiOriginFilter</filter-class>
 	</filter>
 	<filter-mapping>
 		<filter-name>ApiOriginFilter1</filter-name>
-		<url-pattern>/*</url-pattern>
+		<url-pattern>/api/*</url-pattern>
 	</filter-mapping>
-	
+
 	<filter>
 		<filter-name>ApiOriginFilter2</filter-name>
 		<filter-class>si.telekom.dis.server.restExtra.api.ApiOriginFilter</filter-class>
 	</filter>
 	<filter-mapping>
 		<filter-name>ApiOriginFilter2</filter-name>
-		<url-pattern>/*</url-pattern>
+		<url-pattern>/rest/*</url-pattern>
 	</filter-mapping>
 
 

@@ -52,7 +52,6 @@ public class DisRest extends DocumentsApiService {
 
 	public DisRest(ServletConfig servletContext) {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
