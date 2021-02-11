@@ -17,8 +17,7 @@
 			<param-value>
                 io.swagger.jaxrs.listing,
                 io.swagger.sample.resource,
-                si.telekom.dis.server.rest.api,
-                si.telekom.dis.server.restExtra.api
+				si.telekom.dis.server.rest
             </param-value>
 		</init-param>
 		<init-param>
@@ -26,10 +25,7 @@
 			<param-value>
 	                io.swagger.jaxrs.listing.ApiListingResource,
                 	io.swagger.jaxrs.listing.SwaggerSerializers,
-					org.glassfish.jersey.media.multipart.MultiPartFeature,
-					si.telekom.dis.server.rest.DisRest,
-					si.telekom.dis.server.rest.CatalogServiceRest,
-					si.telekom.dis.server.rest.CustomerSearchRest
+					org.glassfish.jersey.media.multipart.MultiPartFeature
 			</param-value>
 		</init-param>
 		<init-param>
@@ -42,7 +38,6 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>jersey</servlet-name>
-		<url-pattern>/api/*</url-pattern>
 		<url-pattern>/rest/*</url-pattern>
 	</servlet-mapping>
 
