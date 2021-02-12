@@ -32,6 +32,7 @@ import si.telekom.dis.server.ExplorerServiceImpl;
 import si.telekom.dis.server.WsServer;
 import si.telekom.dis.server.rest.api.DocumentsApiService;
 import si.telekom.dis.server.rest.api.NotFoundException;
+import si.telekom.dis.server.restCommon.User;
 
 
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
@@ -47,10 +48,6 @@ import si.telekom.dis.server.rest.api.NotFoundException;
 @Api
 public class DisRest extends DocumentsApiService {
 	public DisRest() {
-		super();
-	}
-
-	public DisRest(ServletConfig servletContext) {
 		super();
 	}
 
@@ -183,6 +180,8 @@ public class DisRest extends DocumentsApiService {
 	public Response importDocument(String xTransactionId, ImportDocumentRequest importDocumentRequest, SecurityContext securityContext)
 			throws NotFoundException {
 		try {
+			
+			
 			User user = (User) securityContext.getUserPrincipal();
 
 			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();

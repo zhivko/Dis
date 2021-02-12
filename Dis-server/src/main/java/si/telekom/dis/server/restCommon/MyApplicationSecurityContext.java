@@ -1,6 +1,7 @@
-package si.telekom.dis.server.rest;
+package si.telekom.dis.server.restCommon;
 
 import javax.ws.rs.core.SecurityContext;
+
 import java.security.Principal;
  
 /**

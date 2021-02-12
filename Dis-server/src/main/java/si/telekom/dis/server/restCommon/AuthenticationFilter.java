@@ -1,4 +1,4 @@
-package si.telekom.dis.server.rest;
+package si.telekom.dis.server.restCommon;
 
 import java.lang.reflect.Method;
 import java.util.List;

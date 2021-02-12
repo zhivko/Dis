@@ -1,5 +1,5 @@
 //https://github.com/swagger-api/swagger-core/wiki/Swagger-Core-Jersey-2.X-Project-Setup-1.5
-package si.telekom.dis.server.rest;
+package si.telekom.dis.server.restExtra;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 
 import io.swagger.annotations.Api;
 import si.telekom.dis.server.restExtra.api.CustomerSearchApi;
+import si.telekom.dis.server.restExtra.api.CustomerSearchApiService;
 import si.telekom.dis.server.restExtra.api.NotFoundException;
 import si.telekom.schemas.common.customer.v1.Customer;
 import si.telekom.schemas.common.party.v1.Individual;
@@ -44,11 +45,7 @@ import si.telekom.services.common.customer.v1.ICustomerService;
 // http://localhost:8080/Dis-server/api/v1/dis-dev/application.wadl
 // http://localhost:8080/Dis-server/rest/application.wadl
 @Api
-public class CustomerSearchRest extends CustomerSearchApi {
-
-	public CustomerSearchRest(ServletConfig servletContext) {
-		super(servletContext);
-	}
+public class CustomerSearchRest extends CustomerSearchApiService {
 
 	@Override
 	public Response getCustomersByPartOfName(String partOfCustName, String xTransactionId, SecurityContext securityContext) throws NotFoundException {

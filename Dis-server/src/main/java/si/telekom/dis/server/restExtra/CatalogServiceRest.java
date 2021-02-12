@@ -1,5 +1,5 @@
 //https://github.com/swagger-api/swagger-core/wiki/Swagger-Core-Jersey-2.X-Project-Setup-1.5
-package si.telekom.dis.server.rest;
+package si.telekom.dis.server.restExtra;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.xml.namespace.QName;
@@ -31,7 +30,7 @@ import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogRequestMsg;
 import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogResponseMsg;
 import si.telekom.dis.server.jaxwsClient.catalogService.ICatalogService;
 import si.telekom.dis.server.jaxwsClient.catalogService.RequestMessageHeader;
-import si.telekom.dis.server.restExtra.api.CatalogMilestonesSearchApi;
+import si.telekom.dis.server.restExtra.api.CatalogMilestonesSearchApiService;
 
 
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
@@ -44,11 +43,7 @@ import si.telekom.dis.server.restExtra.api.CatalogMilestonesSearchApi;
 // http://localhost:8080/Dis-server/api/v1/dis-dev/application.wadl
 // http://localhost:8080/Dis-server/rest/application.wadl
 @Api
-public class CatalogServiceRest extends CatalogMilestonesSearchApi {
-
-	public CatalogServiceRest(ServletConfig servletContext) {
-		super(servletContext);
-	}
+public class CatalogServiceRest extends CatalogMilestonesSearchApiService {
 
 	@Override
 	public Response getProcessMilestones(String partOfProcessMilisetoneName, String xTransactionId, SecurityContext securityContext)

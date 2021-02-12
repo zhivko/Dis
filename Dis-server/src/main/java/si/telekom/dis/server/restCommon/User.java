@@ -1,4 +1,4 @@
-package si.telekom.dis.server.rest;
+package si.telekom.dis.server.restCommon;
 
 import java.security.Principal;
 import java.util.List;
