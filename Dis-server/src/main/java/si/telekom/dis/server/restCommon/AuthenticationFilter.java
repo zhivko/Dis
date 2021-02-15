@@ -28,7 +28,6 @@ import si.telekom.dis.server.LoginServiceImpl;
 
 // http://localhost:8080/Dis-server/rest/disRest/newDocument
 
-
 @Provider
 @Priority(Priorities.AUTHENTICATION) // needs to happen before authorization
 public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequestFilter {
@@ -45,13 +44,17 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 	@Override
 	public void filter(ContainerRequestContext requestContext) {
 		Method method = resourceInfo.getResourceMethod();
-		
-    //We do allow wadl to be retrieve
+
+		// We do allow wadl to be retrieve
 		String path = requestContext.getUriInfo().getPath(true);
-    if(method.getName().equals("getWadl") && (path.equals("application.wadl") || path.equals("application.wadl/xsd0.xsd"))){
-        return;
-    }
-    
+		if (method.getName().equals("getWadl") && (path.equals("application.wadl") || path.equals("application.wadl/xsd0.xsd"))) {
+			return;
+		}
+
+		if (path.equals("swagger") && ((method.getName().equals("getListingYaml") || (method.getName().equals("getListingJson"))))) {
+			return;
+		}
+
 		// Access allowed for all
 		if (!method.isAnnotationPresent(PermitAll.class)) {
 			// Access denied for all
@@ -103,15 +106,15 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 			}
 			Logger.getLogger(this.getClass().getName()).info("Authenticating user: " + username + " ... authenticated.");
 
-      // We configure your Security Context here
-      String scheme = requestContext.getUriInfo().getRequestUri().getScheme();
-      
-      User us = new User();
-      us.setId(username);
-      us.setPassword(password);
-      
-      requestContext.setSecurityContext(new MyApplicationSecurityContext(us, scheme));
-      
+			// We configure your Security Context here
+			String scheme = requestContext.getUriInfo().getRequestUri().getScheme();
+
+			User us = new User();
+			us.setId(username);
+			us.setPassword(password);
+
+			requestContext.setSecurityContext(new MyApplicationSecurityContext(us, scheme));
+
 		}
 	}
 

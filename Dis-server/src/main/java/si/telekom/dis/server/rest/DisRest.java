@@ -45,6 +45,8 @@ import si.telekom.dis.server.restCommon.User;
 // https://localhost:8445/Dis-server/rest/swagger/getListingYaml
 // https://localhost:8445/Dis-server/rest/swagger/getListingJson
 // https://localhost:8445/Dis-server/rest/application.wadl
+// https://localhost:8445/Dis-server/api/swagger?type=yaml
+// https://localhost:8445/Dis-server/api/swagger?type=json
 @Api
 public class DisRest extends DocumentsApiService {
 	public DisRest() {
@@ -56,7 +58,7 @@ public class DisRest extends DocumentsApiService {
 	 * [where condition]
 	 */
 	@Override
-	public Response getDocuments(String xTransactionId, String dql, SecurityContext securityContext) throws NotFoundException {
+	public Response getDocuments(String dql, String xTransactionId, SecurityContext securityContext) throws NotFoundException {
 
 		IDfSession userSession = null;
 		IDfCollection collection = null;
@@ -71,6 +73,10 @@ public class DisRest extends DocumentsApiService {
 			Logger.getLogger(this.getClass()).info("getDocuments for " + loginName + " for: " + dql);
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
+			if(!dql.toLowerCase().contains("ENABLE(RETURN_RANGE"))
+				dql = dql + " ENABLE(RETURN_RANGE 1 10 'r_object_id')";
+			
+			
 			IDfQuery query = new DfQuery();
 			query.setDQL(dql);
 			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
@@ -89,21 +95,24 @@ public class DisRest extends DocumentsApiService {
 					doc1.setReleaseNumber(doc.releaseNo);
 
 					ArrayList<Attribute> alAtts = new ArrayList<Attribute>();
-					for (int i = 0; i < collection.getAttrCount(); i++) {
-						String attName = collection.getAttr(i).getName();
+					for (int i = 0; i < persObj.getAttrCount(); i++) {
+						String attName = persObj.getAttr(i).getName();
+						
+					
+						
 						if (!attName.equals("r_object_id")) {
 							Attribute att = new Attribute();
-							if (collection.getAttr(i).isRepeating()) {
+							if (persObj.getAttr(i).isRepeating()) {
 								ArrayList<String> values = new ArrayList<String>();
-								for (int j = 0; j < collection.getValueCount(attName); j++) {
-									values.add(collection.getRepeatingValue(attName, j).asString());
+								for (int j = 0; j < persObj.getValueCount(attName); j++) {
+									values.add(persObj.getRepeatingValue(attName, j).asString());
 								}
 								att.setName(attName);
 								att.setValues(values);
 								alAtts.add(att);
 							} else {
 								ArrayList<String> values = new ArrayList<String>();
-								values.add(collection.getValue(attName).asString());
+								values.add(persObj.getValue(attName).asString());
 								att.setName(attName);
 								att.setValues(values);
 							}
