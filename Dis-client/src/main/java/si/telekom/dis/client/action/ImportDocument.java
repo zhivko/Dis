@@ -233,8 +233,8 @@ public class ImportDocument extends WindowBox {
 				// of type text/html, we can get the result text here
 				Logger.getGlobal().info("event.getResults() " + event.getResults());
 				if (event.getResults() != null) {
-					MainPanel.log("Created imported object.");
-					ImportDocument.this.hide();
+					MainPanel.log("Created imported object. Close dialog manually.");
+					// ImportDocument.this.hide();
 				} else {
 					MainPanel.log("Error creating object: " + event.getResults());
 				}
@@ -435,7 +435,7 @@ public class ImportDocument extends WindowBox {
 
 							@Override
 							public void onFailure(Throwable caught) {
-								// TODO Auto-generated method stub
+								MainPanel.log("Error: " + caught.getMessage());
 								nextB.setEnabled(false);
 							}
 						});
@@ -596,7 +596,7 @@ public class ImportDocument extends WindowBox {
 		for (String key : hm.keySet()) {
 			ret = ret + key + "#";
 			for (String val : hm.get(key)) {
-				ret = ret + val + "|";
+				ret = ret + val.replaceAll("\\|", "¨") + "|";
 			}
 			if (ret.endsWith("|"))
 				ret = ret.substring(0, ret.length() - 1);

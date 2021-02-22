@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 // class that holds combination of SAME attributes configuration
 // and specifies wizards that use it
 // and specify roles/states that use it 
+/**
+ * @author klemen wizards can be import, classify, newdoc
+ */
 public class AttributeRoleStateWizards implements com.google.gwt.user.client.rpc.IsSerializable, java.io.Serializable {
 
 	public List<String> wizards;

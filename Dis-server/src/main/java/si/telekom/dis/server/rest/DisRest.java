@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
@@ -17,23 +18,29 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
 import com.documentum.fc.client.DfQuery;
+import com.documentum.fc.client.DfVersionPolicy;
 import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfFormat;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfQuery;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
+import com.documentum.fc.client.IDfVersionPolicy;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfId;
+import com.documentum.fc.common.IDfId;
 
 import io.swagger.annotations.Api;
 import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
+import si.telekom.dis.server.UploadServlet;
 import si.telekom.dis.server.WsServer;
+import si.telekom.dis.server.rest.UpdateDocumentRequest.VersionEnum;
 import si.telekom.dis.server.rest.api.DocumentsApiService;
 import si.telekom.dis.server.rest.api.NotFoundException;
 import si.telekom.dis.server.restCommon.User;
-
+import si.telekom.dis.shared.AttributeValue;
+import si.telekom.dis.shared.ServerException;
 
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
 // http://localhost:8080/Dis-server/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
@@ -68,15 +75,14 @@ public class DisRest extends DocumentsApiService {
 			String loginName = user.getId();
 			String password = Base64.encodeBase64String(user.getPassword().getBytes());
 
-			DocumentsResponse docResp = new DocumentsResponse();
+			QueryDocumentsResponse docResp = new QueryDocumentsResponse();
 
 			Logger.getLogger(this.getClass()).info("getDocuments for " + loginName + " for: " + dql);
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
-			if(!dql.toLowerCase().contains("ENABLE(RETURN_RANGE"))
+			if (!dql.toLowerCase().contains("ENABLE(RETURN_RANGE"))
 				dql = dql + " ENABLE(RETURN_RANGE 1 10 'r_object_id')";
-			
-			
+
 			IDfQuery query = new DfQuery();
 			query.setDQL(dql);
 			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
@@ -97,9 +103,7 @@ public class DisRest extends DocumentsApiService {
 					ArrayList<Attribute> alAtts = new ArrayList<Attribute>();
 					for (int i = 0; i < persObj.getAttrCount(); i++) {
 						String attName = persObj.getAttr(i).getName();
-						
-					
-						
+
 						if (!attName.equals("r_object_id")) {
 							Attribute att = new Attribute();
 							if (persObj.getAttr(i).isRepeating()) {
@@ -154,7 +158,7 @@ public class DisRest extends DocumentsApiService {
 
 			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
 			for (RoleUsers role : newDocumentRequest.getRolesUsers()) {
-				roles_.put(role.getRoleName(), role.getValues());
+				roles_.put(role.getRoleId(), role.getValues());
 			}
 
 //@formatter:off
@@ -167,7 +171,7 @@ public class DisRest extends DocumentsApiService {
 				newDocumentRequest.getTemplateObjectRObjectId());
 //@formatter:on
 
-			Document doc1 = convertDocument(doc);
+			Document doc1 = getRestDocFromSharedDoc(doc);
 			return Response.ok(doc1).build();
 
 		} catch (Throwable ex) {
@@ -176,21 +180,11 @@ public class DisRest extends DocumentsApiService {
 		}
 	}
 
-	private Document convertDocument(si.telekom.dis.shared.Document doc) {
-		Document doc1 = new Document();
-		doc1.setrObjectId(doc.r_object_id);
-		doc1.setObjectName(doc.object_name);
-		doc1.setReleaseNumber(doc.releaseNo);
-
-		return doc1;
-	}
-
 	@Override
 	public Response importDocument(String xTransactionId, ImportDocumentRequest importDocumentRequest, SecurityContext securityContext)
 			throws NotFoundException {
 		try {
-			
-			
+
 			User user = (User) securityContext.getUserPrincipal();
 
 			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
@@ -200,7 +194,7 @@ public class DisRest extends DocumentsApiService {
 
 			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
 			for (RoleUsers role : importDocumentRequest.getRolesUsers()) {
-				roles_.put(role.getRoleName(), role.getValues());
+				roles_.put(role.getRoleId(), role.getValues());
 			}
 
 //@formatter:off
@@ -212,14 +206,14 @@ public class DisRest extends DocumentsApiService {
 				importDocumentRequest.getStateId(), 
 				attributes_, 
 				roles_, 
-				importDocumentRequest.getContentBase64().getBytes(), 
-				importDocumentRequest.getFormat());
+				importDocumentRequest.getContent().getData().getBytes(), 
+				importDocumentRequest.getContent().getFormat());
 //@formatter:on
-			Document doc1 = convertDocument(doc);
+			Document doc1 = getRestDocFromSharedDoc(doc);
 			return Response.ok(doc1).build();
 
 		} catch (Throwable ex) {
-			return Response.status(500, ex.getMessage()).build();
+			return Response.status(500, ex.toString()).build();
 		} finally {
 		}
 	}
@@ -232,8 +226,8 @@ public class DisRest extends DocumentsApiService {
 			String password = Base64.encodeBase64String(user.getPassword().getBytes());
 
 			si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().demote(loginName, password, rObjectId);
-			Document doc1 = convertDocument(doc);
-			
+			Document doc1 = getRestDocFromSharedDoc(doc);
+
 			return Response.ok(doc1).build();
 		} catch (Throwable ex) {
 			return Response.status(500, ex.getMessage()).build();
@@ -289,13 +283,194 @@ public class DisRest extends DocumentsApiService {
 			String password = Base64.encodeBase64String(user.getPassword().getBytes());
 
 			si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().promote(loginName, password, rObjectId);
-			Document doc1 = convertDocument(doc);
-			
+			Document doc1 = getRestDocFromSharedDoc(doc);
+
 			return Response.ok(doc1).build();
 		} catch (Throwable ex) {
 			return Response.status(500, ex.getMessage()).build();
 		} finally {
 		}
+	}
+
+	@Override
+	public Response getDocument(String rObjectId, String xTransactionId, SecurityContext securityContext) throws NotFoundException {
+		IDfSession userSession = null;
+		IDfCollection collection = null;
+
+		try {
+			User user = (User) securityContext.getUserPrincipal();
+			String loginName = user.getId();
+			String password = Base64.encodeBase64String(user.getPassword().getBytes());
+
+			userSession = AdminServiceImpl.getSession(loginName, password);
+
+			IDfPersistentObject persObj = userSession.getObjectByQualification("dm_sysobject(all) where r_object_id='" + rObjectId + "'");
+			if (persObj != null) {
+				si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().docFromSysObject((IDfSysObject) persObj, loginName, userSession);
+				Document doc1 = getRestDocFromSharedDoc(doc);
+				return Response.ok(doc1).build();
+			} else {
+				return Response.status(404, "Such document doesn't exist.").build();
+			}
+		} catch (Throwable ex) {
+			return Response.status(500, ex.getMessage()).build();
+		} finally {
+			if (collection != null)
+				try {
+					collection.close();
+				} catch (DfException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			if (userSession != null)
+				if (userSession.isConnected())
+					userSession.getSessionManager().release(userSession);
+		}
+	}
+
+	private Document getRestDocFromSharedDoc(si.telekom.dis.shared.Document doc) throws Throwable {
+		Document doc1 = new Document();
+		doc1.setrObjectId(doc.r_object_id);
+		doc1.setObjectName(doc.object_name);
+		doc1.setReleaseNumber(doc.releaseNo);
+
+		ArrayList<Attribute> listAttributes = new ArrayList<Attribute>();
+		for (String attName : doc.attributes.keySet()) {
+			Attribute att = new Attribute();
+			att.setName(attName);
+			att.setValues(doc.attributes.get(attName));
+			listAttributes.add(att);
+		}
+		doc1.setAttributes(listAttributes);
+		doc1.setFormats(doc.formats);
+
+		RoleUsers tmpRoleUsers = null;
+		ArrayList<RoleUsers> rolesUsers = new ArrayList<RoleUsers>();
+		int i = 0;
+		for (String roleUser : doc.roleMembers) {
+			String roleId = doc.roles.get(i).getId();
+			if (tmpRoleUsers == null) {
+				tmpRoleUsers = new RoleUsers();
+				tmpRoleUsers.setRoleId(roleId);
+			} else {
+				if (!tmpRoleUsers.getRoleId().equals(roleId)) {
+					rolesUsers.add(tmpRoleUsers);
+					tmpRoleUsers = new RoleUsers();
+					tmpRoleUsers.setRoleId(roleId);
+				}
+			}
+
+			if (tmpRoleUsers.getRoleId().equals(roleId)) {
+				tmpRoleUsers.addValuesItem(roleUser);
+			}
+
+			i++;
+		}
+		doc1.setRolesUsers(rolesUsers);
+
+		return doc1;
+	}
+
+	@Override
+	public Response updateDocument(String rObjectId, String xTransactionId, UpdateDocumentRequest updateDocumentRequest,
+			SecurityContext securityContext) throws NotFoundException {
+
+		IDfSession userSession = null;
+		IDfCollection collection = null;
+
+		try {
+			User user = (User) securityContext.getUserPrincipal();
+			String loginName = user.getId();
+			String password = Base64.encodeBase64String(user.getPassword().getBytes());
+
+			userSession = AdminServiceImpl.getSession(loginName, password);
+
+			IDfSysObject sysObj = (IDfSysObject) userSession.getObjectByQualification("dm_sysobject(all) where r_object_id='" + rObjectId + "'");
+
+			if (sysObj != null) {
+
+				if (!sysObj.isCheckedOut())
+					sysObj.checkout();
+
+				if (updateDocumentRequest.getContent() != null) {
+					sysObj.setContentType(updateDocumentRequest.getContent().getFormat()); // only
+																																									// if
+																																									// your
+					ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+					baOs.write(Base64.decodeBase64(updateDocumentRequest.getContent().getData()));
+					sysObj.setContentEx(baOs, updateDocumentRequest.getContent().getFormat(), 0);
+					sysObj.setContentType(updateDocumentRequest.getContent().getFormat());
+				}
+
+				String prevVersLabels = "";
+				Pattern p = Pattern.compile("^\\d+(\\.\\d+)+$");
+				String allVersions = sysObj.getAllRepeatingStrings("r_version_label", ",");
+				for (String ver : allVersions.split(",")) {
+					Matcher m = p.matcher(ver);
+					if (!ver.equals("CURRENT") && !m.find())
+						prevVersLabels = prevVersLabels + ver + ",";
+				}
+				if (prevVersLabels.length() > 0)
+					prevVersLabels = prevVersLabels.substring(0, prevVersLabels.length() - 1);
+
+				sysObj.fetch("dm_document");
+				// ((DfSysObject)sysObj).getLatestFlag(); //
+				// i_latest_flag
+				boolean latest = ((IDfSysObject) sysObj).getLatestFlag();
+				IDfVersionPolicy vp = sysObj.getVersionPolicy();
+				boolean canVersionMinor = ((DfVersionPolicy) vp).canVersion(DfVersionPolicy.DF_NEXT_MINOR);
+				boolean canVersionMajor = ((DfVersionPolicy) vp).canVersion(DfVersionPolicy.DF_NEXT_MAJOR);
+				String msg1 = "objectname: " + sysObj.getObjectName() + " Latest? " + latest + " Immutable? " + sysObj.isImmutable() + " Frozen? "
+						+ sysObj.isFrozen() + " permit: " + sysObj.getPermit() + " canVersionMinor: " + canVersionMinor + " canVersionMajor: " + canVersionMajor;
+				Logger.getLogger(UploadServlet.class).info(msg1);
+
+				if (!latest) {
+					throw new ServerException("Not latest version");
+				}
+
+				String toAddVersions;
+				IDfId dfnewid = null;
+				if (updateDocumentRequest.getVersion().equals(VersionEnum.MINOR)) {
+					toAddVersions = vp.getNextMinorLabel() + ",CURRENT," + prevVersLabels;
+					dfnewid = sysObj.checkin(false, toAddVersions);
+				} else if (updateDocumentRequest.getVersion().equals(VersionEnum.MAJOR)) {
+					toAddVersions = vp.getNextMajorLabel() + ",CURRENT," + prevVersLabels;
+					dfnewid = sysObj.checkin(false, toAddVersions);
+				} else {
+					dfnewid = sysObj.checkin(false, "");
+				}
+				IDfSysObject newSysObject = (IDfSysObject) userSession.getObject(dfnewid);
+
+				List<AttributeValue> lAv = new ArrayList<AttributeValue>();
+				for (Attribute att : updateDocumentRequest.getAttributes()) {
+					AttributeValue av = new AttributeValue();
+					av.setName(att.getName());
+					av.setValues(att.getValues());
+					lAv.add(av);
+				}
+				ExplorerServiceImpl.getInstance().setAttributes(loginName, password, dfnewid.getId(), lAv);
+
+				si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().docFromSysObject(newSysObject, loginName, userSession);
+				Document doc1 = getRestDocFromSharedDoc(doc);
+				return Response.ok(doc1).build();
+			} else {
+				return Response.status(404, "Such document doesn't exist.").build();
+			}
+		} catch (Throwable ex) {
+			return Response.status(500, ex.getMessage()).build();
+		} finally {
+			if (collection != null)
+				try {
+					collection.close();
+				} catch (DfException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			if (userSession != null)
+				if (userSession.isConnected())
+					userSession.getSessionManager().release(userSession);
+		}
+
 	}
 
 /*

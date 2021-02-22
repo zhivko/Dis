@@ -1,0 +1,147 @@
+package si.telekom.dis.server;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.net.URI;
+import java.util.HashMap;
+
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Response;
+
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.servlet.ServletRegistration;
+import org.glassfish.grizzly.servlet.WebappContext;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.jersey.test.JerseyTest;
+import org.glassfish.jersey.test.TestProperties;
+import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
+import org.glassfish.jersey.test.spi.TestContainerException;
+import org.glassfish.jersey.test.spi.TestContainerFactory;
+import org.junit.Before;
+import org.junit.Test;
+
+import si.telekom.dis.server.rest.DisRest;
+import si.telekom.dis.server.rest.api.DocumentsApi;
+
+public class MyTest extends JerseyTest {
+
+	// @Override
+	// protected DeploymentContext configureDeployment() {
+	//// HashMap<String,Object> mymap = new HashMap<String,Object>();
+	// String value1 =
+	// "io.swagger.jaxrs.listing," +
+	// "io.swagger.sample.resource," +
+	// "si.telekom.dis.server.restCommon," +
+	// "si.telekom.dis.server.rest," +
+	// "si.telekom.dis.server.rest.api";
+	//
+	// String value2 =
+	// "org.glassfish.jersey.media.multipart.MultiPartFeature,org.glassfish.jersey.filter.LoggingFilter";
+	// String value3 = "DocumentsApi.implementation";
+	//
+	// WebServletConfig myServletConfig = new WebServletConfig(new
+	// ServletContainer(new ResourceConfig()));
+	//
+	//
+	//// mymap.put("jersey.config.server.provider.packages", value);
+	// return ServletDeploymentContext.forServlet(new ServletContainer(new
+	// ResourceConfig())
+	// .property("jersey.config.server.provider.packages", value1)
+	// .property("jersey.config.server.provider.classnames", value2)
+	// .property("DocumentsApi.implementation", value3))).build();
+	// }
+
+	HttpServer server = null;
+
+	@Before
+	public void setUp() throws Exception {
+		if (server == null) {
+			System.out.println("Initializing an instance of Grizzly Container");
+			final ResourceConfig rc = new ResourceConfig(DocumentsApi.class);
+
+			WebappContext ctx = new WebappContext() {
+			};
+			ctx.addContextInitParameter("contextConfigLocation", "classpath:web.xml");
+
+			// ctx.addListener("com.package.something.AServletContextListener");
+
+			HashMap<String, String> initParams = new HashMap<>();
+
+			// ServerProperties.PROVIDER_PACKAGES is equal to
+			// "jersey.config.server.provider.packages"
+			initParams.put(ServerProperties.PROVIDER_PACKAGES, "com.resource,com.provider");
+
+			
+// @formatter:off			
+			String value1 = 
+					"io.swagger.jaxrs.listing," + 
+					"io.swagger.sample.resource," + 
+					"si.telekom.dis.server.restCommon," + 
+					"si.telekom.dis.server.rest," +
+					"si.telekom.dis.server.rest.api";
+// @formatter:on
+			
+		// @formatter:off			
+			String value2 = "org.glassfish.jersey.media.multipart.MultiPartFeature," + 
+											"org.glassfish.jersey.filter.LoggingFilter";
+		// @formatter:on
+
+			System.out.println("Starting GrizzlyTestContainer...");
+			try {
+
+				final ResourceConfig rc1 = new ResourceConfig(DisRest.class);
+				
+				URI uri = URI.create(String.format("http://localhost:9998/"));
+				this.server = GrizzlyHttpServerFactory.createHttpServer(uri, rc1);
+
+				// Initialize and register Jersey Servlet
+				WebappContext context = new WebappContext("WebappContext", "/Dis-server");
+				ServletRegistration registration = context.addServlet("ServletContainer", org.glassfish.jersey.servlet.ServletContainer.class);
+				registration.setInitParameter("javax.ws.rs.Application", rc.getClass().getName());
+				// Add an init parameter - this could be loaded from a parameter in the
+				// constructor
+				registration.setInitParameter(ServerProperties.PROVIDER_PACKAGES, value1);
+				registration.setInitParameter(ServerProperties.PROVIDER_CLASSNAMES, value2);
+				registration.setInitParameter("DocumentsApi.implementation", "si.telekom.dis.server.rest.DisRest");
+
+				registration.addMapping("/api/*");
+				context.deploy(server);
+			} catch (ProcessingException e) {
+				throw new TestContainerException(e);
+			}
+		}
+	}
+
+	@Override
+	protected TestContainerFactory getTestContainerFactory() {
+		return new GrizzlyWebTestContainerFactory();
+	}
+
+	@Override
+	public Application configure() {
+		enable(TestProperties.LOG_TRAFFIC);
+		enable(TestProperties.DUMP_ENTITY);
+		return new ResourceConfig(DisRest.class);
+	}
+
+	@Test
+	public void test() {
+		Response response = target("/Dis-server").request().get();
+		assertEquals("should return status 200", 200, response.getStatus());
+		assertNotNull("Should return user list", response.getEntity().toString());
+		System.out.println(response.getStatus());
+		System.out.println(response.readEntity(String.class));
+	}
+
+	
+	@Override
+	protected URI getBaseUri() {
+		// TODO Auto-generated method stub
+		return super.getBaseUri();
+	}
+}

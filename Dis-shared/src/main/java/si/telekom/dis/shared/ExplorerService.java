@@ -22,7 +22,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		
 		List<List<String>> getDefaultValueDql(String dql) throws ServerException;
 		
-		Void setAttributes(String loginName, String password, String r_object_id, List<String[]> values) throws ServerException;
+		Void setAttributes(String loginName, String password, String r_object_id, List<AttributeValue> values) throws ServerException;
 		Void deleteObject(String loginName, String password, String r_object_id, boolean allVersions) throws ServerException;
 		Void deleteObjects(String loginName, String password, List<String> r_object_ids, boolean allVersions) throws ServerException;
 		List<List<String>> dqlLookup(String loginName, String password, String dql) throws ServerException;

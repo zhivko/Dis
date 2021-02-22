@@ -21,7 +21,7 @@ public interface ExplorerServiceAsync {
 	void getDefaultValueDql(String dql, AsyncCallback<List<List<String>>> callback) throws IllegalArgumentException;
 	
 	
-	void setAttributes(String loginName, String password, String r_object_id, List<String[]> values, AsyncCallback<Void> callback) throws IllegalArgumentException;
+	void setAttributes(String loginName, String password, String r_object_id, List<AttributeValue> values, AsyncCallback<Void> callback) throws IllegalArgumentException;
 	void deleteObject(String loginName, String password, String r_object_id, boolean allVersions, AsyncCallback<Void> callback) throws IllegalArgumentException;
 	void deleteObjects(String loginName, String loginPass, List<String> allChecked, boolean allV, AsyncCallback<Void> asyncCallback);
 	void dqlLookup(String loginName, String password, String dql, AsyncCallback<List<List<String>>> callback) throws IllegalArgumentException;

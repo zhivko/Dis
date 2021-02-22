@@ -3,6 +3,7 @@ package si.telekom.dis.shared;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.view.client.ProvidesKey;
 
@@ -35,6 +36,9 @@ public class Document implements com.google.gwt.user.client.rpc.IsSerializable, 
 	public List<String> details;
 	public boolean isClassified = false;
 	public boolean isFolder=false;
+	
+	public Map<String, List<String>> attributes;
+	public List<String> formats;
 	
   /**
    * The key provider that provides the unique ID of a document.

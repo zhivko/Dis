@@ -310,17 +310,17 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 	}
 
 	public List<String> getValues() {
-		// TODO Auto-generated method stub
-
 		ArrayList<String> values = new ArrayList<String>();
 		if (att.isRepeating)
 			for (int i = 0; i < this.values.getItemCount(); i++) {
-				String val = this.values.getValue(i);
+				String val = split(getValue(), "|")[att.dropDownCol];
 				values.add(val);
 			}
-		else
+		else if (att.dropDownCol != 0) {
+			String val = split(getValue(), "|")[att.dropDownCol];
+			values.add(val);
+		} else
 			values.add(getValue());
-
 		return values;
 	}
 
@@ -381,7 +381,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 				}
 			}
 		} catch (Exception ex) {
-			MainPanel.log("error while parsing value for <strong>"+att.dcmtAttName+"</strong> att type: " + att.getType() + " value: " + value);
+			MainPanel.log("error while parsing value for <strong>" + att.dcmtAttName + "</strong> att type: " + att.getType() + " value: " + value);
 		}
 
 	}

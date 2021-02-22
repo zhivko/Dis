@@ -395,7 +395,11 @@ public class MultiValueSelectBox extends Composite implements HasValue<List<Stri
 	public ArrayList<String> getValue() {
 		ArrayList<String> ret = new ArrayList<String>();
 		for (int i = 0; i < lb.getItemCount(); i++) {
-			String value = lb.getValue(i);
+			String value=null;
+			if(this.att.dropDownCol==0)
+				value = lb.getValue(i);
+			else
+				value = lb.getItemText(i);
 			ret.add(value);
 		}
 		return ret;

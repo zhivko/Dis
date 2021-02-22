@@ -404,8 +404,8 @@ public class DocumentAuditTrail extends WindowBox {
 			// int min1 = Math.min(range.getStart() + range.getLength(),
 			// MyDataProvider.this.allRows.size());
 
-			final int from = range.getStart() + 1;
-			final int to = range.getStart() + 1 + pageSize;
+			final int from = range.getStart() ;
+			final int to = range.getStart() + pageSize;
 
 			explorerService.auditTrail(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, eventFilter, from, to,
 					new AsyncCallback<List<List<String>>>() {
@@ -417,14 +417,18 @@ public class DocumentAuditTrail extends WindowBox {
 							int i = 0;
 							for (List<String> row1 : result) {
 								Row row = new Row(row1);
-								allRows.add(from + i - 1, row);
+								allRows.add(from + i, row);
 								i++;
 							}
 
 							// if (range.getStart() < MyDataProvider.this.allRows.size()) {
-							updateRowData(from - 1, MyDataProvider.this.allRows.subList(from - 1, Math.min(to - 1, allRows.size())));
+							
+							int from1  = from;
+							int to1 = Math.min(to, allRows.size());
+							
+							updateRowData(from, MyDataProvider.this.allRows.subList(from1, to1));
 							//display.setVisibleRange(new Range(from, Math.min(to - 1, allRows.size())));
-							updateRowCount(Math.min(to - 1, allRows.size()), true);
+							updateRowCount(to1, true);
 							DocumentAuditTrail.instance.centerMyPanel();
 							// }
 

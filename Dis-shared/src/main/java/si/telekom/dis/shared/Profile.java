@@ -14,31 +14,38 @@ public class Profile implements com.google.gwt.user.client.rpc.IsSerializable, j
 	public String name;
 	public String objType;
 	public boolean isDefaultForObjectType;
-	
+
 	public String namePolicyPrefix;
 	public String namePolicySuffix;
 	public String namePolicyCounterStart;
 	public String namePolicyCounterPlaces;
 	public int namePolicyBarcodeType;
-	
+
 	public ArrayList<Template> templates;
 	public ArrayList<TemplateFolder> templateFolderPaths;
-	
+
 	public ArrayList<Role> roles;
 	public ArrayList<State> states;
 	public ArrayList<Tab> tabs;
-	
+
 	public ArrayList<Attribute> detailAttributes;
-	
+
 	public List<AttributeRoleStateWizards> attributeRolesStatesWizards;
 	public Map<String, Map<String, List<String>>> roleStateActions;
-	
+
 	public Date modifyDateUTC;
-	
+
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return this.id;
 	}
-	
+
+	public Role getRoleForId(String roleId) {
+		for (Role role : roles) {
+			if (role.getId().equals(roleId))
+				return role;
+		}
+		return null;
+	}
+
 }

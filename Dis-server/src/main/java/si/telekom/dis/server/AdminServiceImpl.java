@@ -2448,7 +2448,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 * @return
 	 * @throws DfException
 	 */
-	private static String evaluateFolderExpression(String folderExpression, IDfPersistentObject persObject) throws DfException {
+	private static String evaluateFolderExpression(String folderExpression, IDfPersistentObject persObject) throws Exception {
 		// TODO Auto-generated method stub
 		String ret = folderExpression;
 
@@ -2461,15 +2461,23 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			for (int i = 0; i < m.groupCount(); i++) {
 				String attName = m.group(i).replaceAll("\\[", "");
 				attName = attName.replaceAll("\\]", "");
-				if (attName.startsWith("year(")) {
-					Pattern p1 = Pattern.compile("year\\((.*?)\\)", Pattern.CASE_INSENSITIVE);
+				if (attName.startsWith("year(") || attName.startsWith("month(")) {
+					Pattern p1 = Pattern.compile("(year|month)\\((.*?)\\)", Pattern.CASE_INSENSITIVE);
 					Matcher m1 = p1.matcher(attName);
 					if (m1.find()) {
-						String attName2 = m1.group(1);
+						String attName2 = m1.group(2);
 						Date date = persObject.getTime(attName2).getDate();
 						GregorianCalendar cal = new GregorianCalendar(Locale.GERMANY);
 						cal.setTime(date);
-						int attValue = cal.get(Calendar.YEAR);
+						int attValue = 0;
+						if (m1.group(1).equals("year"))
+							attValue = cal.get(Calendar.YEAR);
+						else if (m1.group(1).equals("month"))
+							attValue = cal.get(Calendar.MONTH);
+						else {
+							throw new Exception("unknown function: " + attName);
+						}
+
 						String toReplace = "\\[" + attName.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)") + "\\]";
 						folderExpression = folderExpression.replaceAll(toReplace, String.valueOf(attValue));
 					} else {
@@ -2966,9 +2974,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		if (lazy)
 			return ret;
 
-//		if (el.getAttribute("name").startsWith("ePredloge po naz")) {
-//			System.out.println("oop");
-//		}
+		// if (el.getAttribute("name").startsWith("ePredloge po naz")) {
+		// System.out.println("oop");
+		// }
 
 		XPath xpath = xpathFac.newXPath();
 		XPathExpression expr3 = xpath.compile(".//userGroup");
@@ -3002,44 +3010,49 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		while (m.find()) {
 			if (!ret.arguments.contains(m.group(0))) {
 				String partDql = dqlQuery.substring(0, dqlQuery.indexOf(m.group(0)) + m.group(0).length());
-				for (String attName : doctypes.get(type).attributes.keySet()) {
-					// try to parse label
-					String escapedGroup0 = m.group(0).replaceAll("\\%", "[%]");
-					String toCompile = ".*" + attName + " \\((.*?)\\)(.*)" + escapedGroup0;
-					
-					//Logger.getLogger(this.getClass()).info("trying: " + toCompile);
-					
-					Pattern p1 = Pattern.compile(toCompile, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-					Matcher m1 = p1.matcher(dqlQuery);
+				if (doctypes.get(type) == null) {
+					Logger.getLogger(this.getClass()).error("no such document type: " + type);
+				}
+				if (doctypes.get(type) != null) {
+					for (String attName : doctypes.get(type).attributes.keySet()) {
+						// try to parse label
+						String escapedGroup0 = m.group(0).replaceAll("\\%", "[%]");
+						String toCompile = ".*" + attName + " \\((.*?)\\)(.*)" + escapedGroup0;
 
-					if (m1.find()) {
-						int poz1 = partDql.lastIndexOf(attName);
-						String partOfDql = partDql.substring(poz1);
-						String label = "";
-						if (m1.group(1) != null)
-							label = m1.group(1);
+						// Logger.getLogger(this.getClass()).info("trying: " + toCompile);
 
-						// dqlQuery = dqlQuery.replaceAll("\\(" + label + "\\)", "");
-						DcmtAttribute dcmtAtt = doctypes.get(type).attributes.get(attName);
-						Attribute a = new Attribute();
-						a.label = (label.equals("") ? attName : label);
-						a.dcmtAttName = dcmtAtt.attr_name;
-						if (dcmtAtt.domain_type.equals("0")) {
-							a.setType("checkBox");
-						} else if (dcmtAtt.domain_type.equals("1")) {
-							a.setType("textbox");
-						} else if (dcmtAtt.domain_type.equals("2")) {
-							a.setType("textbox");
-						} else if (dcmtAtt.domain_type.equals("3")) {
-							a.setType("textbox");
-						} else if (dcmtAtt.domain_type.equals("4")) {
-							a.setType("datetime");
+						Pattern p1 = Pattern.compile(toCompile, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+						Matcher m1 = p1.matcher(dqlQuery);
+
+						if (m1.find()) {
+							int poz1 = partDql.lastIndexOf(attName);
+							String partOfDql = partDql.substring(poz1);
+							String label = "";
+							if (m1.group(1) != null)
+								label = m1.group(1);
+
+							// dqlQuery = dqlQuery.replaceAll("\\(" + label + "\\)", "");
+							DcmtAttribute dcmtAtt = doctypes.get(type).attributes.get(attName);
+							Attribute a = new Attribute();
+							a.label = (label.equals("") ? attName : label);
+							a.dcmtAttName = dcmtAtt.attr_name;
+							if (dcmtAtt.domain_type.equals("0")) {
+								a.setType("checkBox");
+							} else if (dcmtAtt.domain_type.equals("1")) {
+								a.setType("textbox");
+							} else if (dcmtAtt.domain_type.equals("2")) {
+								a.setType("textbox");
+							} else if (dcmtAtt.domain_type.equals("3")) {
+								a.setType("textbox");
+							} else if (dcmtAtt.domain_type.equals("4")) {
+								a.setType("datetime");
+							}
+							ret.formAttributes.add(a);
+							ret.dqlParts.add(partOfDql);
+							ret.labels.add("\\(" + label + "\\)");
+							ret.arguments.add(m.group(0));
+							break;
 						}
-						ret.formAttributes.add(a);
-						ret.dqlParts.add(partOfDql);
-						ret.labels.add("\\(" + label + "\\)");
-						ret.arguments.add(m.group(0));
-						break;
 					}
 				}
 			}
@@ -3154,80 +3167,82 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// NodeList nl = (NodeList) expr.evaluate( new InputSource(new
 			// StringReader(getDocConfig().toString())),
 			// XPathConstants.NODESET);
-			Element el = (Element) expr.evaluate(getDocConfig(), XPathConstants.NODE);
-			if (el != null) {
-				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " with newName: " + newName);
-				el.setTextContent(newDql);
-				el.setAttribute("name", newName);
-				Element elGroups = getDocConfig().createElement("userGroups");
-				el.appendChild(elGroups);
-				for (String group : groups) {
-					String groupId = "";
-					if (group.split("\\|").length > 1)
-						groupId = group.split("\\|")[0];
-					else
-						groupId = group;
+			NodeList nl = (NodeList) expr.evaluate(getDocConfig(), XPathConstants.NODESET);
+			for (int i = 0; i < nl.getLength(); i++) {
+				Element el = (Element) nl.item(i);
+				if (el != null) {
+					Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " with newName: " + newName);
+					el.setTextContent(newDql);
+					el.setAttribute("name", newName);
+					Element elGroups = getDocConfig().createElement("userGroups");
+					el.appendChild(elGroups);
+					for (String group : groups) {
+						String groupId = "";
+						if (group.split("\\|").length > 1)
+							groupId = group.split("\\|")[0];
+						else
+							groupId = group;
 
-					String groupName = "";
-					if (group.split("\\|").length > 1)
-						groupName = group.split("\\|")[1];
-					else
-						groupName = group;
+						String groupName = "";
+						if (group.split("\\|").length > 1)
+							groupName = group.split("\\|")[1];
+						else
+							groupName = group;
 
-					Element elGroup = getDocConfig().createElement("userGroup");
-					elGroup.setAttribute("id", groupId);
-					elGroup.setAttribute("name", groupName);
-					elGroups.appendChild(elGroup);
-				}
-				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " usersGroups.");
-
-				Element elOrderBys = getDocConfig().createElement("orderBys");
-				el.appendChild(elOrderBys);
-				int j = 0;
-				for (String oBy : orderBys) {
-					Element elOrderBy = getDocConfig().createElement("orderBy");
-					String str = StringUtils.stripEnd(oBy, null);
-					str = StringUtils.stripStart(str, null);
-					elOrderBy.setAttribute("name", str);
-					elOrderBy.setAttribute("direction", orderBydirections.get(j));
-					elOrderBys.appendChild(elOrderBy);
-					j++;
-				}
-				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " orderBys.");
-
-				Element elFilterClass = getDocConfig().createElement("filterClass");
-				elFilterClass.setTextContent(filterClass);
-				el.appendChild(elFilterClass);
-				Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " filterClass.");
-
-				Transformer tr = TransformerFactory.newInstance().newTransformer();
-				tr.setOutputProperty(OutputKeys.INDENT, "yes");
-				tr.setOutputProperty(OutputKeys.METHOD, "xml");
-				tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-				// tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
-				tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-
-				// send DOM to file
-				tr.transform(new DOMSource(docConfig), new StreamResult(new FileOutputStream(configPathFileName)));
-				Logger.getLogger(this.getClass()).info("User " + loginName + " saved search with newName:" + newName + " to " + configPathFileName);
-
-				// check if it is localhost save it to development environment
-				final String ip = getThreadLocalRequest().getRemoteHost();
-				InetAddress addr = InetAddress.getByName(ip);
-				String hostName = addr.getHostName();
-				if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
-					File devConfig;
-					if (SystemUtils.IS_OS_LINUX) {
-						devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
-					} else {
-						devConfig = new File("c:\\git\\Dis\\Dis-server\\src\\main\\resources\\config.xml");
+						Element elGroup = getDocConfig().createElement("userGroup");
+						elGroup.setAttribute("id", groupId);
+						elGroup.setAttribute("name", groupName);
+						elGroups.appendChild(elGroup);
 					}
-					FileUtils.copyFile(new File(configPathFileName), devConfig);
-					Logger.getLogger(this.getClass()).info("Saved search to dev config file: " + devConfig.getAbsolutePath());
+					Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " usersGroups.");
+
+					Element elOrderBys = getDocConfig().createElement("orderBys");
+					el.appendChild(elOrderBys);
+					int j = 0;
+					for (String oBy : orderBys) {
+						Element elOrderBy = getDocConfig().createElement("orderBy");
+						String str = StringUtils.stripEnd(oBy, null);
+						str = StringUtils.stripStart(str, null);
+						elOrderBy.setAttribute("name", str);
+						elOrderBy.setAttribute("direction", orderBydirections.get(j));
+						elOrderBys.appendChild(elOrderBy);
+						j++;
+					}
+					Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " orderBys.");
+
+					Element elFilterClass = getDocConfig().createElement("filterClass");
+					elFilterClass.setTextContent(filterClass);
+					el.appendChild(elFilterClass);
+					Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " filterClass.");
+
+					Transformer tr = TransformerFactory.newInstance().newTransformer();
+					tr.setOutputProperty(OutputKeys.INDENT, "yes");
+					tr.setOutputProperty(OutputKeys.METHOD, "xml");
+					tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+					// tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
+					tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+					// send DOM to file
+					tr.transform(new DOMSource(docConfig), new StreamResult(new FileOutputStream(configPathFileName)));
+					Logger.getLogger(this.getClass()).info("User " + loginName + " saved search with newName:" + newName + " to " + configPathFileName);
+
+					// check if it is localhost save it to development environment
+					final String ip = getThreadLocalRequest().getRemoteHost();
+					InetAddress addr = InetAddress.getByName(ip);
+					String hostName = addr.getHostName();
+					if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
+						File devConfig;
+						if (SystemUtils.IS_OS_LINUX) {
+							devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
+						} else {
+							devConfig = new File("c:\\git\\Dis\\Dis-server\\src\\main\\resources\\config.xml");
+						}
+						FileUtils.copyFile(new File(configPathFileName), devConfig);
+						Logger.getLogger(this.getClass()).info("Saved search to dev config file: " + devConfig.getAbsolutePath());
+					}
+
 				}
-
 			}
-
 		} catch (Throwable ex) {
 			ByteArrayOutputStream byteAOs = new ByteArrayOutputStream();
 			PrintWriter pw = new PrintWriter(byteAOs);

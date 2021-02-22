@@ -269,48 +269,6 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 	}
 
-	// private UserSettings getUserSettings(IDfSession userSess) {
-	// UserSettings us = null;
-	// try {
-	// IDfSysObject obj = (IDfSysObject) userSess
-	// .getObjectByQualification("dm_document where folder('/" +
-	// userSess.getLoginUserName() + "') and objectName='disUserSettings'");
-	//
-	// JacksonXmlModule xmlModule = new JacksonXmlModule();
-	// xmlModule.setDefaultUseWrapper(false);
-	// ObjectMapper objectMapper = new XmlMapper(xmlModule);
-	// objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-	//
-	// if (obj == null) {
-	// obj = (IDfSysObject) userSess.newObject("dm_document");
-	// obj.link(userSess.getLoginUserName());
-	//
-	// us = new UserSettings();
-	// us.explorerReturnResultCount = 100;
-	// us.searchReturnResultCount = 100;
-	//
-	// String xml = objectMapper.writeValueAsString(us);
-	//
-	// ByteArrayOutputStream baOs = new ByteArrayOutputStream();
-	// baOs.write(xml.getBytes());
-	// obj.setContent(baOs);
-	// obj.setContentType("xml");
-	// obj.save();
-	// }
-	//
-	// ByteArrayInputStream baIs = obj.getContent();
-	// us = objectMapper.readValue(baIs, UserSettings.class);
-	//
-	// } catch (Exception e) {
-	// ByteArrayOutputStream baOs = new ByteArrayOutputStream();
-	// e.printStackTrace(new java.io.PrintStream(baOs));
-	//
-	// Logger.getLogger(this.getClass()).error(baOs.toString());
-	//
-	// }
-	// return us;
-	// }
-
 	public static String queryLdap(String filter) throws NamingException {
 		String ret = null;
 		Hashtable env = new Hashtable();
@@ -418,6 +376,12 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			Unmarshaller m = context.createUnmarshaller();
 			Reader reader = new InputStreamReader(baIs);
 			us = (UserSettings) m.unmarshal(reader);
+			
+			if(us.auditTrailPerPageCount == 0)
+				us.auditTrailPerPageCount = 50;
+			
+			Logger.getLogger(this.getClass()).info("AuditTrailPerPage: " + us.auditTrailPerPageCount);
+			
 		} catch (Exception ex) {
 			throw new ServerException(ex.getMessage());
 		} finally {

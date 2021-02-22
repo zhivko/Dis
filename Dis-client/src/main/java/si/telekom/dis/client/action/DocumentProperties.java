@@ -15,13 +15,12 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 
-import si.telekom.dis.client.ExplorerPanel;
 import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MenuPanel;
-import si.telekom.dis.client.ParametrizedQueryPanel;
 import si.telekom.dis.client.WindowBox;
 import si.telekom.dis.client.item.FormAttribute;
 import si.telekom.dis.shared.Attribute;
+import si.telekom.dis.shared.AttributeValue;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
 import si.telekom.dis.shared.ProfileAttributesAndValues;
@@ -116,9 +115,8 @@ public class DocumentProperties extends WindowBox {
 		getOkButton().addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				List<String[]> values = getValues();
 				explorerService.setAttributes(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
-						r_object_id_, values, new AsyncCallback<Void>() {
+						r_object_id_, getValues(), new AsyncCallback<Void>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								MainPanel.log(caught.getMessage());
@@ -181,28 +179,32 @@ public class DocumentProperties extends WindowBox {
 	}
 
 	
-	public List<String[]> getValues()
+	public List<AttributeValue> getValues()
 	{
-		ArrayList<String[]> ret = new ArrayList<String[]>();
+		ArrayList<AttributeValue> ret = new ArrayList<AttributeValue>();
 		for (int i = 0; i < tpAtts.getTabBar().getTabCount(); i++) {
 			Grid g = (Grid) tpAtts.getWidget(i);
 			for (int j = 0; j < g.getRowCount(); j++)
 				for (int k = 0; k < g.getColumnCount(); k++) {
 					if (g.getWidget(j, k) != null) {
 						FormAttribute fa = (FormAttribute) g.getWidget(j, k);
-						String[] value = { fa.getAtribute().dcmtAttName, null };
+						
+						AttributeValue aval = new AttributeValue();
+						aval.setName(fa.getAtribute().dcmtAttName);
 						if (!fa.att.isRepeating)
-							value[1] = split(fa.getValue(), "|")[fa.att.dropDownCol];
-						else {
-							String allValues = "";
-							for (String val : fa.getValues()) {
-								allValues = allValues + split(val, "|")[fa.att.dropDownCol] + "¨";
-							}
-							if (allValues.endsWith("¨"))
-								allValues = allValues.substring(0, allValues.length() - 1);
-							value[1] = allValues;
+						{
+							ArrayList<String> al = new ArrayList<String>();
+							al.add(split(fa.getValue(), "|")[fa.att.dropDownCol]);
+							aval.setValues(al);
 						}
-						ret.add(value);
+						else {
+							ArrayList<String> al = new ArrayList<String>();
+							for (String val : fa.getValues()) {
+								al.add(split(val, "|")[fa.att.dropDownCol]);
+							}
+							aval.setValues(al);
+						}
+						ret.add(aval);
 					}
 				}
 		}
@@ -212,10 +214,10 @@ public class DocumentProperties extends WindowBox {
 	
 	public String getAttributeValue(String attName)
 	{
-		List<String[]> values = getValues();
-		for (String[] strings : values) {
-			if(strings[0].equals(attName))
-				return strings[1];
+		List<AttributeValue> values = getValues();
+		for (AttributeValue attValue : values) {
+			if(attValue.getName().equals(attName))
+				return attValue.getValues().get(0);
 		}
 		return null;
 	}

@@ -242,7 +242,6 @@ public class UploadServlet extends HttpServlet {
 									} else {
 										// checkin or addrendition action for existing document
 
-										Pattern p = Pattern.compile("^\\d+(\\.\\d+)+$");
 
 										String prevVersLabels = "";
 										IDfSysObject sysObj = (IDfSysObject) persObj;
@@ -264,6 +263,7 @@ public class UploadServlet extends HttpServlet {
 											}
 											baOs.flush();
 
+											Pattern p = Pattern.compile("^\\d+(\\.\\d+)+$");
 											String allVersions = sysObj.getAllRepeatingStrings("r_version_label", ",");
 											for (String ver : allVersions.split(",")) {
 												Matcher m = p.matcher(ver);

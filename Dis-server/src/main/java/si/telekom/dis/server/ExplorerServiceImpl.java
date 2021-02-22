@@ -30,9 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -139,6 +136,7 @@ import si.telekom.dis.server.reports.IIncludeInReport;
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.Attribute;
 import si.telekom.dis.shared.AttributeRoleStateWizards;
+import si.telekom.dis.shared.AttributeValue;
 import si.telekom.dis.shared.DcmtAttribute;
 import si.telekom.dis.shared.DocType;
 import si.telekom.dis.shared.Document;
@@ -468,6 +466,46 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			else
 				doc.format = "";
 
+			HashMap<String, List<String>> roleUsers = (HashMap<String, List<String>>) profileAndRolesOfUserAndState[4];
+
+			doc.roles = new ArrayList<Role>();
+			doc.roleMembers = new ArrayList<String>();
+			for (String roleId : roleUsers.keySet()) {
+				for (String roleMember : roleUsers.get(roleId)) {
+					doc.roles.add(prof.getRoleForId(roleId));
+					doc.roleMembers.add(roleMember);
+				}
+			}
+
+			doc.attributes = new HashMap<String, List<String>>();
+			ArrayList<Attribute> alAtts = new ArrayList<Attribute>();
+			for (int i = 0; i < persObj.getAttrCount(); i++) {
+				String attName = persObj.getAttr(i).getName();
+				if (!attName.equals("r_object_id")) {
+					ArrayList<String> values = new ArrayList<String>();
+					if (persObj.getAttr(i).isRepeating()) {
+						for (int j = 0; j < persObj.getValueCount(attName); j++) {
+							values.add(persObj.getRepeatingValue(attName, j).asString());
+						}
+						doc.attributes.put(attName, values);
+					} else {
+						values.add(persObj.getValue(attName).asString());
+					}
+					doc.attributes.put(attName, values);
+				}
+			}
+
+			ArrayList<String> formats = new ArrayList<String>();
+			IDfCollection collection = ((IDfSysObject) persObj).getRenditions("full_format");
+			while (collection.next()) {
+				// Spin through each attribute.
+				for (int i = 0; i < collection.getAttrCount(); i++) {
+					formats.add(collection.getString("full_format"));
+				}
+			}
+			collection.close();
+			doc.formats = formats;
+
 			doc.details = new ArrayList<String>();
 			if (prof != null)
 				if (prof.detailAttributes != null)
@@ -774,7 +812,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						boolean isMember = AdminServiceImpl.getInstance().isMember(forUserOrGroup, userGroupNames);
 						long t5 = System.currentTimeMillis();
 						if (t5 - t4 > 1000) {
-							String msg = "Warning: ldap query: " + ldapQuery + " took "+(t5-t4)+"ms.";
+							String msg = "Warning: ldap query: " + ldapQuery + " took " + (t5 - t4) + "ms.";
 							WsServer.log(userSession.getLoginUserName(), msg);
 							Logger.getLogger(this.getClass()).warn(msg);
 						}
@@ -1380,7 +1418,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	}
 
 	@Override
-	public Void setAttributes(String loginName, String password, String r_object_id, List<String[]> values) throws ServerException {
+	public Void setAttributes(String loginName, String password, String r_object_id, List<AttributeValue> values) throws ServerException {
 		Logger.getLogger(this.getClass()).info("SetAttribute started.");
 		IDfSession userSession = null;
 		IDfCollection collection = null;
@@ -1424,13 +1462,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			if (arsw != null) {
 				Logger.getLogger(this.getClass()).info("\tr_object_id=" + r_object_id + " object_name=" + ((IDfSysObject) (persObject)).getObjectName());
 
-				for (String[] value : values) {
-					String attName = value[0];
+				for (AttributeValue attrVal : values) {
+					String attName = attrVal.getName();
 					DcmtAttribute attr = AdminServiceImpl.getInstance().findAttribute(dfDocument.getType().getName(), attName);
 					Attribute att = AdminServiceImpl.getAttFromAttributeRoleStateWizards(arsw, attName);
 					if (!att.isReadOnly) {
 						if (!attr.attr_repeating) {
-							String attValue = value[1];
+							String attValue = attrVal.getValues().get(0);
 							Logger.getLogger(this.getClass()).info("\t" + attName + " = '" + attValue + "'");
 							// 0,Boolean
 							// 1,Integer
@@ -1460,10 +1498,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							} else if (attr.domain_type.equals("5"))
 								dfDocument.setDouble(attName, Double.valueOf(attValue));
 						} else {
-							String[] allValues = value[1].split("¨");
 							int i = 0;
-							if (value[1].length() > 0) {
-								for (String valueFromValues : allValues) {
+							if (attrVal.getValues().size() > 0) {
+								for (String valueFromValues : attrVal.getValues()) {
 									Logger.getLogger(this.getClass()).info("\t" + attName + "[" + i + "] = '" + valueFromValues + "'");
 
 									if (attr.domain_type.equals("0"))
@@ -2029,7 +2066,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			URL url;
 			url = new URL(strUrl);
-			
 
 			String stUrl = URLEncoder.encode(strUrl, StandardCharsets.UTF_8.toString());
 
@@ -2052,8 +2088,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
 				conn = (HttpsURLConnection) url.openConnection();
-				((HttpsURLConnection)conn).setHostnameVerifier(new HostnameVerifier() {
-					
+				((HttpsURLConnection) conn).setHostnameVerifier(new HostnameVerifier() {
+
 					@Override
 					public boolean verify(String hostname, SSLSession session) {
 						// TODO Auto-generated method stub
@@ -2670,6 +2706,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// + " (select i_chronicle_id from dm_document where r_object_id = '" +
 			// orig_r_object_id + "'))) ENABLE(RETURN_RANGE " + start + " " + end
 			// + " 'time_stamp_utc DESC, audited_obj_id DESC')";
+
+			start = start + 1;
+			end = end + 1;
+
 			String dql;
 			if (eventFilter == null || eventFilter.equals("")) {
 				dql = "select r_object_id, audited_obj_id, time_stamp, time_stamp_utc, event_name, event_description, user_name, string_1,string_2,attribute_list,attribute_list_old from dm_audittrail_Mobitel_all where (audited_obj_id in (select r_object_id from dm_document(all) where i_chronicle_id in "
@@ -2708,6 +2748,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				// .info("added audit trail row for audited_obj_id: " +
 				// collection.getValue("audited_obj_id").asString());
 			}
+			WsServer.log(loginName, "audittrail records returned: " + ret.size());
 			Logger.getLogger(this.getClass()).info("rows: " + ret.size());
 		} catch (Exception ex) {
 			// ex.printStackTrace();
@@ -2926,6 +2967,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// DocType docType = AdminServiceImpl.doctypes.get(prof.objType);
 
 			HashMap<String, Attribute> wizardAttributes = AdminServiceImpl.getInstance().getWizardAttributes(prof, "import");
+			if (wizardAttributes == null)
+				throw new Exception("No import wizard defined");
 
 			for (String attName : attributes.keySet()) {
 				Logger.getLogger(this.getClass()).info("Updating attribute: " + attName);
@@ -2945,10 +2988,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					if (values.size() > 1) {
 						int i = 0;
 						for (String value : values) {
-							if (!value.equals("")) {
-								IDfValue val = new DfValue(value);
+							if (att.getType().equals("dropdown")) {
+								IDfValue val = new DfValue(value.split("¨")[att.dropDownCol]);
 								persObject.setRepeatingValue(attName, i, val);
+							} else {
+								IDfValue val = new DfValue(value);
+								persObject.setValue(attName, val);
 							}
+							i++;
 						}
 					} else if (values.size() == 1) {
 
@@ -2960,8 +3007,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								IDfTime time = new DfTime(cal.getTime());
 								persObject.setTime(attName, time);
 							} else {
-								IDfValue val = new DfValue(values.get(0).split("\\|")[0]);
-								persObject.setValue(attName, val);
+								if (att.getType().equals("dropdown")) {
+									IDfValue val = new DfValue(values.get(0).split("¨")[att.dropDownCol]);
+									persObject.setValue(attName, val);
+								} else {
+									IDfValue val = new DfValue(values.get(0));
+									persObject.setValue(attName, val);
+								}
 							}
 
 						}
@@ -3283,6 +3335,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	@Override
 	public List<Document> runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length)
 			throws ServerException {
+		dql = dql.replaceAll("\n", "");
 		Logger.getLogger(this.getClass()).info("runSearchQuery for " + loginName + " for: " + dql);
 
 		ArrayList<Document> ret = new ArrayList<Document>();
