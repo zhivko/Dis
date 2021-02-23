@@ -383,7 +383,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 		});
 		t1.setName("SyncGroups");
-		//t1.start();
+		t1.start();
 
 		if (MOVE_TO_EFFECTIVE_JOB_ENABLED) {
 			Logger.getLogger(AdminServiceImpl.class).info("Starting MOVE_TO_EFFECTIVE_JOB");

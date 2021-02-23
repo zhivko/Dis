@@ -32,7 +32,7 @@ import org.junit.Test;
 import com.google.common.io.ByteSource;
 
 public class RestTest extends JerseyTest {
-	Server server = null;
+	HttpServer server = null;
 
 	@Before
 	public void setUp() throws Exception {
@@ -60,7 +60,7 @@ public class RestTest extends JerseyTest {
 		initParams.put("DocumentsApi.implementation", "si.telekom.dis.server.rest.DisRest");
 
 		// Make sure to end the URI with a forward slash
-		HttpServer server = GrizzlyWebContainerFactory.create("http://localhost:8080/", initParams);
+		server = GrizzlyWebContainerFactory.create("http://localhost:8080/", initParams);
 		//AdminServiceImpl.getInstance();
 
 		while (!AdminServiceImpl.started)
@@ -81,7 +81,12 @@ public class RestTest extends JerseyTest {
 
 	@After
 	public void after() {
-		System.out.println("after...");
+		try {
+			server.shutdown();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Test

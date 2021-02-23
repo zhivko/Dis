@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -164,7 +165,7 @@ public class DisRest extends DocumentsApiService {
 //@formatter:off
 		si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().newDocument(
 				user.getId(), 
-				Base64.encodeBase64String(user.getPassword().getBytes()),
+				user.getPaswordBase64Encoded(),
 				newDocumentRequest.getProfileId(), 
 				attributes_, 
 				roles_, 
@@ -200,7 +201,7 @@ public class DisRest extends DocumentsApiService {
 //@formatter:off
 		si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().importDocument(
 				user.getId(), 
-				Base64.encodeBase64String(user.getPassword().getBytes()),
+				user.getPaswordBase64Encoded(),
 				"",
 				importDocumentRequest.getProfileId(), 
 				importDocumentRequest.getStateId(), 
@@ -223,7 +224,8 @@ public class DisRest extends DocumentsApiService {
 		try {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
-			String password = Base64.encodeBase64String(user.getPassword().getBytes());
+			String password = user.getPaswordBase64Encoded();
+
 
 			si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().demote(loginName, password, rObjectId);
 			Document doc1 = getRestDocFromSharedDoc(doc);
@@ -242,7 +244,8 @@ public class DisRest extends DocumentsApiService {
 		try {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
-			String password = Base64.encodeBase64String(user.getPassword().getBytes());
+			String password = user.getPaswordBase64Encoded();
+
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			userSession = AdminServiceImpl.getSession(loginName, password);
@@ -261,7 +264,7 @@ public class DisRest extends DocumentsApiService {
 				try (ObjectOutputStream objectStream = new ObjectOutputStream(binaryOutput)) {
 					objectStream.writeObject(bacontentStreamIs);
 				}
-				byte[] content = Base64.encodeBase64(binaryOutput.toByteArray());
+				byte[] content = Base64.getEncoder().encode(binaryOutput.toByteArray());
 
 				return Response.ok(content).build();
 			}
@@ -280,7 +283,8 @@ public class DisRest extends DocumentsApiService {
 		try {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
-			String password = Base64.encodeBase64String(user.getPassword().getBytes());
+			String password = user.getPaswordBase64Encoded();
+
 
 			si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().promote(loginName, password, rObjectId);
 			Document doc1 = getRestDocFromSharedDoc(doc);
@@ -300,7 +304,8 @@ public class DisRest extends DocumentsApiService {
 		try {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
-			String password = Base64.encodeBase64String(user.getPassword().getBytes());
+			String password = user.getPaswordBase64Encoded();
+
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
@@ -381,7 +386,8 @@ public class DisRest extends DocumentsApiService {
 		try {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
-			String password = Base64.encodeBase64String(user.getPassword().getBytes());
+			String password = user.getPaswordBase64Encoded();
+
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
@@ -397,7 +403,7 @@ public class DisRest extends DocumentsApiService {
 																																									// if
 																																									// your
 					ByteArrayOutputStream baOs = new ByteArrayOutputStream();
-					baOs.write(Base64.decodeBase64(updateDocumentRequest.getContent().getData()));
+					baOs.write(Base64.getDecoder().decode(updateDocumentRequest.getContent().getData()));
 					sysObj.setContentEx(baOs, updateDocumentRequest.getContent().getFormat(), 0);
 					sysObj.setContentType(updateDocumentRequest.getContent().getFormat());
 				}
