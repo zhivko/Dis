@@ -88,7 +88,7 @@ public class RestTest extends JerseyTest {
 	public void tesFetchAll() {
 		// http://localhost:8080/Dis-server/api/documents/query?dql=select * from
 		// dm_cabinet
-		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("zivkovick", "Doitman890123");
+		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
 		// HttpAuthenticationFeature feature =
 		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
 
