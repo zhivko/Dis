@@ -1942,10 +1942,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			sessMgr.clearIdentities();
 			sessMgr.setIdentity(AdminServiceImpl.repositoryName, loginInfo);
 			Logger.getLogger(AdminServiceImpl.class).info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\"
-					+ AdminServiceImpl.superUserName + " pass: " + AdminServiceImpl.superUserPassword + "...");
+					+ AdminServiceImpl.superUserName + "...");
 			userSession = sessMgr.getSession(AdminServiceImpl.repositoryName);
 			Logger.getLogger(AdminServiceImpl.class).info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\"
-					+ AdminServiceImpl.superUserName + " pass: " + AdminServiceImpl.superUserPassword + " ... Done");
+					+ AdminServiceImpl.superUserName + " ... Done");
 		}
 
 		return userSession;
