@@ -112,6 +112,7 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 			User us = new User();
 			us.setId(username);
 			us.setPassword(password);
+			us.setPaswordBase64Encoded(Base64.getEncoder().encodeToString(password.getBytes()));
 
 			requestContext.setSecurityContext(new MyApplicationSecurityContext(us, scheme));
 

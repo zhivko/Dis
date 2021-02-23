@@ -85,7 +85,7 @@ public class RestTest extends JerseyTest {
 	}
 
 	@Test
-	public void tesFetchAll() {
+	public void testDocumentsQuery() {
 		// http://localhost:8080/Dis-server/api/documents/query?dql=select * from
 		// dm_cabinet
 		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
@@ -100,14 +100,8 @@ public class RestTest extends JerseyTest {
 
 		Response response = client.target("http://localhost:8080/documents/query").queryParam("dql", "select * from dm_cabinet").request().get();
 		String responseTxt = response.readEntity(String.class);
-
-		System.out.println("--- test ----");
-
-		System.out.println(responseTxt);
-
+		//System.out.println(responseTxt);
 		assertEquals("should return status 200", 200, response.getStatus());
 		assertNotNull("Should return user list", response.getEntity().toString());
-		System.out.println(response.getStatus());
-		System.out.println(response.readEntity(String.class));
 	}
 }

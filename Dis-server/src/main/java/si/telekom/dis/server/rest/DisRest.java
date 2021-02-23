@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
 import com.documentum.fc.client.DfQuery;
@@ -73,7 +72,7 @@ public class DisRest extends DocumentsApiService {
 		try {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
-			String password = user.getPassword();
+			String password = user.getPaswordBase64Encoded();
 
 			QueryDocumentsResponse docResp = new QueryDocumentsResponse();
 

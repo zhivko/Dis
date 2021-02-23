@@ -4,8 +4,16 @@ import java.security.Principal;
 import java.util.List;
 
 public class User implements Principal {
-  private String id, firstName, lastName, login, email, password;
-  private List<String> role;
+  private String id, firstName, lastName, login, email, password, paswordBase64Encoded;
+  
+  public String getPaswordBase64Encoded() {
+		return paswordBase64Encoded;
+	}
+	public void setPaswordBase64Encoded(String paswordBase64Encoded) {
+		this.paswordBase64Encoded = paswordBase64Encoded;
+	}
+
+	private List<String> role;
 
   public void setId(String id) {this.id = id;}
   public String getId() {return this.id;}
@@ -26,4 +34,5 @@ public class User implements Principal {
   public String getName() {
       return this.firstName + " " + this.lastName;
   }
+  
 }
