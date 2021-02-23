@@ -5,6 +5,7 @@ import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -16,7 +17,9 @@ public final class WebAppListener implements ServletContextAttributeListener, Se
 	/**
 	 * The servlet context with which we are associated.
 	 */
+	@Context
 	private ServletContext context = null;
+	
 
 	/**
 	 * Record the fact that this web application has been destroyed.
@@ -59,6 +62,10 @@ public final class WebAppListener implements ServletContextAttributeListener, Se
 	public void contextInitialized(ServletContextEvent event) {
 		Logger.getLogger(this.getClass()).info("contextInitialized");
 		this.context = event.getServletContext();
+		
+		AdminServiceImpl.readStartupParamFromServletContext(context);
+		
+		
 		try {
 			WebappContext.init(event.getServletContext());
 			SLF4JBridgeHandler.install();

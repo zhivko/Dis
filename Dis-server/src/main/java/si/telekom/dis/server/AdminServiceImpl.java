@@ -57,6 +57,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -154,6 +156,8 @@ import si.telekom.dis.shared.UserGroup;
 @RemoteServiceRelativePath("admin")
 public class AdminServiceImpl extends RemoteServiceServlet implements AdminService {
 	static public IDfSessionManager sessMgr = null;
+	
+	public static boolean started = false;
 	private static DfClientX myDctmClientX;
 
 	public static String superUserName = "dmadmin";
@@ -196,26 +200,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public static HashMap<String, IDfGroup> allGroups = new HashMap<String, IDfGroup>();
 
 	static {
-
-		ServletContext servletContext = WebappContext.getServletContext();
-
-		AdminServiceImpl.BARCODE_SQL_SERVER_DB_NAME = servletContext.getInitParameter("barcode.database");
-		AdminServiceImpl.BARCODE_SQL_SERVER_HOST = servletContext.getInitParameter("barcode.sqlHost");
-		AdminServiceImpl.BARCODE_SQL_SERVER_PORT = servletContext.getInitParameter("barcode.sqlPort");
-		AdminServiceImpl.BARCODE_USER = servletContext.getInitParameter("barcode.user");
-		AdminServiceImpl.BARCODE_PASSWORD = servletContext.getInitParameter("barcode.password");
-
-		AdminServiceImpl.MOVE_TO_EFFECTIVE_JOB_ENABLED = Boolean.valueOf(servletContext.getInitParameter("MOVE_TO_EFFECTIVE_JOB_ENABLED"));
-
-		AdminServiceImpl.repositoryName = servletContext.getInitParameter("documentum.docbaseName");
-		AdminServiceImpl.superUserName = servletContext.getInitParameter("documentum.superUserLogin");
-		AdminServiceImpl.superUserPassword = servletContext.getInitParameter("documentum.superUserPassword");
-		AdminServiceImpl.userDomain = servletContext.getInitParameter("documentum.userDomain");
-		AdminServiceImpl.superUserDomain = servletContext.getInitParameter("documentum.superUserDomain");
-
-		AdminServiceImpl.retentionAddUnit = servletContext.getInitParameter("retention.addUnit");
-
-		AdminServiceImpl.configPath = servletContext.getInitParameter("configPath");
 
 		Thread t = new Thread(new Runnable() {
 
@@ -363,6 +347,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				long timeMs2 = System.currentTimeMillis();
 				Logger.getLogger(AdminServiceImpl.class).info("Started in: " + Math.round(((timeMs2 - timeMs1) / 1000)) + "s.");
 
+				started=true;
 				// MassClassify();
 				// checkPermForUser();
 
@@ -398,7 +383,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 		});
 		t1.setName("SyncGroups");
-		t1.start();
+		//t1.start();
 
 		if (MOVE_TO_EFFECTIVE_JOB_ENABLED) {
 			Logger.getLogger(AdminServiceImpl.class).info("Starting MOVE_TO_EFFECTIVE_JOB");
@@ -418,6 +403,40 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 		}
 		return directoryToBeDeleted.delete();
+	}
+
+	public static void readStartupParamFromServletContext(ServletContext context) {
+
+		try {
+			// String classPath =
+			// AdminServiceImpl.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+			// classPath = classPath.replace("classes", "");
+			// String webxml = classPath + "web.xml";
+
+			Context env = (Context) new InitialContext().lookup("java:comp/env");
+
+			// ServletContext servletContext = WebappContext.getServletContext();
+			AdminServiceImpl.BARCODE_SQL_SERVER_DB_NAME = context.getInitParameter("barcode.database");
+			AdminServiceImpl.BARCODE_SQL_SERVER_HOST = context.getInitParameter("barcode.sqlHost");
+			AdminServiceImpl.BARCODE_SQL_SERVER_PORT = context.getInitParameter("barcode.sqlPort");
+			AdminServiceImpl.BARCODE_USER = context.getInitParameter("barcode.user");
+			AdminServiceImpl.BARCODE_PASSWORD = context.getInitParameter("barcode.password");
+
+			AdminServiceImpl.MOVE_TO_EFFECTIVE_JOB_ENABLED = Boolean.valueOf(context.getInitParameter("MOVE_TO_EFFECTIVE_JOB_ENABLED"));
+
+			AdminServiceImpl.repositoryName = context.getInitParameter("documentum.docbaseName");
+			AdminServiceImpl.superUserName = context.getInitParameter("documentum.superUserLogin");
+			AdminServiceImpl.superUserPassword = context.getInitParameter("documentum.superUserPassword");
+			AdminServiceImpl.userDomain = context.getInitParameter("documentum.userDomain");
+			AdminServiceImpl.superUserDomain = context.getInitParameter("documentum.superUserDomain");
+
+			AdminServiceImpl.retentionAddUnit = context.getInitParameter("retention.addUnit");
+
+			AdminServiceImpl.configPath = context.getInitParameter("configPath");
+		} catch (Throwable ex) {
+			System.out.println(ex.getMessage());
+			System.exit(-1);
+		}
 	}
 
 	protected static void checkEcsStore(String ecsstoreDisName, boolean requiresRetentionDate) {
@@ -1465,7 +1484,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		ret = folderExist(folderPath);
 		if (ret == null) {
-			IDfSession dfSuperUserSession = getSuperUserSession(repositoryName);
+			IDfSession dfSuperUserSession = getAdminSession();
 			String[] folderTokens = folderPath.split("/");
 			String tempPath = "";
 			for (String token : folderTokens) {
@@ -1537,36 +1556,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return ret;
 	}
 
-	public static IDfSession getSuperUserSession(String docbaseName) throws Exception {
-
-		IDfSession sess = null;
-		// if (superUserSession == null || !superUserSession.isConnected()) {
-		getSessionManager();
-		synchronized (sessMgr) {
-			sessMgr.clearIdentities();
-
-			IDfLoginInfo loginInfo = new DfLoginInfo();
-			loginInfo.setUser(superUserName);
-			loginInfo.setPassword(superUserPassword);
-			loginInfo.setDomain(superUserDomain);
-
-			sessMgr.setIdentity(docbaseName, loginInfo);
-
-			Logger.getLogger(AdminServiceImpl.class)
-					.info("getSuperUserSession for docbase: " + docbaseName + " for user " + superUserDomain + "\\" + superUserName);
-			sess = sessMgr.getSession(docbaseName);
-		}
-		// }
-		return sess;
-	}
-
 	public static void registerTables() {
 		IDfQuery query = new DfQuery();
 
 		IDfSession dfSuperUserSession = null;
 		IDfCollection collection = null;
 		try {
-			dfSuperUserSession = getSuperUserSession(repositoryName);
+			dfSuperUserSession = getAdminSession();
 
 			Logger.getLogger(AdminServiceImpl.class).info("Setting permission start.");
 
@@ -1644,7 +1640,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		IDfCollection collection = null;
 		try {
 			// enumerate doctypes and store them into hashmap
-			dfSuperUserSession = getSuperUserSession(repositoryName);
+			dfSuperUserSession = getAdminSession();
 			String additionalDoctypes_1 = "ipko_%";
 			String additionalDoctypes_2 = "ts_%";
 
@@ -1781,7 +1777,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		IDfCollection collection = null;
 
 		try {
-			dfSuperUserSession = getSuperUserSession(repositoryName);
+			dfSuperUserSession = getAdminSession();
 
 			IDfQuery query = new DfQuery();
 			query.setDQL(dql);
@@ -1899,18 +1895,20 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		getSessionManager();
 
 		// String password = Tools.decryptString(passwordEncrypted);
-		String password = new String(Base64Utils.fromBase64(passwordEncrypted), Charset.forName("UTF-8"));
+		String password = new String(Base64Utils.fromBase64(passwordEncrypted));
 
 		IDfSession userSession = null;
 		synchronized (sessMgr) {
 			IDfLoginInfo loginInfo = new DfLoginInfo();
 			loginInfo.setUser(loginName);
-			if (loginName.equals(AdminServiceImpl.superUserName))
+			if (loginName.equals(AdminServiceImpl.superUserName)) {
 				loginInfo.setDomain(AdminServiceImpl.superUserDomain);
-			else
+				System.out.println("Password equals? " + password.equals(AdminServiceImpl.superUserPassword));
+			} else
 				loginInfo.setDomain(AdminServiceImpl.userDomain);
 
 			loginInfo.setPassword(password);
+			loginInfo.setForceAuthentication(false);
 
 			sessMgr.clearIdentities();
 			sessMgr.setIdentity(AdminServiceImpl.repositoryName, loginInfo);
@@ -1940,9 +1938,14 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			loginInfo.setUser(AdminServiceImpl.superUserName);
 			loginInfo.setDomain(AdminServiceImpl.superUserDomain);
 			loginInfo.setPassword(AdminServiceImpl.superUserPassword);
+			loginInfo.setForceAuthentication(false);
 			sessMgr.clearIdentities();
 			sessMgr.setIdentity(AdminServiceImpl.repositoryName, loginInfo);
+			Logger.getLogger(AdminServiceImpl.class).info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\"
+					+ AdminServiceImpl.superUserName + " pass: " + AdminServiceImpl.superUserPassword + "...");
 			userSession = sessMgr.getSession(AdminServiceImpl.repositoryName);
+			Logger.getLogger(AdminServiceImpl.class).info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\"
+					+ AdminServiceImpl.superUserName + " pass: " + AdminServiceImpl.superUserPassword + " ... Done");
 		}
 
 		return userSession;
@@ -2562,7 +2565,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		IDfSession dfSuperUserSession = null;
 		IDfCollection collection = null;
 		try {
-			dfSuperUserSession = getSuperUserSession(repositoryName);
+			dfSuperUserSession = getAdminSession();
 
 			Logger.getLogger(AdminServiceImpl.class).info("registerTable start - user: " + loginName + " table " + tableName);
 
@@ -2763,7 +2766,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		IDfSession dfSuperUserSession = null;
 		IDfCollection collection = null;
 		try {
-			dfSuperUserSession = getSuperUserSession(repositoryName);
+			dfSuperUserSession = getAdminSession();
 			query.setDQL(
 					"select object_name from dm_registered where object_name like '%T_DOC%' or object_name like 'T_DCTME_%' or object_name = 'mob_sppserviceaction' or object_name like 'T_CLASSIFICATION%'");
 			collection = query.execute(dfSuperUserSession, IDfQuery.DF_READ_QUERY);
@@ -3752,7 +3755,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			userSess = sessionMgr.getSession(AdminServiceImpl.repositoryName);
 
-			userSess = getSuperUserSession(repositoryName);
+			userSess = getAdminSession();
 
 			IDfQuery query = new DfQuery();
 			query.setDQL(dql);
@@ -4009,7 +4012,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		try {
 
-			dfSuperUserSession = getSuperUserSession(docbaseName);
+			dfSuperUserSession = getAdminSession();
 
 			ticket = dfSuperUserSession.getLoginTicketEx(userDomain + "\\" + userLoginName, "docbase", 0, false, null);
 

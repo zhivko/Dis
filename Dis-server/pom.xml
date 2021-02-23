@@ -349,12 +349,7 @@
 			<version>${logback-version}</version>
 			<scope>compile</scope>
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit-version}</version>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
@@ -439,16 +434,43 @@
 			<version>${jersey2-version}</version>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.test-framework.providers</groupId>
+			<artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+			<version>${jersey2-version}</version>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.13.2</version>
+			<version>${junit-version}</version>
 			<scope>test</scope>
 		</dependency>
+
 
 	</dependencies>
 
 	<build>
+
+
+		<testOutputDirectory>${basedir}/target/tests</testOutputDirectory>
+		<testResources>
+			<testResource>
+				<directory>${basedir}/src/main/resources</directory>
+				<targetPath>${basedir}/target/tests</targetPath>
+				<filtering>true</filtering>
+				<includes>
+					<include>dfc.properties</include>
+					<include>log4j.properties</include>
+					<include>logging.properties</include>
+					<include>config.xml</include>
+					<include>profile-template.xml</include>
+				</includes>
+			</testResource>
+		</testResources>
+
 		<resources>
 			<resource>
 				<directory>${basedir}/src/main/webapp</directory>
@@ -473,7 +495,13 @@
 		</resources>
 
 		<plugins>
-
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>-Djava.security.egd=file:/dev/./urandom</argLine>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>2.6.1</version>

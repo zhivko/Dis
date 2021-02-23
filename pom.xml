@@ -25,17 +25,17 @@
 			</snapshots>
 		</repository>
 
-<!-- 		<repository> -->
-<!-- 			<id>for proxool</id> -->
-<!-- 			<url>https://oss.sonatype.org/content/repositories/releases</url> -->
-<!-- 			<layout>default</layout> -->
-<!-- 			<releases> -->
-<!-- 				<enabled>true</enabled> -->
-<!-- 			</releases> -->
-<!-- 			<snapshots> -->
-<!-- 				<enabled>true</enabled> -->
-<!-- 			</snapshots> -->
-<!-- 		</repository> -->
+		<!-- <repository> -->
+		<!-- <id>for proxool</id> -->
+		<!-- <url>https://oss.sonatype.org/content/repositories/releases</url> -->
+		<!-- <layout>default</layout> -->
+		<!-- <releases> -->
+		<!-- <enabled>true</enabled> -->
+		<!-- </releases> -->
+		<!-- <snapshots> -->
+		<!-- <enabled>true</enabled> -->
+		<!-- </snapshots> -->
+		<!-- </repository> -->
 
 
 
@@ -59,6 +59,7 @@
 	</dependencyManagement>
 
 	<build>
+
 		<plugins>
 			<plugin>
 				<groupId>net.ltgt.gwt.maven</groupId>
@@ -68,7 +69,6 @@
 					<launcherDir>${project.build.directory}/gwt/launcherDir</launcherDir>
 				</configuration>
 			</plugin>
-
 		</plugins>
 		<pluginManagement>
 			<plugins>

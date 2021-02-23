@@ -1,6 +1,7 @@
 package si.telekom.dis.server.restCommon;
 
 import java.lang.reflect.Method;
+import java.util.Base64;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -18,7 +19,6 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
 
-import jcifs.util.Base64;
 import si.telekom.dis.server.LoginServiceImpl;
 
 /**
@@ -79,7 +79,7 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 			final String encodedUserPassword = authorization.get(0).replaceFirst(AUTHENTICATION_SCHEME + " ", "");
 
 			// Decode username and password
-			String usernameAndPassword = new String(Base64.decode(encodedUserPassword));
+			String usernameAndPassword = new String(Base64.getDecoder().decode(encodedUserPassword.getBytes()));
 
 			// Split username and password tokens
 			final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
@@ -118,7 +118,7 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 		}
 	}
 
-	private boolean isUserAllowed(final String username, final String password) {
+	private boolean isUserAllowed(final String username, String password) {
 		boolean isAllowed = false;
 
 		try {

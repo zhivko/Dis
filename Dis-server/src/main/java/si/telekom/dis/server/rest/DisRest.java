@@ -73,7 +73,7 @@ public class DisRest extends DocumentsApiService {
 		try {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
-			String password = Base64.encodeBase64String(user.getPassword().getBytes());
+			String password = user.getPassword();
 
 			QueryDocumentsResponse docResp = new QueryDocumentsResponse();
 
@@ -125,6 +125,7 @@ public class DisRest extends DocumentsApiService {
 					}
 					doc1.setAttributes(alAtts);
 					docResp.addDocumentsItem(doc1);
+					Logger.getLogger(this.getClass()).info("Added 1 object (object_name: "+doc.object_name+") to result.");
 				}
 			}
 			return Response.ok(docResp).build();

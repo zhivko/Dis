@@ -20,30 +20,14 @@ public class WebappContext {
 
 	public static final String KEY = WebappContext.class.getName();
 
+	
+	@javax.ws.rs.core.Context
 	public static ServletContext servletContext;
 	
 
 	public WebappContext(ServletContext servletContext) throws Exception {
 
 		try {
-			
-			try {
-//				<!-- 				<documentum.docbaseName>Mobitel</documentum.docbaseName> -->
-//				<!-- 				<documentum.superUserLogin>dmadmin</documentum.superUserLogin> -->
-//				<!-- 				<documentum.superUserPassword>tb25me81</documentum.superUserPassword> -->
-//				<!-- 				<documentum.superUserDomain></documentum.superUserDomain> -->
-//				<!-- 				<documentum.globalRepositoryPassword></documentum.globalRepositoryPassword> -->
-//
-//				<!-- 				<barcode.user></barcode.user> -->
-//				<!-- 				<barcode.password></barcode.password> -->
-//				<!-- 				<barcode.database></barcode.database> -->
-//				<!-- 				<barcode.sqlHost></barcode.sqlHost> -->
-//				<!-- 				<barcode.sqlPort></barcode.sqlPort> -->
-				Class.forName("si.telekom.dis.server.AdminServiceImpl");
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}			
 			
 			Locale.setDefault(new Locale("sl", "SI"));
 			System.setProperty("javax.xml.xpath.XPathFactory:" + NamespaceConstant.OBJECT_MODEL_SAXON,
@@ -78,7 +62,8 @@ public class WebappContext {
 	protected static void init(ServletContext servletContext) throws Exception {
 		WebappContext.servletContext = servletContext;
 		WebappContext instance = new WebappContext(servletContext);
-		// instance.setConfigurationClasses(com.google.gwt.dev.shell.jetty.JettyLauncher.DEFAULT_CONFIG_CLASSES);
+	
+		
 		servletContext.setAttribute(KEY, instance);
 
 	}

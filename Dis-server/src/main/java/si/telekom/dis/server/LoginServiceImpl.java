@@ -10,6 +10,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -33,7 +34,7 @@ import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.client.IDfUser;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import com.google.gwt.user.server.Base64Utils;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import si.telekom.dis.shared.LoginService;
@@ -96,11 +97,11 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		}
 	}
 
-	public String[] checkPassword(String loginName, String passwordHashed) throws Exception {
-		return checkPassword(loginName, passwordHashed, null);
+	public String[] checkPassword(String loginName, String password) throws Exception {
+		return checkPassword(loginName, password, null);
 	}
 
-	public String[] checkPassword(String loginName, String passwordHashed, String ip) throws Exception {
+	public String[] checkPassword(String loginName, String password, String ip) throws Exception {
 		String ret[] = { "", "", "", "", "", "" };
 
 		IDfSession adminSession = null;
@@ -109,26 +110,27 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		try (final DatagramSocket socket = new DatagramSocket()) {
 
 			if (ip == null)
-				ip = getThreadLocalRequest().getRemoteHost();
+				if (getThreadLocalRequest() != null)
+					ip = getThreadLocalRequest().getRemoteHost();
 
 			InetAddress addr = InetAddress.getByName(ip);
 			String hostName = addr.getHostName();
 
 			boolean tryDevelop = true;
-			if (tryDevelop && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
+			if (tryDevelop && password.equals("") && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 5000;
 				ret[0] = "zivkovick";
-				ret[1] = Base64Utils.toBase64("sdfs".getBytes());
+				ret[1] = Base64.getEncoder().encodeToString("sdfs".getBytes());
 				ret[2] = "administrator";
 				ret[3] = "ZivkovicK";
-				ret[4] = AdminServiceImpl.repositoryName;
+				ret[4] = AdminServiceImpl.getInstance().repositoryName;
 
 				ret[0] = "dmadmin";
-				ret[1] = Base64Utils.toBase64("tb25me81".getBytes());
+				ret[1] = Base64.getEncoder().encodeToString("tb25me81".getBytes());
 				ret[2] = "administrator";
 				ret[3] = "dmadmin";
-				ret[4] = AdminServiceImpl.repositoryName;
+				ret[4] = AdminServiceImpl.getInstance().repositoryName;
 
 				loginName = "e-kalapcievv";
 				loginName = "alzupan";
@@ -138,17 +140,16 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 				loginName = "ttaks";
 				loginName = "zivkovick";
-				//loginName = "ikovacic";
+				// loginName = "ikovacic";
 
 				ret[0] = loginName;
 				adminSession = AdminServiceImpl.getInstance().getAdminSession();
 				IDfUser dcmtUser = (IDfUser) adminSession.getObjectByQualification("dm_user where user_login_name='" + loginName + "'");
 
 				if (loginName.contentEquals("zivkovick"))
-					ret[1] = Base64Utils.toBase64("Doitman890123".getBytes());
+					ret[1] = Base64.getEncoder().encodeToString("Doitman890123".getBytes());
 				else
-					ret[1] = Base64Utils.toBase64(
-							AdminServiceImpl.getInstance().getAdminSession().getLoginTicketForUser(AdminServiceImpl.userDomain + "\\" + ret[0]).getBytes());
+					ret[1] = Base64.getEncoder().encodeToString(AdminServiceImpl.getInstance().getAdminSession().getLoginTicketForUser(AdminServiceImpl.userDomain + "\\" + ret[0]).getBytes());
 
 				if (admins.contains(loginName))
 					ret[2] = "administrator";
@@ -166,8 +167,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				return ret;
 			}
 
-			byte[] fromBase64 = Base64Utils.fromBase64(passwordHashed);
-			String password = new String(fromBase64, Charset.forName("UTF-8"));
+			//byte[] fromBase64 = Base64.getDecoder().decode(password);
+			//String password = new String(fromBase64);
 			// String password = Tools.decryptString(passwordHashed);
 
 			if (password.equals(""))
@@ -176,7 +177,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			boolean ldapCheck = false;
 
 			if (!ldapCheck) {
-				userSess = AdminServiceImpl.getSession(loginName, passwordHashed);
+				userSess = AdminServiceImpl.getSession(loginName, Base64.getEncoder().encodeToString(password.getBytes()));
 				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>"
 						+ userSess.getServerConfig().getString("r_server_version");
 				IDfUser dcmtUser = (IDfUser) userSess.getObjectByQualification("dm_user where user_login_name='" + loginName + "'");
@@ -214,7 +215,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 			if (admins.contains(loginName)) {
 				ret[2] = "administrator";
-				Logger.getLogger(this.getClass()).info("User " + loginName + "is in role administrator.");
+				Logger.getLogger(this.getClass()).info("User " + loginName + " is in role administrator.");
 			} else {
 				ret[2] = "user";
 			}
@@ -261,7 +262,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		}
 
 		ret[0] = loginName;
-		ret[1] = passwordHashed;
+		ret[1] = new String(password);
 
 		Logger.getLogger(this.getClass()).info(String.format("Logged user: %s, role: %s, documentumUser %s", ret[0], ret[2], ret[3]));
 
@@ -376,12 +377,12 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			Unmarshaller m = context.createUnmarshaller();
 			Reader reader = new InputStreamReader(baIs);
 			us = (UserSettings) m.unmarshal(reader);
-			
-			if(us.auditTrailPerPageCount == 0)
+
+			if (us.auditTrailPerPageCount == 0)
 				us.auditTrailPerPageCount = 50;
-			
+
 			Logger.getLogger(this.getClass()).info("AuditTrailPerPage: " + us.auditTrailPerPageCount);
-			
+
 		} catch (Exception ex) {
 			throw new ServerException(ex.getMessage());
 		} finally {
