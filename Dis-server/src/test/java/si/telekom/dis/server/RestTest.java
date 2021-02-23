@@ -1,23 +1,16 @@
 package si.telekom.dis.server;
 
 import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.HashMap;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
-import org.eclipse.jetty.server.Server;
 import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.grizzly2.servlet.GrizzlyWebContainerFactory;
@@ -28,8 +21,6 @@ import org.glassfish.jersey.test.TestProperties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.io.ByteSource;
 
 public class RestTest extends JerseyTest {
 	HttpServer server = null;
@@ -60,7 +51,7 @@ public class RestTest extends JerseyTest {
 		initParams.put("DocumentsApi.implementation", "si.telekom.dis.server.rest.DisRest");
 
 		// Make sure to end the URI with a forward slash
-		server = GrizzlyWebContainerFactory.create("http://localhost:8080/", initParams);
+		server = GrizzlyWebContainerFactory.create("http://localhost:9998/", initParams);
 		//AdminServiceImpl.getInstance();
 
 		while (!AdminServiceImpl.started)
@@ -103,7 +94,7 @@ public class RestTest extends JerseyTest {
 		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
 		client.property(ClientProperties.READ_TIMEOUT, 10000000);
 
-		Response response = client.target("http://localhost:8080/documents/query").queryParam("dql", "select * from dm_cabinet").request().get();
+		Response response = client.target("http://localhost:9998/documents/query").queryParam("dql", "select * from dm_cabinet").request().get();
 		String responseTxt = response.readEntity(String.class);
 		//System.out.println(responseTxt);
 		assertEquals("should return status 200", 200, response.getStatus());
