@@ -32,4 +32,5 @@ public class MyParametrizedQuery implements java.io.Serializable, com.google.gwt
 		this.name = name;
 		this.dql = dql;
 	}
+
 }

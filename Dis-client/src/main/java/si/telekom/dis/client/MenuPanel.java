@@ -77,7 +77,7 @@ public class MenuPanel extends Composite {
 	 * 16x16 image, we will use a blank 1x1 image so it does not take up any
 	 * space. Each TreeItem will use its own custom image.
 	 */
-	Images images; // = (Images) GWT.create(Images.class);
+	public Images images; // = (Images) GWT.create(Images.class);
 	public static String selectedDcmtType = "";
 	VerticalPanel adminPanel = new VerticalPanel();
 	ScrollPanel spDocTypes = null;
@@ -226,10 +226,10 @@ public class MenuPanel extends Composite {
 	 *          the {@link ImageResource} to add next to the header
 	 * @return the header as a string
 	 */
-	private String getHeaderString(String text, ImageResource image) {
+	public String getHeaderString(String text, ImageResource image) {
 		// Add the image and text to a horizontal panel
 		HorizontalPanel hPanel = new HorizontalPanel();
-		hPanel.setSpacing(0);
+		hPanel.setSpacing(10);
 		hPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		hPanel.add(new Image(image));
 		// HTML headerText = new HTML(text);

@@ -107,7 +107,10 @@ public class CustomDocumentCell extends AbstractCell<Document> {
 					sb.append(AbstractImagePrototype.create(resource).getSafeHtml());
 			}
 
-			sb.appendEscaped(value.object_name);
+			if(!value.isFolder && value.releaseNo>-1)
+				sb.appendEscaped(value.object_name + "/" + value.releaseNo);
+			else
+				sb.appendEscaped(value.object_name);
 
 			sb.appendEscapedLines("\n");
 			if (!value.isFolder)

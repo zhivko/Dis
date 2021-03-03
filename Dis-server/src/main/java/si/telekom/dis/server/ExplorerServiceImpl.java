@@ -161,8 +161,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	static Parser parser = new AutoDetectParser();
 
 	public static ExplorerServiceImpl getInstance() {
-		if (instance == null)
+		if (instance == null) {
 			instance = new ExplorerServiceImpl();
+		}
 
 		return instance;
 	}
@@ -228,8 +229,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 //@formatter:off			
-					baOs.write(("<!DOCTYPE html>" + "<html>" + "<head>" + "<title>Page Title</title>"
-							+ "<meta charset='" + encoding + "'>" + "</head>" + "<body>").getBytes());
+                    baOs.write(("<!DOCTYPE html>" + "<html>" + "<head>" + "<title>Page Title</title>"
+                            + "<meta charset='" + encoding + "'>" + "</head>" + "<body>").getBytes());
 //@formatter:on
 					if (msg.getMainChunks() != null) {
 						baOs.write(("<br><br>\n").getBytes(encoding));
@@ -266,9 +267,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								// height=\"1000\" width=\"800\"
 								if (filename.toLowerCase().endsWith("pdf")) {
 									baOs.write(("<embed src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
-								} else
+								} else {
 									baOs.write(
 											("<img alt=\"" + filename + "\" src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
+								}
 							}
 							baOs.write(("<br>").getBytes(encoding));
 
@@ -297,8 +299,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServletException("Throwable: ", new IOException(e1));
 		} finally {
 			// TODO Auto-generated catch block
-			if (userSession != null)
+			if (userSession != null) {
 				AdminServiceImpl.getInstance().releaseSession(userSession);
+			}
 		}
 
 	}
@@ -412,14 +415,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -435,8 +440,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			ArrayList<String> rolesOfUser = (ArrayList<String>) profileAndRolesOfUserAndState[2];
 			String stateId = (String) profileAndRolesOfUserAndState[3];
 
-			if (prof == null)
+			if (prof == null) {
 				prof = findProfileForObjectType(persObj);
+			}
 
 			IDfSysObject sysObj = ((IDfSysObject) persObj);
 			doc.object_name = sysObj.getObjectName();
@@ -451,20 +457,22 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			doc.owner = sysObj.getOwnerName();
 			doc.lockOwner = sysObj.getLockOwner();
 			doc.lockMachine = sysObj.getLockMachine();
-			int realeNoInd = sysObj.findAttrIndex("mob_release_no");
-			if (realeNoInd > -1)
-				doc.releaseNo = sysObj.getInt("mob_release_no");
-			else
+			int realeNoInd = sysObj.findAttrIndex("mob_releaseno");
+			if (realeNoInd > -1) {
+				doc.releaseNo = sysObj.getInt("mob_releaseno");
+			} else {
 				doc.releaseNo = -1;
+			}
 
 			doc.isClassified = (stateId == null ? false : true);
 
 			doc.i_chronicle_id = sysObj.getChronicleId().getId().toString();
 
-			if (sysObj.getFormat() != null)
+			if (sysObj.getFormat() != null) {
 				doc.format = sysObj.getFormat().getName();
-			else
+			} else {
 				doc.format = "";
+			}
 
 			HashMap<String, List<String>> roleUsers = (HashMap<String, List<String>>) profileAndRolesOfUserAndState[4];
 
@@ -507,23 +515,27 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			doc.formats = formats;
 
 			doc.details = new ArrayList<String>();
-			if (prof != null)
-				if (prof.detailAttributes != null)
+			if (prof != null) {
+				if (prof.detailAttributes != null) {
 					for (Attribute att : prof.detailAttributes) {
 						DocType docType = AdminServiceImpl.doctypes.get(persObj.getType().getName());
 						if (docType != null) {
 							DcmtAttribute attr = docType.attributes.get(att.dcmtAttName);
 							if (attr.attr_repeating) {
 								String value = sysObj.getAllRepeatingStrings(att.dcmtAttName, ",").toString();
-								if (value != "")
+								if (value != "") {
 									doc.details.add(value);
+								}
 							} else {
 								String value = sysObj.getValue(att.dcmtAttName).toString();
-								if (!value.equals(""))
+								if (!value.equals("")) {
 									doc.details.add(value);
+								}
 							}
 						}
 					}
+				}
+			}
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -560,8 +572,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -597,37 +610,43 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		if (prof != null) {
 			// get all actions for user in this state
 			Map<String, List<String>> rolesActions = prof.roleStateActions.get(stateId);
-			if (rolesActions != null)
+			if (rolesActions != null) {
 				for (String roleId : rolesOfUser) {
 					msg = msg + roleId + ",";
 					for (String actionId : rolesActions.get(roleId)) {
 						Action act = AdminServiceImpl.getInstance().getActionById(actionId);
-						if (!ret.contains(act))
+						if (!ret.contains(act)) {
 							ret.add(act);
+						}
 					}
 				}
+			}
 
 			if (ret.size() == 0 && !isClassified) {
 				// do same for "all" state and "all" role
 				rolesActions = prof.roleStateActions.get("unclassified");
 				msg = msg + "unclassified,";
-				if (rolesActions != null)
+				if (rolesActions != null) {
 					for (String roleId : rolesOfUser) {
 						for (String actionId : rolesActions.get(roleId)) {
 							Action act = AdminServiceImpl.getInstance().getActionById(actionId);
-							if (!ret.contains(act))
+							if (!ret.contains(act)) {
 								ret.add(act);
+							}
 						}
 
 						for (String actionId : rolesActions.get("unclassified")) {
 							Action act = AdminServiceImpl.getInstance().getActionById(actionId);
-							if (!ret.contains(act))
+							if (!ret.contains(act)) {
 								ret.add(act);
+							}
 						}
 					}
+				}
 			}
-			if (msg.endsWith(","))
+			if (msg.endsWith(",")) {
 				msg = msg.substring(0, msg.length() - 1);
+			}
 			msg = msg + "</strong>";
 			WsServer.log(userSession.getLoginInfo().getUser(), msg);
 		} else {
@@ -638,14 +657,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				Map<String, List<String>> roleActionsInAllState = prof1.roleStateActions.get("unclassified");
 				if (roleActionsInAllState != null) {
 					List<String> actions = roleActionsInAllState.get("unclassified");
-					if (actions != null)
+					if (actions != null) {
 						for (String actionId : actions) {
 							Action action = AdminServiceImpl.getInstance().getActionById(actionId);
-							if (action != null)
+							if (action != null) {
 								ret.add(action);
-							else
+							} else {
 								Logger.getLogger(this.getClass()).error("Unknown action: " + actionId);
+							}
 						}
+					}
 				}
 			} else {
 				Logger.getLogger(this.getClass()).error("Not found profile for objectType: " + persObj.getType().getName());
@@ -657,18 +678,19 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	Profile findProfileForObjectType(IDfPersistentObject persObj) throws DfException {
 		Profile ret = null;
 		for (Profile prof1 : AdminServiceImpl.profiles.values()) {
-			if (prof1.isDefaultForObjectType)
+			if (prof1.isDefaultForObjectType) {
 				if (prof1.objType.equals(persObj.getType().getName())) {
 					ret = prof1;
 					break;
 				}
+			}
 		}
 
 		if (ret == null) {
 			List<String> allSuperTypes = findSuperTypes(persObj.getType(), null);
 			for (String typeName : allSuperTypes) {
 				DocType docType = AdminServiceImpl.doctypes.get(typeName);
-				if (docType.profiles != null)
+				if (docType.profiles != null) {
 					for (Profile prof1 : docType.profiles.values()) {
 						if (prof1.isDefaultForObjectType) {
 							// Logger.getLogger(this.getClass())
@@ -679,6 +701,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							break;
 						}
 					}
+				}
 			}
 		}
 
@@ -687,8 +710,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 	/**
 	 * returns array object consisting of persObj, profile, rolesOfUser, stateId
-	 * 
-	 * 
+	 *
+	 *
 	 * @param persObj
 	 *          ... existing object in documentum
 	 * @param forUserOrGroup
@@ -708,8 +731,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		IDfQuery query2 = new DfQuery();
 		IDfQuery query = new DfQuery();
 		String id = persObj.getObjectId().getId();
-		if (id == null)
+		if (id == null) {
 			Logger.getLogger(this.getClass()).warn("Object NULL!");
+		}
 		String dql1 = "select profile_id, current_state_id from dm_dbo.T_DOCMAN_S where r_object_id='" + id + "'";
 		Logger.getLogger(this.getClass()).debug("Dql for docman_s: " + dql1);
 		query.setDQL(dql1);
@@ -731,7 +755,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		}
 
 		// IDfUser dmUser = userSession.getUser(forUserOrGroupLoginName);
-
 		if (collection.getState() == IDfCollection.DF_READY_STATE) {
 			String profileId = collection.getString("profile_id");
 			prof = AdminServiceImpl.profiles.get(profileId);
@@ -765,17 +788,20 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				hasNext = collection2.next();
 			}
 
-			if (!hasNext)
+			if (!hasNext) {
 				Logger.getLogger(this.getClass()).warn("No records in T_DOCMAN_R - but records in T_DOCMAN_S exist ... no data for users and roles...");
+			}
 
 			while (hasNext) { // (collection2.getState() ==
 				// IDfCollection.DF_READY_STATE) {
 				String roleId = collection2.getString("role_id");
 				String userGroupNames = collection2.getString("user_group_name");
-				if (!roleUserGroups.containsKey(roleId))
+				if (!roleUserGroups.containsKey(roleId)) {
 					roleUserGroups.put(roleId, new ArrayList<String>());
-				if (!roleUserGroups.get(roleId).contains(userGroupNames))
+				}
+				if (!roleUserGroups.get(roleId).contains(userGroupNames)) {
 					roleUserGroups.get(roleId).add(userGroupNames);
+				}
 
 				if (userGroupNames.equals("dm_world")) {
 					rolesOfUser.add(roleId);
@@ -800,7 +826,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						// group search base: DC=ts,DC=telekom,DC=si
 						// (&(memberOf:1.2.840.113556.1.4.1941:=CN=Procesi,OU=FIM-Managed
 						// Groups,DC=ts,DC=telekom,DC=si)(objectCategory=group))
-
 						String groupDn = "CN=" + userGroupNames + ",OU=FIM-Managed Groups,DC=ts,DC=telekom,DC=si";
 						String ldapQuery = "(&(memberOf:1.2.840.113556.1.4.1941:={0})(objectCategory=person)(objectClass=user)(sAMAccountName={1}))";
 						ldapQuery = ldapQuery.replaceAll("\\{0\\}", groupDn);
@@ -817,27 +842,32 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							Logger.getLogger(this.getClass()).warn(msg);
 						}
 						// if (!rolesOfUser.contains(roleId))
-						if (isMember || forUserOrGroup.toLowerCase().equals(userGroupNames.toLowerCase()))
-							if (!rolesOfUser.contains(roleId))
+						if (isMember || forUserOrGroup.toLowerCase().equals(userGroupNames.toLowerCase())) {
+							if (!rolesOfUser.contains(roleId)) {
 								rolesOfUser.add(roleId);
+							}
+						}
 
 						// move over users in group
 						for (int j = 0; j < group.getUsersNamesCount(); j++) {
 							String userName = group.getUsersNames(j);
 							if (forUserOrGroup.toLowerCase().equals(userName.toLowerCase())) {
-								if (!rolesOfUser.contains(roleId))
+								if (!rolesOfUser.contains(roleId)) {
 									rolesOfUser.add(roleId);
+								}
 							}
 						}
 
 					} else {
 						// try user
 						IDfUser user = userSession.getUser(userGroupNames);
-						if (user != null)
+						if (user != null) {
 							if (user.getUserLoginName().equalsIgnoreCase(forUserOrGroup)) {
-								if (!rolesOfUser.contains(roleId))
+								if (!rolesOfUser.contains(roleId)) {
 									rolesOfUser.add(roleId);
+								}
 							}
+						}
 					}
 				}
 				hasNext = collection2.next();
@@ -847,9 +877,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		collection.close();
 
 		// in case of administrators - lets add role administrator
-		if (LoginServiceImpl.admins.contains(forUserOrGroup.toLowerCase()))
-			if (!rolesOfUser.contains("administrator"))
+		if (LoginServiceImpl.admins.contains(forUserOrGroup.toLowerCase())) {
+			if (!rolesOfUser.contains("administrator")) {
 				rolesOfUser.add("administrator");
+			}
+		}
 
 		Object[] ret = { persObj, prof, rolesOfUser, stateId, roleUserGroups, isClassified };
 		return ret;
@@ -863,8 +895,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		coll1.next();
 		if (coll1.getState() == IDfCollection.DF_NO_MORE_ROWS_STATE) {
 			String stateId = null;
-			if (prof == null)
+			if (prof == null) {
 				prof = ExplorerServiceImpl.getInstance().findProfileForObjectType(persObject);
+			}
 			int indexOfDraftState = 0;
 			for (State stat : prof.states) {
 				if (!stat.getId().equals("unclassified")) {
@@ -890,8 +923,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 	/**
 	 * returns array object consisting of persObj, profile, rolesOfUser, stateId
-	 * 
-	 * 
+	 *
+	 *
 	 * @param persObj
 	 *          ... existing object in documentum
 	 * @param forUserOrGroup
@@ -915,8 +948,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 	private List<String> findSuperTypes(IDfType type, ArrayList<String> ret) throws DfException {
 		// System.out.println(type.getName() + " " + type.getSuperName());
-		if (ret == null)
+		if (ret == null) {
 			ret = new ArrayList<String>();
+		}
 
 		if (!type.getSuperName().equals("")) {
 			ret.add(type.getSuperName());
@@ -951,14 +985,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -988,27 +1024,30 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			ret.rolesAndUsers = rolesAndUsers;
 
-			if (stateId == null)
+			if (stateId == null) {
 				stateId = "unclassified";
+			}
 
 			String roleId = "";
-			if (rolesOfUser.contains("administrator") || rolesOfUser.contains("admin"))
+			if (rolesOfUser.contains("administrator") || rolesOfUser.contains("admin")) {
 				roleId = "administrator";
-			else if (rolesOfUser.contains("coordinator"))
+			} else if (rolesOfUser.contains("coordinator")) {
 				roleId = "coordinator";
-			else if (rolesOfUser.contains("author"))
+			} else if (rolesOfUser.contains("author")) {
 				roleId = "author";
-			else if (rolesOfUser.contains("reviewer"))
+			} else if (rolesOfUser.contains("reviewer")) {
 				roleId = "reviewer";
-			else if (rolesOfUser.contains("approver"))
+			} else if (rolesOfUser.contains("approver")) {
 				roleId = "approver";
-			else if (rolesOfUser.contains("archiver"))
+			} else if (rolesOfUser.contains("archiver")) {
 				roleId = "archiver";
-			else if (rolesOfUser.contains("user"))
+			} else if (rolesOfUser.contains("user")) {
 				roleId = "user";
+			}
 
-			if (roleId.equals(""))
+			if (roleId.equals("")) {
 				roleId = "unclassified";
+			}
 
 			if (prof == null) {
 				Logger.getLogger(this.getClass()).debug("findProfileForObjectType(" + persObj.getId("r_object_id").toString() + ")");
@@ -1045,15 +1084,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 									// dcmtAttribute.attr_name);
 									if (!dcmtAttribute.attr_repeating) {
 										String value = null;
-										if (dcmtAttribute.domain_type.equals("0"))
+										if (dcmtAttribute.domain_type.equals("0")) {
 											value = String.valueOf(persObj.getBoolean(attr.dcmtAttName));
-										else if (dcmtAttribute.domain_type.equals("1"))
+										} else if (dcmtAttribute.domain_type.equals("1")) {
 											value = String.valueOf(persObj.getInt(attr.dcmtAttName));
-										else if (dcmtAttribute.domain_type.equals("2"))
+										} else if (dcmtAttribute.domain_type.equals("2")) {
 											value = String.valueOf(persObj.getString(attr.dcmtAttName));
-										else if (dcmtAttribute.domain_type.equals("3"))
+										} else if (dcmtAttribute.domain_type.equals("3")) {
 											value = String.valueOf(persObj.getId(attr.dcmtAttName));
-										else if (dcmtAttribute.domain_type.equals("4")) {
+										} else if (dcmtAttribute.domain_type.equals("4")) {
 											Calendar c = new GregorianCalendar();
 											if (persObj.getTime(attr.dcmtAttName).getDate() != null) {
 												c.setTime(persObj.getTime(attr.dcmtAttName).getDate());
@@ -1065,15 +1104,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 										int valueCount = persObj.getValueCount(attr.dcmtAttName);
 										for (int i = 0; i < valueCount; i++) {
 											String value = null;
-											if (dcmtAttribute.domain_type.equals("0"))
+											if (dcmtAttribute.domain_type.equals("0")) {
 												value = String.valueOf(persObj.getRepeatingBoolean(attr.dcmtAttName, i));
-											else if (dcmtAttribute.domain_type.equals("1"))
+											} else if (dcmtAttribute.domain_type.equals("1")) {
 												value = String.valueOf(persObj.getRepeatingInt(attr.dcmtAttName, i));
-											else if (dcmtAttribute.domain_type.equals("2"))
+											} else if (dcmtAttribute.domain_type.equals("2")) {
 												value = String.valueOf(persObj.getRepeatingString(attr.dcmtAttName, i));
-											else if (dcmtAttribute.domain_type.equals("3"))
+											} else if (dcmtAttribute.domain_type.equals("3")) {
 												value = String.valueOf(persObj.getRepeatingId(attr.dcmtAttName, i));
-											else if (dcmtAttribute.domain_type.equals("4")) {
+											} else if (dcmtAttribute.domain_type.equals("4")) {
 												if (persObj.getRepeatingTime(attr.dcmtAttName, i).getDate() != null) {
 													Calendar c = new GregorianCalendar();
 													c.setTime(persObj.getRepeatingTime(attr.dcmtAttName, i).getDate());
@@ -1146,8 +1185,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	@Override
 	public List<String[]> getValuesFromDql(String loginName, String password, String likeString, String dql) throws ServerException {
 		ArrayList<String[]> ret = new ArrayList<String[]>();
-		if (dql.equals(""))
+		if (dql.equals("")) {
 			return ret;
+		}
 		IDfQuery query = new DfQuery();
 
 		IDfSession userSession = null;
@@ -1161,11 +1201,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Pattern p = Pattern.compile("select (.*) from (.*) where (.*) order by (.*)", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);// .
 
 			// user group selects
-
 //@formatter:off			
-			Pattern p1 = Pattern.compile(
-					"select (.*) from (.*) where (.*) " + "union " + "select (.*) from (.*) where (.*)",
-					Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+            Pattern p1 = Pattern.compile(
+                    "select (.*) from (.*) where (.*) " + "union " + "select (.*) from (.*) where (.*)",
+                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 //@formatter:on			
 
 			likeString = likeString.toLowerCase().trim();
@@ -1191,11 +1230,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				String where = m.group(3);
 				String orderby = m.group(4);
 
-				if (likeString != null && !likeString.equals(""))
+				if (likeString != null && !likeString.equals("")) {
 					completeDql = "select " + fields + " from " + from + " where " + where + " and (lower(" + valueField + ") like '%" + likeString
 							+ "%' or lower(" + idField + ") like '%" + likeString + "%') order by " + orderby;
-				else
+				} else {
 					completeDql = "select " + fields + " from " + from + " where " + where + " order by " + orderby;
+				}
 
 			} else if (m1.matches()) {
 				String select1 = m1.group(1);
@@ -1218,20 +1258,20 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				if (likeString != null && !likeString.equals("")) {
 //@formatter:off							
-					completeDql = "select " + select1 + " from " + from1 + " where " + where1 + " and (lower("
-							+ valueField1 + ") like '%" + likeString + "%' or lower(" + idField1 + ") like '%"
-							+ likeString + "%')" + " union " + "select " + select2 + " from " + from2 + " where "
-							+ where2 + " and (lower(" + valueField2 + ") like '%" + likeString + "%' or lower("
-							+ idField2 + ") like '%" + likeString + "%')";
+                    completeDql = "select " + select1 + " from " + from1 + " where " + where1 + " and (lower("
+                            + valueField1 + ") like '%" + likeString + "%' or lower(" + idField1 + ") like '%"
+                            + likeString + "%')" + " union " + "select " + select2 + " from " + from2 + " where "
+                            + where2 + " and (lower(" + valueField2 + ") like '%" + likeString + "%' or lower("
+                            + idField2 + ") like '%" + likeString + "%')";
 //@formatter:on							
-				} else
+				} else {
 					completeDql = dql;
+				}
 			} else {
 				throw new ServerException(new Exception("getValuesFromDql definition must be in form: select field1,field2 from ... where ... order by ..."));
 			}
 
 			// fields should be in form id,value
-
 			// search and remove fixedValues
 			// fixedValues(dm_world, vsi;dm_owner, lastnik, dm_group, skupina)
 			Pattern pFixedValues = Pattern.compile(".*(fixedValues\\((.+?)\\))", Pattern.CASE_INSENSITIVE);
@@ -1259,8 +1299,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				String[] val = { id, value };
 				ret.add(val);
 				recNo++;
-				if (recNo > maxRowsReturned)
+				if (recNo > maxRowsReturned) {
 					break;
+				}
 			}
 
 			Logger.getLogger(this.getClass()).info("getValuesFromDql: " + completeDql + " returned " + ret.size() + " suggestions.");
@@ -1274,14 +1315,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -1391,8 +1434,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						String[] values = { col1, col2 };
 						ret.add(values);
 					}
-					if (ret.size() > maxResultCount)
+					if (ret.size() > maxResultCount) {
 						break;
+					}
 
 				}
 				Logger.getLogger(this.getClass()).info("Returned: " + ret.size() + " records.");
@@ -1437,19 +1481,19 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			if (prof != null) {
 				ArrayList<String> rolesOfUser = (ArrayList<String>) ret[2];
 				stateId = (String) ret[3];
-				if (rolesOfUser.contains("administrator"))
+				if (rolesOfUser.contains("administrator")) {
 					roleId = "administrator";
-				else if (rolesOfUser.contains("coordinator"))
+				} else if (rolesOfUser.contains("coordinator")) {
 					roleId = "coordinator";
-				else if (rolesOfUser.contains("author"))
+				} else if (rolesOfUser.contains("author")) {
 					roleId = "author";
-				else if (rolesOfUser.contains("reviewer"))
+				} else if (rolesOfUser.contains("reviewer")) {
 					roleId = "reviewer";
-				else if (rolesOfUser.contains("approver"))
+				} else if (rolesOfUser.contains("approver")) {
 					roleId = "approver";
-				else if (rolesOfUser.contains("user"))
+				} else if (rolesOfUser.contains("user")) {
 					roleId = "user";
-				else {
+				} else {
 					roleId = "non standard role";
 					Logger.getLogger(this.getClass()).warn("non standard role!");
 				}
@@ -1468,65 +1512,75 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					Attribute att = AdminServiceImpl.getAttFromAttributeRoleStateWizards(arsw, attName);
 					if (!att.isReadOnly) {
 						if (!attr.attr_repeating) {
-							String attValue = attrVal.getValues().get(0);
-							Logger.getLogger(this.getClass()).info("\t" + attName + " = '" + attValue + "'");
-							// 0,Boolean
-							// 1,Integer
-							// 2,String
-							// 3,ID
-							// 4,Time/Date
-							// 5,Double
-							if (attr.domain_type.equals("0"))
-								dfDocument.setBoolean(attName, Boolean.valueOf(attValue));
-							else if (attr.domain_type.equals("1"))
-								dfDocument.setInt(attName, Integer.valueOf(attValue));
-							else if (attr.domain_type.equals("2"))
-								dfDocument.setString(attName, attValue);
-							else if (attr.domain_type.equals("3"))
-								dfDocument.setId(attName, new DfId(attValue));
-							else if (attr.domain_type.equals("4")) {
-								// milliseconds since January 1, 1970, 00:00:00 GMT
-								if (!attValue.equals("")) {
-									Date date = new Date();
-									date.setTime(Long.valueOf(attValue).longValue());
-									IDfTime time = new DfTime(date);
-									Logger.getLogger(this.getClass()).info("\t\t = '" + time.toString() + "'");
-									dfDocument.setTime(attName, time);
-								} else {
-									dfDocument.setTime(attName, null);
+							String attValue = null;
+							if (attrVal.getValues().size() > 0) {
+								attValue = attrVal.getValues().get(0);
+
+								Logger.getLogger(this.getClass()).info("\t" + attName + " = '" + attValue + "'");
+								// 0,Boolean
+								// 1,Integer
+								// 2,String
+								// 3,ID
+								// 4,Time/Date
+								// 5,Double
+								
+								if (attr.domain_type.equals("0")) {
+									dfDocument.setBoolean(attName, Boolean.valueOf(attValue));
+								} else if (attr.domain_type.equals("1")) {
+									dfDocument.setInt(attName, Integer.valueOf(attValue));
+								} else if (attr.domain_type.equals("2")) {
+									dfDocument.setString(attName, attValue);
+								} else if (attr.domain_type.equals("3")) {
+									dfDocument.setId(attName, new DfId(attValue));
+								} else if (attr.domain_type.equals("4")) {
+									// milliseconds since January 1, 1970, 00:00:00 GMT
+									if (!attValue.equals("")) {
+										Date date = new Date();
+										date.setTime(Long.valueOf(attValue).longValue());
+										IDfTime time = new DfTime(date);
+										Logger.getLogger(this.getClass()).info("\t\t = '" + time.toString() + "'");
+										dfDocument.setTime(attName, time);
+									} else {
+										dfDocument.setTime(attName, null);
+									}
+								} else if (attr.domain_type.equals("5")) {
+									dfDocument.setDouble(attName, Double.valueOf(attValue));
 								}
-							} else if (attr.domain_type.equals("5"))
-								dfDocument.setDouble(attName, Double.valueOf(attValue));
+							} else {
+								dfDocument.setNull(attName);
+							}
 						} else {
 							int i = 0;
 							if (attrVal.getValues().size() > 0) {
 								for (String valueFromValues : attrVal.getValues()) {
 									Logger.getLogger(this.getClass()).info("\t" + attName + "[" + i + "] = '" + valueFromValues + "'");
 
-									if (attr.domain_type.equals("0"))
+									if (attr.domain_type.equals("0")) {
 										dfDocument.setRepeatingBoolean(attName, i, Boolean.valueOf(valueFromValues));
-									else if (attr.domain_type.equals("1"))
+									} else if (attr.domain_type.equals("1")) {
 										dfDocument.setRepeatingInt(attName, i, Integer.valueOf(valueFromValues));
-									else if (attr.domain_type.equals("2"))
+									} else if (attr.domain_type.equals("2")) {
 										dfDocument.setRepeatingString(attName, i, valueFromValues);
-									else if (attr.domain_type.equals("3"))
+									} else if (attr.domain_type.equals("3")) {
 										dfDocument.setRepeatingId(attName, i, new DfId(valueFromValues));
-									else if (attr.domain_type.equals("4")) {
+									} else if (attr.domain_type.equals("4")) {
 										// milliseconds since January 1, 1970, 00:00:00 GMT
 										Date date = new Date();
 										date.setTime(Long.valueOf(valueFromValues).longValue());
 										IDfTime time = new DfTime(date);
 										dfDocument.setRepeatingTime(attName, i, time);
-									} else if (attr.domain_type.equals("5"))
+									} else if (attr.domain_type.equals("5")) {
 										dfDocument.setRepeatingDouble(attName, i, Double.valueOf(valueFromValues));
+									}
 									i++;
 								}
 							}
 							int howMany = dfDocument.getValueCount(attName) - i;
 
 							if (howMany > 0) {
-								for (int j = 0; j < howMany; j++)
+								for (int j = 0; j < howMany; j++) {
 									dfDocument.remove(attName, i);
+								}
 							}
 						}
 					}
@@ -1549,14 +1603,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -1671,8 +1727,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					WsServer.log(loginName, "Destroyed version of object: " + r_object_id_);
 				}
 				col2.close();
-			} else
+			} else {
 				dfDocument.destroy();
+			}
 			WsServer.log(loginName, "Destroying...Done.");
 
 			userSession.commitTrans();
@@ -1692,16 +1749,19 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (adminSession != null)
+				if (adminSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(adminSession);
-				if (userSession != null)
+				}
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -1754,10 +1814,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					coll2.close();
 				}
 
-				if (allVersions)
+				if (allVersions) {
 					dfDocument.destroyAllVersions();
-				else
+				} else {
 					dfDocument.destroy();
+				}
 
 				WsServer.log(loginName, "Deleting " + r_object_id + " ... DONE.");
 			}
@@ -1776,14 +1837,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -1795,8 +1858,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	@Override
 	public List<List<String>> dqlLookup(String loginName, String passwordEncrypted, String dql) throws ServerException {
 		ArrayList<List<String>> ret = new ArrayList<List<String>>();
-		if (dql.equals(""))
+		if (dql.equals("")) {
 			return ret;
+		}
 		IDfQuery query = new DfQuery();
 
 		IDfSession userSession = null;
@@ -1816,10 +1880,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				}
 			}
 
-			if (loginName.equals(AdminServiceImpl.superUserName))
+			if (loginName.equals(AdminServiceImpl.superUserName)) {
 				userSession = AdminServiceImpl.getAdminSession();
-			else
+			} else {
 				userSession = AdminServiceImpl.getSession(loginName, passwordEncrypted);
+			}
 
 			query.setDQL(dql);
 			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
@@ -1837,8 +1902,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				}
 				ret.add(values);
 				recNo++;
-				if (recNo > maxRowsReturned)
+				if (recNo > maxRowsReturned) {
 					break;
+				}
 			}
 			Logger.getLogger(this.getClass()).info("dqlLookup: " + dql + " returned " + ret.size() + " records.");
 
@@ -1847,14 +1913,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -1883,8 +1951,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				checkDocmanSExist(persObject, userSession, null);
 				setUsersForRoles(userSession, persObject, rolesUsers);
 
-				if (userSession.isTransactionActive())
+				if (userSession.isTransactionActive()) {
 					userSession.commitTrans();
+				}
 
 				Logger.getLogger(this.getClass()).info("setUsersForRoles completed. objectName: " + persObject.getString("object_name") + " r_object_id: "
 						+ persObject.getId("r_object_id").toString());
@@ -1911,8 +1980,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// ex.printStackTrace();
 			// }
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -1961,7 +2031,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					coll2.close();
 
 					// remove all permit for this user
-					if (permits != null)
+					if (permits != null) {
 						for (int i = 0; i < permits.getCount(); i++) {
 							IDfPermit userPermit = (IDfPermit) permits.get(i);
 							if (userPermit.getAccessorName().equals(userGroup)) {
@@ -1970,33 +2040,37 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								objAcl.revokePermit(userPermit);
 							}
 						}
+					}
 
 					// setAclFor each user in role
-
 					List<Action> actions = getActionsForObject(userSession, userGroup, persObject);
 					// Logger.getLogger(this.getClass().getName()).info("user: " +
 					// userGroup);
 					int maxGrant = 0;
 					String allExtPermissions = "";
 					for (Action action : actions) {
-						if (maxGrant < action.permit.value())
+						if (maxGrant < action.permit.value()) {
 							maxGrant = action.permit.value();
+						}
 
 						for (ExtendedPermit.extPermit exp : action.extPermits) {
-							if (!allExtPermissions.contains(exp.value()))
+							if (!allExtPermissions.contains(exp.value())) {
 								allExtPermissions = allExtPermissions + exp.value() + ",";
+							}
 						}
 					}
 
-					if (allExtPermissions.length() > 0)
+					if (allExtPermissions.length() > 0) {
 						allExtPermissions = allExtPermissions.substring(0, allExtPermissions.length() - 1);
+					}
 
 					IDfUser user = userSession.getUser(userGroup);
 					if (user != null || userGroup.equals("dm_world") || userGroup.equals("dm_group") || userGroup.equals("dm_owner")) {
 						objAcl.grant(userGroup, maxGrant, allExtPermissions);
 						Logger.getLogger(this.getClass().getName()).info("\tgranted: " + maxGrant + " extPermit: " + allExtPermissions + " for " + userGroup);
-					} else
+					} else {
 						Logger.getLogger(this.getClass().getName()).info("No such user: " + userGroup);
+					}
 
 				}
 			}
@@ -2019,7 +2093,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			// if (userSession.isTransactionActive())
 			// userSession.commitTrans();
-
 			Logger.getLogger(this.getClass()).info("Acl name:   " + sysObj.getACLName());
 			Logger.getLogger(this.getClass()).info("Acl domain: " + sysObj.getACLDomain());
 
@@ -2031,8 +2104,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			WsServer.log(userSession.getLoginUserName(), ex.getMessage());
 			throw new ServerException(ex.getMessage());
 		} finally {
-			if (adminSess != null)
+			if (adminSess != null) {
 				adminSess.getSessionManager().release(adminSess);
+			}
 		}
 	}
 
@@ -2050,11 +2124,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			int port = this.getThreadLocalRequest().getLocalPort();
 			String strUrl = "";
-			if (restUrl.contains("http:"))
+			if (restUrl.contains("http:")) {
 				strUrl = restUrl + URLEncoder.encode(likeString, "UTF-8");
-			else {
-				if (!restUrl.startsWith("/"))
+			} else {
+				if (!restUrl.startsWith("/")) {
 					restUrl = "/" + restUrl;
+				}
 
 				String prot = this.getThreadLocalRequest().isSecure() ? "https" : "http";
 				String host = (hostname != null ? hostname : "127.0.0.1");
@@ -2066,9 +2141,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			URL url;
 			url = new URL(strUrl);
-
+			Logger.getLogger(this.getClass()).info("Rest url: " + strUrl);
 			String stUrl = URLEncoder.encode(strUrl, StandardCharsets.UTF_8.toString());
-
+			// partOfProcessMilisetoneName
 			if (this.getThreadLocalRequest().isSecure()) {
 
 				TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
@@ -2111,12 +2186,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			conn.setConnectTimeout(1000);
 			conn.setReadTimeout(10000);
 
-			String auth = loginName + ":" + password;
+			byte[] decodedBytes = Base64.getDecoder().decode(password.getBytes());
+			String decodedPass = new String(decodedBytes);
+
+			String auth = loginName + ":" + decodedPass;
 			byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
 
 			String authHeaderValue = "Basic " + new String(encodedAuth);
 			conn.setRequestProperty("Authorization", authHeaderValue);
-
 			conn.connect();
 
 			if (conn.getResponseCode() != 200) {
@@ -2179,14 +2256,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -2228,8 +2307,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				ArrayList<String> rolesOfUser = (ArrayList<String>) profileAndRolesOfUserAndState[2];
 				String stateId = (String) profileAndRolesOfUserAndState[3];
 
-				if (prof == null)
+				if (prof == null) {
 					prof = findProfileForObjectType(persObj);
+				}
 
 				Document doc = new Document();
 				try {
@@ -2245,17 +2325,20 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					doc.owner = sysObj.getOwnerName();
 					doc.lockOwner = sysObj.getLockOwner();
 					doc.lockMachine = sysObj.getLockMachine();
-					if (sysObj.getFormat() != null)
+					if (sysObj.getFormat() != null) {
 						doc.format = sysObj.getFormat().getName();
-					else
+					} else {
 						doc.format = "";
+					}
 
 					doc.details = new ArrayList<String>();
-					if (prof != null)
-						if (prof.detailAttributes != null)
+					if (prof != null) {
+						if (prof.detailAttributes != null) {
 							for (Attribute att : prof.detailAttributes) {
 								doc.details.add(sysObj.getValue(att.dcmtAttName).toString());
 							}
+						}
+					}
 
 					doc.r_version_label = sysObj.getAllRepeatingStrings("r_version_label", ",");
 
@@ -2267,8 +2350,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				ret.add(doc);
 
-				if (ret.size() % 10 == 0)
+				if (ret.size() % 10 == 0) {
 					WsServer.log(loginName, "Added " + ret.size() + " version record to result.");
+				}
 
 			}
 
@@ -2282,14 +2366,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -2315,8 +2401,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				userSession.beginTrans();
 				moveToState(userSession, r_object_id, nextStateId, profileAndRolesOfUserAndState);
 				userSession.commitTrans();
-			} else
+			} else {
 				throw new ServerException("Cannot promote, already last state.");
+			}
 		} catch (Throwable ex) {
 			// ex.printStackTrace();
 			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
@@ -2349,8 +2436,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -2416,10 +2504,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			String currentStateId = (String) profileAndRolesOfUserAndState[3];
 
 			boolean shouldSupersede;
-			if (stateId.equals("effective") && !currentStateId.equals("archive"))
+			if (stateId.equals("effective") && !currentStateId.equals("archive")) {
 				shouldSupersede = true;
-			else
+			} else {
 				shouldSupersede = false;
+			}
 
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 
@@ -2435,15 +2524,17 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							if (dfDocument.getValue(att.dcmtAttName).asString().contentEquals("")) {
 								WsServer.log(userSession.getLoginInfo().getUser(), att.dcmtAttName + " is not set.");
 								allMandatoryFilled = false;
-								if (!mandatoryAttNamesNotSet.contains(att.dcmtAttName))
+								if (!mandatoryAttNamesNotSet.contains(att.dcmtAttName)) {
 									mandatoryAttNamesNotSet = mandatoryAttNamesNotSet + att.dcmtAttName + ",";
+								}
 							}
 						}
 					}
 				}
 			}
-			if (mandatoryAttNamesNotSet.length() > 0)
+			if (mandatoryAttNamesNotSet.length() > 0) {
 				mandatoryAttNamesNotSet = mandatoryAttNamesNotSet.substring(0, mandatoryAttNamesNotSet.length() - 1);
+			}
 
 			if (!allMandatoryFilled) {
 				String object_name = persObj.getString("object_name");
@@ -2458,11 +2549,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			AdminServiceImpl.runStandardActions(persObj, prof.states.get(stateNo).getId(), userSession);
 
-			if (shouldSupersede)
+			if (shouldSupersede) {
 				supersede(persObj, userSession);
+			}
 
-			if (startedTransaction)
+			if (startedTransaction) {
 				userSession.commitTrans();
+			}
 
 		} catch (Throwable ex) {
 			// ex.printStackTrace();
@@ -2472,8 +2565,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Logger.getLogger(this.getClass()).error(stackTrace);
 
 			try {
-				if (userSession.isTransactionActive())
+				if (userSession.isTransactionActive()) {
 					userSession.abortTrans();
+				}
 			} catch (DfException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -2482,8 +2576,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -2510,9 +2605,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 			objToSupersede = (IDfSysObject) userSession
 					.getObjectByQualification("mob_document where object_name='" + objectName + "' and mob_releaseno=" + mobReleaseNo);
-			if (objToSupersede == null)
+			if (objToSupersede == null) {
 				objToSupersede = (IDfSysObject) userSession
 						.getObjectByQualification("mob_form_template where object_name='" + objectName + "' and mob_releaseno=" + mobReleaseNo);
+			}
 
 			if (objToSupersede != null) {
 				if (!objToSupersede.getId("r_object_id").equals(persObj.getId("r_object_id"))) {
@@ -2529,6 +2625,52 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	}
 
 	@Override
+	public String apiDump(String loginName, String password, String r_object_id) throws ServerException {
+
+		String result;
+		IDfSession userSession = null;
+		try {
+			// try to get profile from local path - if it doesnt exist load it from
+			// documentum
+
+			Logger.getLogger(this.getClass()).info("Apidump triggered from user: " + loginName + " for object r_object_id: " + r_object_id);
+
+			if (loginName == null) {
+				throw new Exception("LoginName should not be null");
+			}
+			if (password == null) {
+				throw new Exception("Password should not be null");
+			}
+
+			userSession = AdminServiceImpl.getSession(loginName, password);
+			userSession.beginTrans();
+			IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
+
+			result = persObj.dump();
+			result = result.replace("\n", "<br>");
+
+			Logger.getLogger(this.getClass()).info("Apidump for " + loginName + " for: " + r_object_id + " done.");
+
+		} catch (Throwable ex) {
+			// ex.printStackTrace();
+			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
+			Logger.getLogger(this.getClass()).error(ex.getMessage());
+			Logger.getLogger(this.getClass()).error(stackTrace);
+			throw new ServerException(ex.getMessage());
+		} finally {
+			try {
+				if (userSession != null) {
+					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
+
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+	@Override
 	public Document demote(String loginName, String password, String r_object_id) throws ServerException {
 
 		Document doc;
@@ -2539,10 +2681,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			Logger.getLogger(this.getClass()).info("Demote triggered rom user: " + loginName + " for object r_object_id: " + r_object_id);
 
-			if (loginName == null)
+			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
-			if (password == null)
+			}
+			if (password == null) {
 				throw new Exception("Password should not be null");
+			}
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			userSession.beginTrans();
@@ -2555,10 +2699,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 			String prevStateId = AdminServiceImpl.getPrevStateId(prof, stateInd);
-			if (prevStateId != null)
+			if (prevStateId != null) {
 				moveToState(userSession, r_object_id, prevStateId, profileAndRolesOfUserAndState);
-			else
+			} else {
 				throw new ServerException("Cannot demote, already first state.");
+			}
 			userSession.commitTrans();
 
 			doc = docFromSysObject(persObj, loginName, userSession);
@@ -2573,8 +2718,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -2593,15 +2739,18 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			Logger.getLogger(this.getClass()).info("CancelCheckout for " + loginName + " for: " + r_object_id);
 
-			if (loginName == null)
+			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
-			if (password == null)
+			}
+			if (password == null) {
 				throw new Exception("Password should not be null");
+			}
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
-			if (((IDfSysObject) persObj).isCheckedOut())
+			if (((IDfSysObject) persObj).isCheckedOut()) {
 				((IDfSysObject) persObj).cancelCheckout();
+			}
 			Logger.getLogger(this.getClass()).info("CancelCheckout for " + loginName + " for: " + r_object_id + " completed.");
 		} catch (Exception ex) {
 			// ex.printStackTrace();
@@ -2612,14 +2761,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -2640,10 +2791,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			Logger.getLogger(this.getClass()).info("Unlock for " + loginName + " for: " + r_object_id);
 
-			if (loginName == null)
+			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
-			if (password == null)
+			}
+			if (password == null) {
 				throw new Exception("Password should not be null");
+			}
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
@@ -2661,14 +2814,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -2691,10 +2846,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			Logger.getLogger(this.getClass()).info("AuditTrail for " + loginName + " for: " + orig_r_object_id);
 
-			if (loginName == null)
+			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
-			if (password == null)
+			}
+			if (password == null) {
 				throw new Exception("Password should not be null");
+			}
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
@@ -2706,7 +2863,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// + " (select i_chronicle_id from dm_document where r_object_id = '" +
 			// orig_r_object_id + "'))) ENABLE(RETURN_RANGE " + start + " " + end
 			// + " 'time_stamp_utc DESC, audited_obj_id DESC')";
-
 			start = start + 1;
 			end = end + 1;
 
@@ -2741,8 +2897,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					}
 					row.add(collection.getValue(collection.getAttr(i).getName()).asString());
 				}
-				if (ret.size() % 10 == 0)
+				if (ret.size() % 10 == 0) {
 					WsServer.log(loginName, "Added " + ret.size() + " audittrail records to result.");
+				}
 				ret.add(row);
 				// Logger.getLogger(ExplorerServiceImpl.class)
 				// .info("added audit trail row for audited_obj_id: " +
@@ -2758,14 +2915,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -2799,10 +2958,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			Logger.getLogger(this.getClass()).info("NewFolder started for " + loginName + " for: " + parentFolderPath);
 
-			if (loginName == null)
+			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
-			if (password == null)
+			}
+			if (password == null) {
 				throw new Exception("Password should not be null");
+			}
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
@@ -2820,8 +2981,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -2952,10 +3114,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// try to get profile from local path - if it doesnt exist load it from
 			// documentum
 
-			if (loginName == null)
+			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
-			if (password == null)
+			}
+			if (password == null) {
 				throw new Exception("Password should not be null");
+			}
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			AdminServiceImpl.beginTransaction(userSession);
@@ -2965,22 +3129,24 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			IDfPersistentObject persObject = userSession.newObject(prof.objType);
 
 			// DocType docType = AdminServiceImpl.doctypes.get(prof.objType);
-
 			HashMap<String, Attribute> wizardAttributes = AdminServiceImpl.getInstance().getWizardAttributes(prof, "import");
-			if (wizardAttributes == null)
+			if (wizardAttributes == null) {
 				throw new Exception("No import wizard defined");
+			}
 
 			for (String attName : attributes.keySet()) {
 				Logger.getLogger(this.getClass()).info("Updating attribute: " + attName);
 				Attribute att = wizardAttributes.get(attName);
 
-				if (att == null)
+				if (att == null) {
 					throw new ServerException("No such attribute: " + attName + " in profile: " + prof.id);
+				}
 
 				DcmtAttribute dcmtAttribute = AdminServiceImpl.getInstance().findAttribute(prof.objType, attName);
 
-				if (dcmtAttribute == null)
+				if (dcmtAttribute == null) {
 					throw new Exception("No such attribute: " + attName + " on type: " + prof.objType);
+				}
 
 				List<String> values = attributes.get(attName);
 
@@ -3036,18 +3202,20 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			String barcode = AdminServiceImpl.getBarcode(prof.namePolicyBarcodeType, "0", "9", "10", gcal, 1, "DisTelekom")[0];
 
 			persObject.setString("object_name", barcode);
-			if (persObject.hasAttr("mob_barcode"))
+			if (persObject.hasAttr("mob_barcode")) {
 				persObject.setString("mob_barcode", barcode);
+			}
 
 			try {
 
-				if (stateId == null)
+				if (stateId == null) {
 					for (int j = 0; j < prof.states.size(); j++) {
 						if (!prof.states.get(j).getId().equals("unclassified")) {
 							stateId = prof.states.get(j).getId();
 							break;
 						}
 					}
+				}
 				persObject.save();
 				setStateForObject(userSession, persObject, prof, stateId);
 				setUsersForRoles(userSession, persObject, rolesUsers);
@@ -3093,8 +3261,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			doc = docFromSysObject(persObject, userSession.getLoginUserName(), userSession);
 
-			if (userSession.isTransactionActive())
+			if (userSession.isTransactionActive()) {
 				userSession.commitTrans();
+			}
 
 			String msg = "ImportDocument completed. objectName: <strong>" + persObject.getString("object_name") + "</strong> r_object_id: <strong>"
 					+ destObject.getId("r_object_id") + "</strong>";
@@ -3116,13 +3285,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-			if (userSession != null)
+			if (userSession != null) {
 				AdminServiceImpl.getInstance().releaseSession(userSession);
+			}
 		}
 		return doc;
 	}
@@ -3139,10 +3310,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// try to get profile from local path - if it doesnt exist load it from
 			// documentum
 
-			if (loginName == null)
+			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
-			if (password == null)
+			}
+			if (password == null) {
 				throw new Exception("Password should not be null");
+			}
 			if (rObjectIdOfObjectOrFolder.equals("") || rObjectIdOfObjectOrFolder == null) {
 				throw new ServerException("Teplate not specified '" + rObjectIdOfObjectOrFolder + "'");
 			}
@@ -3227,8 +3400,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				String barcode = AdminServiceImpl.getBarcode(prof.namePolicyBarcodeType, "0", "9", "10", gcal, 1, "DisTelekom")[0];
 
 				persObject.setString("object_name", barcode);
-				if (persObject.hasAttr("mob_barcode"))
+				if (persObject.hasAttr("mob_barcode")) {
 					persObject.setString("mob_barcode", barcode);
+				}
 
 				IDfSysObject sysObjTemplate = (IDfSysObject) objTemplate;
 				ByteArrayInputStream baIs = sysObjTemplate.getContent();
@@ -3288,8 +3462,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
 
 			try {
-				if (userSession != null && userSession.isTransactionActive())
+				if (userSession != null && userSession.isTransactionActive()) {
 					userSession.abortTrans();
+				}
 			} catch (Exception ex1) {
 				errorStringWriter = new StringWriter();
 				pw = new PrintWriter(errorStringWriter);
@@ -3300,14 +3475,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -3349,8 +3526,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		String[] lines = dql.split("\n");
 		String resultLine = "";
 		for (String line : lines) {
-			if (!line.startsWith("#"))
+			if (!line.startsWith("#")) {
 				resultLine = resultLine + line + "\n";
+			}
 		}
 		dql = resultLine;
 
@@ -3366,9 +3544,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// single
 			// character
 			Matcher m = p.matcher(dql);
-			if (!m.find())
+			if (!m.find()) {
 				throw new ServerException(
 						"Dql must contain \"ENABLE (RETURN_RANGE 1 20 '[[att] [desc], ...]')\" hint, to limit load on Documentum content server.");
+			}
 
 			if (m.group(2) != null) {
 				dql = dql.replaceAll(m.group(1), "RETURN_RANGE " + rangeStart + " " + rangeEnd + " " + m.group(2));
@@ -3376,10 +3555,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				String orderByStr = "'";
 				int i = 0;
 				for (String oby : pQuery.orderBys) {
-					if (pQuery.orderByDirections.get(i).contentEquals("D"))
+					if (pQuery.orderByDirections.get(i).contentEquals("D")) {
 						orderByStr = orderByStr + oby + " desc, ";
-					else
+					} else {
 						orderByStr = orderByStr + oby + ", ";
+					}
 					i++;
 				}
 				if (orderByStr.length() > 1) {
@@ -3392,10 +3572,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			Logger.getLogger(this.getClass()).info("dql: " + dql);
 
-			if (loginName == null)
+			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
-			if (password == null)
+			}
+			if (password == null) {
 				throw new Exception("Password should not be null");
+			}
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
@@ -3463,14 +3645,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -3487,8 +3671,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			for (int j = 0; j < objAclExisting.getAccessorCount(); j++) {
 				currentPermissions = currentPermissions + objAclExisting.getAccessorName(j).toString() + " " + objAclExisting.getAccessorPermit(j) + ", ";
 			}
-			if (currentPermissions.endsWith(", "))
+			if (currentPermissions.endsWith(", ")) {
 				currentPermissions = currentPermissions.substring(0, currentPermissions.length() - 2);
+			}
 			WsServer.log(loginName, currentPermissions);
 		} else {
 			WsServer.log(loginName, currentPermissions + "No acl on object??");
@@ -3523,8 +3708,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			ex.printStackTrace(pw);
 			Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
 		} finally {
-			if (userSession != null)
+			if (userSession != null) {
 				AdminServiceImpl.getInstance().releaseSession(userSession);
+			}
 		}
 
 		return ret;
@@ -3572,16 +3758,21 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					// SB2 mobilesb2_dev1/enigma
 					"mobile/reports/ReportsPw01~jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS=(PROTOCOL=TCP)(HOST=dbm02.ts.telekom.si)(PORT=1521))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=select)(METHOD=basic))(SERVER=dedicated)(SERVICE_NAME=tsalfa.ts.telekom.si)))" };
 
-			if (msg_template_type == null)
+			if (msg_template_type == null) {
 				throw new ServerException("BN Template type is not defined.");
-			if (topic_id == 0)
+			}
+			if (topic_id == 0) {
 				throw new ServerException("BN topic_id is not defined.");
-			if (msg_template_description == null)
+			}
+			if (msg_template_description == null) {
 				throw new ServerException("BN Description is not defined.");
-			if (process_point == null)
+			}
+			if (process_point == null) {
 				throw new ServerException("BN Process point is not defined.");
-			if (rules_conditions == null)
+			}
+			if (rules_conditions == null) {
 				throw new ServerException("BN rules_conditions is not defined.");
+			}
 
 			for (String driverUrl : urls) {
 
@@ -3635,29 +3826,29 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				stmt = lconn.createStatement();
 				// @formatter:off
-				sql = "MERGE INTO "+scheme+".T_MSG_TEMPLATE USING dual ON ( msg_template_id="
-						+ msg_template_id + " )"
-						+ "	WHEN MATCHED THEN UPDATE SET msg_template_type='" + msg_template_type + "', topic_id= " + topic_id +
-						"	WHEN NOT MATCHED THEN " 
-						+ "		INSERT(msg_template_id,msg_template_type,topic_id) VALUES(" 
-						+ msg_template_id
-						+ ",'" + msg_template_type + "',"+topic_id+")";
-				// @formatter:on
+                sql = "MERGE INTO " + scheme + ".T_MSG_TEMPLATE USING dual ON ( msg_template_id="
+                        + msg_template_id + " )"
+                        + "	WHEN MATCHED THEN UPDATE SET msg_template_type='" + msg_template_type + "', topic_id= " + topic_id
+                        + "	WHEN NOT MATCHED THEN "
+                        + "		INSERT(msg_template_id,msg_template_type,topic_id) VALUES("
+                        + msg_template_id
+                        + ",'" + msg_template_type + "'," + topic_id + ")";
+                // @formatter:on
 				rs = stmt.executeQuery(sql);
 
 				// @formatter:off
-				sql = "MERGE INTO "+scheme+".T_MSG_TEMPLATE_TOPIC USING dual ON ( msg_template_id="
-						+ msg_template_id + " )"
-						+ "	WHEN MATCHED THEN UPDATE SET msg_template_description='" + msg_template_description + "'," +
-																						"process_point='" + process_point + "'," +
-																						"rules_conditions='" + rules_conditions + "'" +
-						"	WHEN NOT MATCHED THEN " 
-						+ "		INSERT(msg_template_id,msg_template_description,process_point,rules_conditions) VALUES(" 
-						+ msg_template_id
-						+ ",'" + msg_template_description + "'"
-						+ ",'" + process_point + "'"
-						+ ",'" + rules_conditions + "')";
-				// @formatter:on
+                sql = "MERGE INTO " + scheme + ".T_MSG_TEMPLATE_TOPIC USING dual ON ( msg_template_id="
+                        + msg_template_id + " )"
+                        + "	WHEN MATCHED THEN UPDATE SET msg_template_description='" + msg_template_description + "',"
+                        + "process_point='" + process_point + "',"
+                        + "rules_conditions='" + rules_conditions + "'"
+                        + "	WHEN NOT MATCHED THEN "
+                        + "		INSERT(msg_template_id,msg_template_description,process_point,rules_conditions) VALUES("
+                        + msg_template_id
+                        + ",'" + msg_template_description + "'"
+                        + ",'" + process_point + "'"
+                        + ",'" + rules_conditions + "')";
+                // @formatter:on
 				rs = stmt.executeQuery(sql);
 
 				// lets delete deplate_default for this template_id
@@ -3696,9 +3887,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
 			WsServer.log(loginName, "ERROR: " + e.getMessage());
 		} finally {
-			if (userSession != null)
-				if (userSession.isConnected())
+			if (userSession != null) {
+				if (userSession.isConnected()) {
 					userSession.getSessionManager().release(userSession);
+				}
+			}
 		}
 
 		return null;
@@ -3715,14 +3908,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// AdminServiceImpl.superUserPassword = "Doitman789012";
 			// AdminServiceImpl.superUserDomain = "ts";
 			// String m_docbroker = "bsw-documentum.ts.telekom.si";
-
 			// ---- TEST
 			// AdminServiceImpl.repositoryName = "Mobitel";
 			// AdminServiceImpl.superUserName = "zivkovick";
 			// AdminServiceImpl.superUserPassword = "Doitman789012";
 			// AdminServiceImpl.superUserDomain = "ts";
 			// String m_docbroker = "BTW-DOCUMENT-T.ts.telekom.si";
-
 			// -- PROD
 			AdminServiceImpl.repositoryName = "Mobitel";
 			AdminServiceImpl.superUserName = "zivkovick";
@@ -3854,8 +4045,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			 * You can also add virtual document to the copy operation. In that case,
 			 * all the (immediate and non-immediate) children of the virtual document
 			 * will also be copied.
-			 **/
-
+			 *
+			 */
 			if (dfSysObject.isVirtualDocument()) { // yes, it is virtual
 				IDfVirtualDocument virdoc = dfSysObject.asVirtualDocument("", false);
 				copyOperation.add(virdoc);
@@ -3888,8 +4079,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					for (int i = 0; i < prof.roles.size(); i++) {
 						for (int k = 0; k < prof.roles.get(i).defaultUserGroups.size(); k++) {
 							UserGroup ug = prof.roles.get(i).defaultUserGroups.get(k);
-							if (!roleUserGroups.containsKey(prof.roles.get(i).getId()))
+							if (!roleUserGroups.containsKey(prof.roles.get(i).getId())) {
 								roleUserGroups.put(prof.roles.get(i).getId(), new ArrayList<String>());
+							}
 
 							roleUserGroups.get(prof.roles.get(i).getId()).add(ug.getId());
 						}
@@ -3902,10 +4094,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				int releaseNo = 0;
 				releaseNo = dfSysObject.getInt("mob_releaseno") + 1;
 				copiedObject.setInt("mob_releaseno", releaseNo);
-				if (dfSysObject.hasAttr("mob_releaseno"))
+				if (dfSysObject.hasAttr("mob_releaseno")) {
 					copiedObject.setRepeatingString("mob_supersedes", 0, dfSysObject.getObjectName() + "/" + dfSysObject.getInt("mob_releaseno"));
-				else
+				} else {
 					copiedObject.setRepeatingString("mob_supersedes", 0, dfSysObject.getObjectName());
+				}
 
 				try {
 					copiedObject.setTime("mob_valid_from", DfTime.DF_NULLDATE);
@@ -3919,8 +4112,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				ExplorerServiceImpl.getInstance().checkDocmanSExist(persObject, userSession, prof);
 				ExplorerServiceImpl.getInstance().setUsersForRoles(userSession, persObject, roleUserGroups);
 
-				if (userSession.isTransactionActive())
+				if (userSession.isTransactionActive()) {
 					userSession.commitTrans();
+				}
 
 				WsServer.log(loginName, "[" + loginName + "] NewRelease: done.");
 
@@ -3932,8 +4126,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			ex.printStackTrace(pw);
 			Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
 		} finally {
-			if (userSession != null)
+			if (userSession != null) {
 				AdminServiceImpl.getInstance().releaseSession(userSession);
+			}
 		}
 
 		return null;
@@ -3968,17 +4163,17 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Tika tika = new Tika();
 			String filetype = tika.detect(tis);
 
-			if (filetype.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+			if (filetype.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
 				al.add("msw12");
-			else if (filetype.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+			} else if (filetype.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
 				al.add("ods");
-			else if (filetype.equals("application/xhtml+xml"))
+			} else if (filetype.equals("application/xhtml+xml")) {
 				al.add("html");
-			// else if (filetype.equals("application/vnd.ms-excel"))
+			} // else if (filetype.equals("application/vnd.ms-excel"))
 			// al.add("xls");
-			else if (filetype.equals("text/html"))
+			else if (filetype.equals("text/html")) {
 				al.add("html");
-			else {
+			} else {
 				// String mimeType = Files.probeContentType(tempFile.toPath());
 				sess = AdminServiceImpl.getAdminSession();
 				query.setDQL("select name from dm_format where mime_type='" + filetype + "'");
@@ -3996,10 +4191,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		} catch (Throwable ex) {
 			Logger.getLogger(this.getClass()).error(ex);
 		} finally {
-			if (sess != null)
+			if (sess != null) {
 				sess.getSessionManager().release(sess);
-			if (tempFile != null)
+			}
+			if (tempFile != null) {
 				tempFile.delete();
+			}
 		}
 
 		return al;
@@ -4024,8 +4221,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -4047,10 +4245,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// try to get profile from local path - if it doesnt exist load it from
 			// documentum
 
-			if (loginName == null)
+			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
-			if (password == null)
+			}
+			if (password == null) {
 				throw new Exception("Password should not be null");
+			}
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			AdminServiceImpl.beginTransaction(userSession);
@@ -4102,7 +4302,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			 * barcode);
 			 * 
 			 */
-
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 
 			setStateForObject(userSession, persObject, prof, stateId);
@@ -4115,8 +4314,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			WsServer.log(loginName, "Documentum object with barcode" + persObject.getString("object_name") + "(" + persObject.getId("r_object_id")
 					+ ") classified in: " + timeSec + " seconds.");
 
-			if (userSession.isTransactionActive())
+			if (userSession.isTransactionActive()) {
 				userSession.commitTrans();
+			}
 
 			doc = docFromSysObject(persObject, userSession.getLoginUserName(), userSession);
 
@@ -4144,14 +4344,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			throw new ServerException(ex.getMessage());
 		} finally {
 			try {
-				if (collection != null)
+				if (collection != null) {
 					collection.close();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				if (userSession != null)
+				if (userSession != null) {
 					AdminServiceImpl.getInstance().releaseSession(userSession);
+				}
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -4198,8 +4400,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						Path pathInZipfile = zipfs.getPath(sysObj.getObjectName() + "." + sysObj.getFormat().getDOSExtension());
 
 						Files.copy(externalTxtFile, pathInZipfile, StandardCopyOption.REPLACE_EXISTING);
-						if (f2.delete())
+						if (f2.delete()) {
 							Logger.getLogger(this.getClass()).info("Succesfully added in deleted temp file " + f2.getAbsolutePath() + " to zip");
+						}
 
 						WsServer.log(loginName, "progress: " + count + "/" + r_object_ids.size());
 					}
@@ -4215,8 +4418,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		} catch (Throwable ex) {
 			Logger.getLogger(this.getClass()).error(ex);
 		} finally {
-			if (userSession != null)
+			if (userSession != null) {
 				userSession.getSessionManager().release(userSession);
+			}
 		}
 		return ret;
 	}
@@ -4226,27 +4430,29 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			boolean deleteDir) throws ServerException {
 
 		// https://github.com/vasturiano/3d-force-graph
-
 		IDfSession userSession = null;
 
 		Thread.currentThread().setName("prepareAiTrainDataForFolderAndClassification");
 
 		try {
 
-			if (classification.contains("|"))
+			if (classification.contains("|")) {
 				classification = classification.split("\\|")[0];
+			}
 
 			Path path = Paths.get("/tmp/classify/train/" + classification);
-			if (!path.toFile().exists())
+			if (!path.toFile().exists()) {
 				Files.createDirectories(path);
+			}
 
 			if (deleteDir) {
 				Stream<Path> list = Files.list(path);
 				Iterator<Path> it = list.iterator();
 				while (it.hasNext()) {
 					Path pathFile = it.next();
-					if (pathFile.toFile().delete())
+					if (pathFile.toFile().delete()) {
 						Logger.getLogger(this.getClass()).info("Delete learning file: " + pathFile.toFile().getAbsolutePath());
+					}
 				}
 				list.close();
 			}
@@ -4258,14 +4464,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				String folderPath = fold.getAllRepeatingStrings("r_folder_path", "");
 
 // @formatter:off				
-				IDfQuery q = new DfQuery("select r_object_id from dm_document where folder('" + folderPath + "') and (a_content_type='pdf' or " +
-																																																						 "a_content_type='tiff' or " +
-																																																						 "a_content_type='msg' or " +
-																																																						 "a_content_type='odt' or " +
-																																																						 "a_content_type='csv' or " +
-																																																						 "a_content_type='tiff' or " +
-																																																						 "a_content_type='tiff')"
-						);
+                IDfQuery q = new DfQuery("select r_object_id from dm_document where folder('" + folderPath + "') and (a_content_type='pdf' or "
+                        + "a_content_type='tiff' or "
+                        + "a_content_type='msg' or "
+                        + "a_content_type='odt' or "
+                        + "a_content_type='csv' or "
+                        + "a_content_type='tiff' or "
+                        + "a_content_type='tiff')"
+                );
 // @formatter:on				
 				IDfCollection coll = q.execute(userSession, IDfQuery.DF_READ_QUERY);
 				while (coll.next()) {
@@ -4289,7 +4495,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					// f.delete();
 					// outputStream.close();
 					// f = new File(tiffFileName);
-
 					BodyContentHandler handler = new BodyContentHandler(Integer.MAX_VALUE);
 
 					TesseractOCRConfig config = new TesseractOCRConfig();
@@ -4357,7 +4562,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					// }
 					//
 					// }
-
 				}
 				coll.close();
 			}
@@ -4365,8 +4569,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		} catch (Throwable ex) {
 			Logger.getLogger(this.getClass()).error(ex);
 		} finally {
-			if (userSession != null)
+			if (userSession != null) {
 				userSession.getSessionManager().release(userSession);
+			}
 		}
 
 		return null;
@@ -4407,7 +4612,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				// GetCatalogRequestMsg msg = new GetCatalogRequestMsg();
 				// msg.setHeader(header);
 				// msg.setName("process.milestones");
-
 				client.syncTemplate(r_object_id);
 
 				Logger.getLogger(this.getClass()).error("Synced template on: " + wsdlEndpoint + " endpoint.");

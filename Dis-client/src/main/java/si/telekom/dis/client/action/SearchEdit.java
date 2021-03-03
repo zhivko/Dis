@@ -60,6 +60,7 @@ public class SearchEdit extends WindowBox {
 	ArrayList<String> orderByDirections;
 
 	public Button duplicateSearch;
+	public Button deleteSearch;
 
 	public SearchEdit(ParametrizedQueryPanel parametrizedQueryPanel) {
 		orderByDirections = new ArrayList<String>();
@@ -220,7 +221,7 @@ public class SearchEdit extends WindowBox {
 				// TODO Auto-generated method stub
 				try {
 					adminService.duplicateParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
-							ParametrizedQueryPanel.lastParametrizedQuery.name, new AsyncCallback<String>() {
+							ParametrizedQueryPanel.lastParametrizedQuery.name, SearchEdit.this.name.getValue() , new AsyncCallback<String>() {
 								@Override
 								public void onSuccess(String result) {
 									MenuPanel.getInstance().createSearchItems();
@@ -242,6 +243,38 @@ public class SearchEdit extends WindowBox {
 			duplicateSearch.setEnabled(false);
 		}
 
+		deleteSearch = new Button("Delete search");
+		deleteSearch.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				// TODO Auto-generated method stub
+				try {
+					adminService.deleteParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
+							ParametrizedQueryPanel.lastParametrizedQuery.name, new AsyncCallback<String>() {
+								@Override
+								public void onSuccess(String result) {
+									MenuPanel.getInstance().createSearchItems();
+									MainPanel.log("Deleted search.");
+								}
+
+								@Override
+								public void onFailure(Throwable caught) {
+									MainPanel.log("Error delete search.");
+								}
+							});
+				} catch (ServerException e) {
+					MainPanel.log("Error deleting search: " + e.getMessage());
+				}
+			}
+		});
+		getButtonPanel().add(deleteSearch);
+		if (!MainPanel.getInstance().loginRole.toLowerCase().equals("administrator")) {
+			deleteSearch.setEnabled(false);
+		}
+		
+		
+		
 		getOkButton().addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {

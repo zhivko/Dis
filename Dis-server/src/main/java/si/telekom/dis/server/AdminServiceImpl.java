@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -156,7 +157,7 @@ import si.telekom.dis.shared.UserGroup;
 @RemoteServiceRelativePath("admin")
 public class AdminServiceImpl extends RemoteServiceServlet implements AdminService {
 	static public IDfSessionManager sessMgr = null;
-	
+
 	public static boolean started = false;
 	private static DfClientX myDctmClientX;
 
@@ -347,7 +348,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				long timeMs2 = System.currentTimeMillis();
 				Logger.getLogger(AdminServiceImpl.class).info("Started in: " + Math.round(((timeMs2 - timeMs1) / 1000)) + "s.");
 
-				started=true;
+				started = true;
 				// MassClassify();
 				// checkPermForUser();
 
@@ -360,10 +361,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			@Override
 			public void run() {
+				IDfSession adminSession = null;
 				try {
+					Thread.sleep(1 * 60 * 60 * 1000);
 					while (true) {
 						Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...");
-						IDfSession adminSession = getAdminSession();
+						adminSession = getAdminSession();
 						IDfQuery qry = new DfQuery("select r_object_id, group_name from dm_group");
 						IDfCollection coll = qry.execute(adminSession, IDfQuery.DF_READ_QUERY);
 						while (coll.next()) {
@@ -372,13 +375,16 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 							allGroups.put(groupName, group);
 						}
 						coll.close();
-						adminSession.getSessionManager().release(adminSession);
+
 						Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...end.");
 						// 1 hour
 						Thread.sleep(1 * 60 * 60 * 1000);
 					}
 				} catch (Exception e) {
 					Logger.getLogger(AdminServiceImpl.class).error(e);
+				} finally {
+					if (adminSession != null)
+						adminSession.getSessionManager().release(adminSession);
 				}
 			}
 		});
@@ -519,7 +525,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		ret.add(new Action("document.addVersionLabel", "dodaj labelo verzije", permit.WRITE));
 		ret.add(new Action("document.removeVersionLabel", "odstrani labelo verzije", permit.WRITE));
 		ret.add(new Action("document.cancelCheckOut", "Prekliči checkout", permit.WRITE));
-
+		ret.add(new Action("document.apiDump", "ApiDump objekta", permit.BROWSE));
+		
 		ArrayList<extPermit> extPermitPromoteDemote = new ArrayList<>();
 		extPermitPromoteDemote.add(extPermit.CHANGE_PERMIT);
 		extPermitPromoteDemote.add(extPermit.CHANGE_LOCATION);
@@ -1015,7 +1022,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return retProfile;
 	}
 
-	public static IDfSessionManager getSessionManager() throws Exception {
+	public static synchronized IDfSessionManager getSessionManager() throws Exception {
 		// https://community.emc.com/thread/179349?start=0&tstart=0
 		if (sessMgr == null) {
 			long n1 = System.currentTimeMillis();
@@ -1027,7 +1034,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			Logger.getLogger(AdminService.class).info(String.format(String.format("Started myDctmClientX.getLocalClient()")));
 			IDfClient myDfClient = myDctmClientX.getLocalClient();
 			long n3 = System.currentTimeMillis();
-			Logger.getLogger(AdminService.class).info(String.format(String.format("Started myDctmClientX.getLocalClient()...Done. took:" + (n3 - n1))));
+			Logger.getLogger(AdminService.class)
+					.info(String.format(String.format("Started myDctmClientX.getLocalClient()...Done. took:" + (n3 - n1) / 1000 + "s")));
 
 			sessMgr = myDfClient.newSessionManager();
 			Logger.getLogger(AdminService.class).info(String.format(String.format("Started myDctmClientX.getLocalClient().newSessionManager()...Done.")));
@@ -1042,7 +1050,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				String docbrokerAdress = config.getString("primary_host");
 				int docbrokerPort;
 				docbrokerPort = config.getInt("primary_port");
-				Logger.getLogger(AdminService.class).info(String.format("Docbroker host: %s port: %d", docbrokerAdress, docbrokerPort));
+				Logger.getLogger(AdminService.class).info(String.format(
+						"Docbroker host: " + ConsoleColors.RED_BACKGROUND_BRIGHT + "%s" + ConsoleColors.RESET + " port: %d", docbrokerAdress, docbrokerPort));
 			} catch (DfException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1895,7 +1904,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		getSessionManager();
 
 		// String password = Tools.decryptString(passwordEncrypted);
-		String password = new String(Base64Utils.fromBase64(passwordEncrypted));
+		String password = base64Decode(passwordEncrypted);
 
 		IDfSession userSession = null;
 		synchronized (sessMgr) {
@@ -1941,11 +1950,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			loginInfo.setForceAuthentication(false);
 			sessMgr.clearIdentities();
 			sessMgr.setIdentity(AdminServiceImpl.repositoryName, loginInfo);
-			Logger.getLogger(AdminServiceImpl.class).info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\"
-					+ AdminServiceImpl.superUserName + "...");
+			Logger.getLogger(AdminServiceImpl.class)
+					.info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\" + AdminServiceImpl.superUserName + "...");
 			userSession = sessMgr.getSession(AdminServiceImpl.repositoryName);
-			Logger.getLogger(AdminServiceImpl.class).info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\"
-					+ AdminServiceImpl.superUserName + " ... Done");
+			Logger.getLogger(AdminServiceImpl.class)
+					.info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\" + AdminServiceImpl.superUserName + " ... Done");
 		}
 
 		return userSession;
@@ -3054,6 +3063,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 							ret.dqlParts.add(partOfDql);
 							ret.labels.add("\\(" + label + "\\)");
 							ret.arguments.add(m.group(0));
+							
+							Logger.getLogger(this.getClass()).info("PartDql: " + partDql);
+							Logger.getLogger(this.getClass()).info("\tAtt: " + a.dcmtAttName + " ("+a.label+")");
+							
+							dqlQuery = dqlQuery.replace(partDql, "");
 							break;
 						}
 					}
@@ -3941,7 +3955,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public String duplicateParametrizedQuery(String loginName, String loginPass, String name) throws ServerException {
+	public String duplicateParametrizedQuery(String loginName, String loginPass, String oldName, String name) throws ServerException {
 		String ret = null;
 		Logger.getLogger(this.getClass()).info("Duplicate search: " + name);
 		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
@@ -3951,12 +3965,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			XPath xpath = xpathFac.newXPath();
 			// xpath.setNamespaceContext();
 
-			XPathExpression expr = xpath.compile("/config/docbase[1]/queries/query[@name='" + name + "']");
+			XPathExpression expr = xpath.compile("/config/docbase[1]/queries/query[@name='" + oldName + "']");
 			Element el = (Element) expr.evaluate(getDocConfig(), XPathConstants.NODE);
 			if (el != null) {
 
 				Element el1 = (Element) el.cloneNode(true);
-				el1.setAttribute("name", name + " (copy of)");
+				el1.setAttribute("name", name);
 
 				el.getParentNode().appendChild(el1);
 
@@ -3997,6 +4011,61 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return ret;
 	}
 
+	@Override
+	public String deleteParametrizedQuery(String loginName, String loginPass, String name) throws ServerException {
+		String ret = null;
+		Logger.getLogger(this.getClass()).info("Duplicate search: " + name);
+		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
+
+		try {
+			XPathFactory xpathFac = XPathFactory.newInstance();
+			XPath xpath = xpathFac.newXPath();
+			// xpath.setNamespaceContext();
+
+			XPathExpression expr = xpath.compile("/config/docbase[1]/queries/query[@name='" + name + "']");
+			Element el = (Element) expr.evaluate(getDocConfig(), XPathConstants.NODE);
+			if (el != null) {
+
+				docConfig.removeChild(el);
+
+				Transformer tr = TransformerFactory.newInstance().newTransformer();
+				tr.setOutputProperty(OutputKeys.INDENT, "yes");
+				tr.setOutputProperty(OutputKeys.METHOD, "xml");
+				tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+				// tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
+				tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+				// send DOM to file
+				tr.transform(new DOMSource(docConfig), new StreamResult(new FileOutputStream(configPathFileName)));
+
+				// check if it is ocalhost save it to development environment
+				final String ip = getThreadLocalRequest().getRemoteHost();
+				InetAddress addr = InetAddress.getByName(ip);
+				String hostName = addr.getHostName();
+				if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
+					File devConfig;
+					if (SystemUtils.IS_OS_LINUX) {
+						devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
+					} else {
+						devConfig = new File("c:\\git\\Dis\\Dis-server\\src\\main\\resources\\config.xml");
+					}
+					FileUtils.copyFile(new File(configPathFileName), devConfig);
+					Logger.getLogger(this.getClass()).info("Saved search to dev config file: " + devConfig.getAbsolutePath());
+				}
+			}
+		} catch (Throwable ex) {
+			ByteArrayOutputStream byteAOs = new ByteArrayOutputStream();
+			PrintWriter pw = new PrintWriter(byteAOs);
+			ex.printStackTrace(pw);
+			pw.flush();
+			Logger.getLogger(AdminServiceImpl.class).error(byteAOs.toString());
+			throw new ServerException(ex.getMessage());
+		}
+
+		return ret;
+	}
+	
+	
 	public static void beginTransaction(IDfSession userSession) throws Exception {
 		userSession.beginTrans();
 	}
@@ -4042,6 +4111,24 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		}
 
 		return ret;
+	}
+
+	// Base64 Basic Decoding
+	public static String base64Decode(String value) {
+		try {
+			byte[] decodedValue = Base64.getDecoder().decode(value);
+			return new String(decodedValue, StandardCharsets.UTF_8.toString());
+		} catch (UnsupportedEncodingException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	public static String base64Encode(String value) {
+		try {
+			return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8.toString()));
+		} catch (UnsupportedEncodingException ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
 }

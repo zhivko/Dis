@@ -36,6 +36,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		List<Document> versions(String loginName, String password, String r_object_id) throws ServerException;
 		Document promote(String loginName, String password, String r_object_id) throws ServerException;
 		Document demote(String loginName, String password, String r_object_id) throws ServerException;
+		String apiDump(String loginName, String password, String r_object_id) throws ServerException;
 		
 		List<List<String>> auditTrail(String loginName, String password, String r_object_id, String eventFilter, int start, int length) throws ServerException;
 		Void addVersionLabel(String loginName, String password, List<String> r_object_id, String labelVersion) throws ServerException;

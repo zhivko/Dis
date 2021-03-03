@@ -2,6 +2,8 @@ package si.telekom.dis.client;
 
 import java.util.logging.Logger;
 
+import org.fusesource.restygwt.client.JsonEncoderDecoder;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -12,18 +14,16 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.ToggleButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.autobean.shared.AutoBean;
+import com.google.web.bindery.autobean.shared.AutoBeanCodex;
+import com.google.web.bindery.autobean.shared.AutoBeanUtils;
 
 import si.telekom.dis.client.action.SearchEdit;
 import si.telekom.dis.client.item.FormAttribute;
-import si.telekom.dis.shared.AdminService;
-import si.telekom.dis.shared.AdminServiceAsync;
 import si.telekom.dis.shared.Attribute;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
@@ -36,10 +36,14 @@ public class ParametrizedQueryPanel extends WindowBox {
 	private final static Logger logger = Logger.getLogger("mylogger");
 	public static MyParametrizedQuery lastParametrizedQuery;
 
+	public interface MyParametrizedQueryCodec extends JsonEncoderDecoder<MyParametrizedQuery> {
+	}
+
 	public MyParametrizedQuery parametrizedQuery;
 
 	public ParametrizedQueryPanel(MyParametrizedQuery parametrizedQuery) {
 		super();
+
 		this.parametrizedQuery = parametrizedQuery;
 
 		setText("Search - " + parametrizedQuery.name);
@@ -47,7 +51,6 @@ public class ParametrizedQueryPanel extends WindowBox {
 
 		VerticalPanel vp = new VerticalPanel();
 		ScrollPanel sp = new ScrollPanel(vp);
-		refresh(parametrizedQuery);
 
 		getOkButton().addClickHandler(new ClickHandler() {
 			@Override
@@ -101,7 +104,6 @@ public class ParametrizedQueryPanel extends WindowBox {
 								@Override
 								public void onSuccess(MyParametrizedQuery result) {
 									ParametrizedQueryPanel.this.refresh(result);
-
 									if (parametrizedQuery.formAttributes.size() == 0) {
 										lastParametrizedQuery = ParametrizedQueryPanel.this.parametrizedQuery;
 										SearchPanel.getSearchPanelInstance().runReadDqlQuery(prepareDql());
@@ -122,7 +124,6 @@ public class ParametrizedQueryPanel extends WindowBox {
 									}
 									MenuPanel.getInstance().resetSearchButtons();
 									b.setDown(true);
-
 								}
 
 								@Override
@@ -152,7 +153,7 @@ public class ParametrizedQueryPanel extends WindowBox {
 									SearchEdit se = new SearchEdit(ParametrizedQueryPanel.this);
 									se.show();
 								}
-								
+
 								public void onFailure(Throwable caught) {
 									MainPanel.getInstance().log(caught.getMessage());
 								};
@@ -170,27 +171,34 @@ public class ParametrizedQueryPanel extends WindowBox {
 	}
 
 	public void refresh(MyParametrizedQuery result) {
-		// TODO Auto-generated method stub
+
+		// String serializedPrevious = JsonUtils.stringify(lastParametrizedQuery);
+		MyParametrizedQueryCodec codec = GWT.create(MyParametrizedQueryCodec.class);
+		String serializedNow = codec.encode(result).toString();
+		String serializedPrevious = codec.encode(lastParametrizedQuery).toString();
+
 		this.parametrizedQuery = result;
-		lastParametrizedQuery = result;
 
-		getContentPanel().clear();
+		if (!serializedPrevious.equals(serializedNow)) {
+			getContentPanel().clear();
+			int i = 0;
+			for (String partOfDql : parametrizedQuery.dqlParts) {
+				Attribute a = parametrizedQuery.formAttributes.get(i);
+				FormAttribute fa = new FormAttribute(a);
+				fa.addKeyUpHandler(new KeyUpHandler() {
 
-		int i = 0;
-		for (String partOfDql : parametrizedQuery.dqlParts) {
-			Attribute a = parametrizedQuery.formAttributes.get(i);
-			FormAttribute fa = new FormAttribute(a);
-			fa.addKeyUpHandler(new KeyUpHandler() {
-
-				@Override
-				public void onKeyUp(KeyUpEvent event) {
-					if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-						runQuery();
+					@Override
+					public void onKeyUp(KeyUpEvent event) {
+						if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+							runQuery();
+						}
 					}
-				}
-			});
-			getContentPanel().add(fa);
-			i++;
+				});
+				getContentPanel().add(fa);
+				i++;
+			}
+			lastParametrizedQuery = result;
+
 		}
 
 	}

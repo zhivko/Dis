@@ -47,6 +47,7 @@ import si.telekom.dis.client.CustomTreeModel.MyAsyncDataProvider;
 import si.telekom.dis.client.action.ClassifyDocument;
 import si.telekom.dis.client.action.DocumentAddRendition;
 import si.telekom.dis.client.action.DocumentAddVersionLabel;
+import si.telekom.dis.client.action.DocumentApiDump;
 import si.telekom.dis.client.action.DocumentAuditTrail;
 import si.telekom.dis.client.action.DocumentCheckin;
 import si.telekom.dis.client.action.DocumentDelete;
@@ -331,6 +332,8 @@ public class ExplorerPanel extends Composite {
 			adb = new DocumentCheckin(r_object_id);
 		} else if (actionId.equals("document.addRendition")) {
 			adb = new DocumentAddRendition(r_object_id);
+		} else if (actionId.equals("document.apiDump")) {
+			adb = new DocumentApiDump(r_object_id);			
 		} else if (actionId.equals("document.removeRendition")) {
 			adb = new DocumentRemoveRendition(r_object_id);
 		} else if (actionId.equals("document.checkOut")) {

@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.xml.namespace.QName;
@@ -30,8 +31,9 @@ import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogRequestMsg;
 import si.telekom.dis.server.jaxwsClient.catalogService.GetCatalogResponseMsg;
 import si.telekom.dis.server.jaxwsClient.catalogService.ICatalogService;
 import si.telekom.dis.server.jaxwsClient.catalogService.RequestMessageHeader;
+import si.telekom.dis.server.restExtra.api.CatalogMilestonesSearchApi;
 import si.telekom.dis.server.restExtra.api.CatalogMilestonesSearchApiService;
-
+import si.telekom.dis.server.restExtra.api.NotFoundException;
 
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
 // http://localhost:8080/Dis-server/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
@@ -46,14 +48,13 @@ import si.telekom.dis.server.restExtra.api.CatalogMilestonesSearchApiService;
 public class CatalogServiceRest extends CatalogMilestonesSearchApiService {
 
 	@Override
-	public Response getProcessMilestones(String partOfProcessMilisetoneName, String xTransactionId, SecurityContext securityContext)
-			throws si.telekom.dis.server.restExtra.api.NotFoundException {
-
+	public Response getProcessMilestones(String partOfProcessMilestoneName,SecurityContext securityContext) 
+			throws NotFoundException {
 		List<String> ret = new ArrayList<String>();
 
-		if(partOfProcessMilisetoneName==null)
-			partOfProcessMilisetoneName="";
-		
+		if (partOfProcessMilestoneName == null)
+			partOfProcessMilestoneName = "";
+
 		int maxResultCount = 20;
 		try {
 			String wsdlEndpoint = "http://services.ts.telekom.si:80/services/common/base/v1/CatalogService/v/1.8.0?wsdl";
@@ -80,10 +81,10 @@ public class CatalogServiceRest extends CatalogMilestonesSearchApiService {
 			GetCatalogResponseMsg resp = client.getCatalog(msg);
 			List<CatalogValue> values = resp.getCatalog().getCatalogValueCollection().getCatalogValues();
 
-			String regExpr = ".*" + partOfProcessMilisetoneName + ".*";
+			String regExpr = ".*" + partOfProcessMilestoneName + ".*";
 			Pattern p = Pattern.compile(regExpr, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);// .
 			for (CatalogValue catalogValue : values) {
-				if (!partOfProcessMilisetoneName.equals("")) {
+				if (!partOfProcessMilestoneName.equals("")) {
 					Matcher m = p.matcher(catalogValue.getCode());
 					if (m.find()) {
 						String line = catalogValue.getCode();

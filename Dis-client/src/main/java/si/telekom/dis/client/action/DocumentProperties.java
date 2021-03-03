@@ -56,8 +56,8 @@ public class DocumentProperties extends WindowBox {
 		});
 
 		MainPanel.log("Nalagam atribute..");
-		explorerService.getProfileAttributesAndValues(MainPanel.getInstance().loginName,
-				MainPanel.getInstance().loginPass, r_object_id_, new AsyncCallback<ProfileAttributesAndValues>() {
+		explorerService.getProfileAttributesAndValues(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id_,
+				new AsyncCallback<ProfileAttributesAndValues>() {
 
 					@Override
 					public void onSuccess(ProfileAttributesAndValues result) {
@@ -71,8 +71,7 @@ public class DocumentProperties extends WindowBox {
 									FormAttribute fa = new FormAttribute(att);
 									fa.setWidth("90%");
 									fa.addValueChangeHandler(new ValueChangeHandler<List<String>>() {
-										public void onValueChange(
-												com.google.gwt.event.logical.shared.ValueChangeEvent<java.util.List<String>> event) {
+										public void onValueChange(com.google.gwt.event.logical.shared.ValueChangeEvent<java.util.List<String>> event) {
 											if (checkMandatoryAttributes())
 												getOkButton().setEnabled(true);
 
@@ -83,13 +82,13 @@ public class DocumentProperties extends WindowBox {
 									if (values != null) {
 										fa.setValue(values);
 									} else {
-										MainPanel.log("Attribute value for attribute <strong>" + att.dcmtAttName
-												+ "</strong> not received from server.");
+										MainPanel.log("Attribute value for attribute <strong>" + att.dcmtAttName + "</strong> not received from server.");
 										fa.att.isReadOnly = true;
 									}
 									g.setWidget(att.row, att.col, fa);
 									allFaAl.add(fa);
-									// logger.info("\tadded to row:" + att.row + " col:" + att.col);
+									// logger.info("\tadded to row:" + att.row + " col:" +
+									// att.col);
 								}
 							}
 							tpAtts.add(g, tab.getParameter());
@@ -115,8 +114,8 @@ public class DocumentProperties extends WindowBox {
 		getOkButton().addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				explorerService.setAttributes(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
-						r_object_id_, getValues(), new AsyncCallback<Void>() {
+				explorerService.setAttributes(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id_, getValues(),
+						new AsyncCallback<Void>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								MainPanel.log(caught.getMessage());
@@ -178,9 +177,7 @@ public class DocumentProperties extends WindowBox {
 		return ret;
 	}
 
-	
-	public List<AttributeValue> getValues()
-	{
+	public List<AttributeValue> getValues() {
 		ArrayList<AttributeValue> ret = new ArrayList<AttributeValue>();
 		for (int i = 0; i < tpAtts.getTabBar().getTabCount(); i++) {
 			Grid g = (Grid) tpAtts.getWidget(i);
@@ -188,46 +185,40 @@ public class DocumentProperties extends WindowBox {
 				for (int k = 0; k < g.getColumnCount(); k++) {
 					if (g.getWidget(j, k) != null) {
 						FormAttribute fa = (FormAttribute) g.getWidget(j, k);
-						
+
 						AttributeValue aval = new AttributeValue();
 						aval.setName(fa.getAtribute().dcmtAttName);
-						if (!fa.att.isRepeating)
-						{
-							ArrayList<String> al = new ArrayList<String>();
-							al.add(split(fa.getValue(), "|")[fa.att.dropDownCol]);
-							aval.setValues(al);
-						}
-						else {
-							ArrayList<String> al = new ArrayList<String>();
+						ArrayList<String> al = new ArrayList<String>();
+						if (!fa.att.isRepeating) {
+							if (fa != null && !fa.getValue().equals(""))
+								al.add(split(fa.getValue(), "|")[fa.att.dropDownCol]);
+						} else {
 							for (String val : fa.getValues()) {
-								al.add(split(val, "|")[fa.att.dropDownCol]);
+								if (val != null && val.equals(""))
+									al.add(split(val, "|")[fa.att.dropDownCol]);
 							}
-							aval.setValues(al);
 						}
+						aval.setValues(al);
 						ret.add(aval);
 					}
 				}
 		}
 		return ret;
 	}
-	
-	
-	public String getAttributeValue(String attName)
-	{
+
+	public String getAttributeValue(String attName) {
 		List<AttributeValue> values = getValues();
 		for (AttributeValue attValue : values) {
-			if(attValue.getName().equals(attName))
+			if (attValue.getName().equals(attName))
 				return attValue.getValues().get(0);
 		}
 		return null;
 	}
-	
-	public static DocumentProperties getInstance()
-	{
+
+	public static DocumentProperties getInstance() {
 		return instance;
 	}
-	
-	
+
 	public static final native String[] split(String string, String separator) /*-{
 		return string.split(separator);
 	}-*/;

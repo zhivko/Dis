@@ -48,7 +48,7 @@ import si.telekom.services.common.customer.v1.ICustomerService;
 public class CustomerSearchRest extends CustomerSearchApiService {
 
 	@Override
-	public Response getCustomersByPartOfName(String partOfCustName, String xTransactionId, SecurityContext securityContext) throws NotFoundException {
+	public Response getCustomersByPartOfName(String partOfCustName, SecurityContext securityContext) throws NotFoundException {
 		List<String> ret = new ArrayList<String>();
 
 		String endpointUrl = "http://services-stg.ts.telekom.si:8000/services/common/customer/v1/CustomerService/v/1.8.0";

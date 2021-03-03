@@ -54,8 +54,10 @@ public interface AdminServiceAsync {
 	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
 			List<String> orderBy, List<String> orderByDirections, String filterClass, AsyncCallback<Void> callback) throws ServerException;
 
-	void duplicateParametrizedQuery(String loginName, String loginPass, String name, AsyncCallback<String> asyncCallback) throws ServerException;
+	void duplicateParametrizedQuery(String loginName, String loginPass, String oldName, String name, AsyncCallback<String> asyncCallback) throws ServerException;
 
+	void deleteParametrizedQuery(String loginName, String loginPass, String name, AsyncCallback<String> asyncCallback) throws ServerException;	
+	
 	void getDocTypeFromDql(String loginName, String loginPass, String dql, AsyncCallback<DocType> asyncCallBack) throws ServerException;
 
 	void getColIdsForTemplate(int templateId, int start, int length, AsyncCallback<List<List<String>>> asyncCallBack) throws ServerException;

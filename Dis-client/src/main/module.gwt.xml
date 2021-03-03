@@ -10,12 +10,12 @@
 	<!-- Inherit the default GWT style sheet. You can change -->
 	<!-- the theme of your GWT application by uncommenting -->
 	<!-- any one of the following lines. -->
-<!-- 	<inherits name='com.google.gwt.user.theme.standard.Standard' /> -->
+	<!-- <inherits name='com.google.gwt.user.theme.standard.Standard' /> -->
 	<inherits name="com.google.gwt.logging.Logging" />
 
 	<!-- <inherits name='com.google.gwt.user.theme.standard.Standard'/> -->
-	s<inherits name='com.google.gwt.user.theme.chrome.Chrome'/>
-<!-- 	<inherits name='com.google.gwt.user.theme.dark.Dark'/> -->
+	<inherits name='com.google.gwt.user.theme.chrome.Chrome' />
+	<!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/> -->
 
 	<!-- Other module inherits -->
 	<!-- <inherits name='com.tractionsoftware.gwt.user.UTCDateTime' /> -->
@@ -23,6 +23,8 @@
 	<inherits name='elemental2.dom.Dom' />
 
 	<inherits name="org.gwtbootstrap3.GwtBootstrap3" />
+
+	<inherits name="org.fusesource.restygwt.RestyGWT" />
 
 	<!-- <inherits name='com.googlecode.gwt.crypto.Crypto' /> -->
 	<!-- <inherits name="com.github.gwtbootstrap.Bootstrap" /> -->
@@ -59,7 +61,7 @@
 		<include name='/js/*.js' />
 	</public>
 
-	<stylesheet src='dis.css'/>
-  <!-- <script src='js/theme.js'/> -->
+	<stylesheet src='dis.css' />
+	<!-- <script src='js/theme.js'/> -->
 
 </module>

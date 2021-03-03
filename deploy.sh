@@ -5,7 +5,7 @@ ssh -i ~/.ssh/id_rsa zivkovick@erender-test.ts.telekom.si 'chmod a+w /app/render
 ssh -i ~/.ssh/id_rsa zivkovick@erender-test.ts.telekom.si 'chmod a+w /app/render/DocMan-DEV/*'
 
 ##################################
-mvn package -P prod
+mvn package -P prod -DskipTests
 
 echo "copying profiles ..."
 scp -i ~/.ssh/id_rsa -r /app/render/DocMan/* zivkovick@erender-test.ts.telekom.si:/app/render/DocMan
@@ -21,7 +21,7 @@ scp -i ~/.ssh/id_rsa ./Dis-server/target/Dis-server-1.0-SNAPSHOT.war zivkovick@e
 
 
 #####################################
-mvn package -P test
+mvn package -P test -DskipTests -Dgwt.skipCompilation=true
 
 echo "copying profiles ..."
 scp -i ~/.ssh/id_rsa -r /app/render/DocMan/* zivkovick@erender-test.ts.telekom.si:/app/render/DocMan-TEST
@@ -39,7 +39,7 @@ scp -i ~/.ssh/id_rsa ./Dis-server/target/Dis-server-1.0-SNAPSHOT.war zivkovick@e
 
 
 ############################################
-mvn package -P dev
+mvn package -P dev -DskipTests -Dgwt.skipCompilation=true
 
 echo "copying profiles ..."
 scp -i ~/.ssh/id_rsa -r /app/render/DocMan/* zivkovick@erender-test.ts.telekom.si:/app/render/DocMan-DEV
@@ -51,4 +51,4 @@ echo "deleting ...Done."
 echo "copying dev..."
 scp -i ~/.ssh/id_rsa ./Dis-server/target/Dis-server-1.0-SNAPSHOT.war zivkovick@erender-test.ts.telekom.si:/app/render/apache-tomcat-8.5.45/webapps/Dis-dev.war
 
-mvn package -P prod
+mvn package -P prod -DskipTests -Dgwt.skipCompilation=true

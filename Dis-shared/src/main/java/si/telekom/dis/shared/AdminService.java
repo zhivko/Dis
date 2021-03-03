@@ -13,11 +13,11 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface AdminService extends RemoteService {
 	List<Action> getActions(String loginName, String password) throws ServerException;
 
-	Action getActionById(String actionId) throws ServerException;	
-	
+	Action getActionById(String actionId) throws ServerException;
+
 	List<DocType> getDocTypes(String loginName, String password) throws ServerException;
+
 	DocType getDocType(String loginName, String password, String doctypeName) throws ServerException;
-	
 
 	List<Profile> getProfiles(String loginName, String password) throws ServerException;
 
@@ -42,23 +42,27 @@ public interface AdminService extends RemoteService {
 	void updateRegTableRow(String loginName, String loginPass, String regTableId, String value, int columnIndex, String pkValue) throws ServerException;
 
 	List<MyParametrizedQuery> getSearchQueries(String loginName, String dctmUserName, String loginPass) throws ServerException;
-	
+
 	List<MyParametrizedQuery> getLazySearchQueries(String loginName, String dctmUserName, String loginPass) throws ServerException;
-	
+
 	MyParametrizedQuery getParametrizedQueryByName(String loginName, String loginPass, String name) throws ServerException;
 
-	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups, List<String> orderBy, List<String> orderBydirections, String filterClass) throws ServerException;
+	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
+			List<String> orderBy, List<String> orderBydirections, String filterClass) throws ServerException;
 
-	String duplicateParametrizedQuery(String loginName, String loginPass, String name) throws ServerException;
-	
+	String duplicateParametrizedQuery(String loginName, String loginPass, String oldName, String name) throws ServerException;
+
+	String deleteParametrizedQuery(String loginName, String loginPass, String name) throws ServerException;
+
 	DocType getDocTypeFromDql(String loginName, String loginPass, String dql) throws ServerException;
-	
+
 	List<List<String>> getColIdsForTemplate(int templateId, int rowNo, int pageLength) throws ServerException;
 
-	void updateCollId(String loginName, String loginPass, int templateId, String templateName, String col_id, String columnName, String value) throws ServerException;	
+	void updateCollId(String loginName, String loginPass, int templateId, String templateName, String col_id, String columnName, String value)
+			throws ServerException;
 
-	void deleteCollId(String loginName, String loginPass, int templateId, String col_id) throws ServerException;	
+	void deleteCollId(String loginName, String loginPass, int templateId, String col_id) throws ServerException;
 
 	void transferToAllEnvironments(String loginName, String loginPass, int templateId) throws ServerException;
-	
+
 }

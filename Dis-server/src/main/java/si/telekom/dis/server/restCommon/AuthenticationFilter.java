@@ -19,6 +19,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
 
+import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.LoginServiceImpl;
 
 /**
@@ -125,7 +126,7 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 		try {
 			LoginServiceImpl loginServiceImpl = new LoginServiceImpl();
 			String clientIp = servletRequest.getRemoteAddr();
-			loginServiceImpl.checkPassword(username, password, clientIp);
+			loginServiceImpl.checkPassword(username, AdminServiceImpl.base64Encode(password), clientIp);
 			isAllowed = true;
 			return isAllowed;
 		} catch (Exception ex) {

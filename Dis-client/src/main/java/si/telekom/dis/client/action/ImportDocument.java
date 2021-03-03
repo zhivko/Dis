@@ -596,7 +596,8 @@ public class ImportDocument extends WindowBox {
 		for (String key : hm.keySet()) {
 			ret = ret + key + "#";
 			for (String val : hm.get(key)) {
-				ret = ret + val.replaceAll("\\|", "¨") + "|";
+				if (val != null && !val.equals(""))
+					ret = ret + String.join("¨", val.split("\\|")) + "|";
 			}
 			if (ret.endsWith("|"))
 				ret = ret.substring(0, ret.length() - 1);

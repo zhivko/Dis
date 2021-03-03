@@ -16,15 +16,10 @@ paths:
       security:
         - BasicAuth: []
       parameters:
-        - in: header
-          name: 'X-Transaction-Id'
-          schema:
-            type: string
-          example: '123e4567-e89b-12d3-a456-426614174000'
         - in: query
-          name: partOfProcessMilisetoneName
+          name: partOfProcessMilestoneName
           description: part of process milestone name
-          required: true
+          required: false
           schema:
             type: string          
       responses:
@@ -53,11 +48,6 @@ paths:
       security:
         - BasicAuth: []
       parameters:
-        - in: header
-          name: 'X-Transaction-Id'
-          schema:
-            type: string
-          example: '123e4567-e89b-12d3-a456-426614174000'
         - in: query
           name: partOfCustName
           description: part of customer name

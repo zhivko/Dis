@@ -33,6 +33,7 @@ public interface ExplorerServiceAsync {
 	void versions(String loginName, String password, String r_object_id, AsyncCallback<List<Document>> callback) throws IllegalArgumentException;
 	void promote(String loginName, String password, String r_object_id, AsyncCallback<Document> callback) throws IllegalArgumentException;
 	void demote(String loginName, String password, String r_object_id, AsyncCallback<Document> callback) throws IllegalArgumentException;
+	void apiDump(String loginName, String password, String r_object_id, AsyncCallback<String> callback) throws IllegalArgumentException;
 
 	
 	void auditTrail(String loginName, String password, String r_object_id, String eventFilter, int start, int length, AsyncCallback<List<List<String>>> callback) throws IllegalArgumentException;

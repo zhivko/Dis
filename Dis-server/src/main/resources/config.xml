@@ -1731,6 +1731,27 @@
             <orderBys/>
             <filterClass/>
          </query>
+         <query name="Vhodna pošta po pošiljatelju in datumu prejema">select r_object_id from mob_incoming_mail where 
+subject (Del naziva dokumenta) like '%&lt;1&gt;%' and 
+mob_sender (Del imena pošiljatelja) like '%&lt;2&gt;%' and 
+r_creation_date (Dokument kreiran OD dne)&gt;date('&lt;3&gt;', 'dd.mm.yyyy hh:mi:ss') and 
+r_creation_date (Dokument kreiran DO dne)&lt;date('&lt;4&gt;', 'dd.mm.yyyy hh:mi:ss') 
+ENABLE (RETURN_RANGE 1 100 'r_modify_date desc')
+				
+				
+				
+			
+            
+            
+         
+            
+            
+         <userGroups>
+               <userGroup id="dm_world" name="dm_world"/>
+            </userGroups>
+            <orderBys/>
+            <filterClass/>
+         </query>
       </queries>
    </docbase>
 </config>

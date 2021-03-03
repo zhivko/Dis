@@ -72,7 +72,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	 * ret[4] ... documentum repository name ret[5] ... documentum content server
 	 * version ret[6] ... UserSettings
 	 */
-	public String[] login(String loginName, String loginPassword) throws ServerException {
+	public String[] login(String loginName, String passwordEncoded) throws ServerException {
 		// Verify that the input is valid.
 		// if (!FieldVerifier.isValidName(loginName)) {
 		// // If the input is not valid, throw an IllegalArgumentException back to
@@ -91,17 +91,17 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		userAgent = escapeHtml(userAgent);
 
 		try {
-			return checkPassword(loginName, loginPassword);
+			return checkPassword(loginName, passwordEncoded);
 		} catch (Exception ex) {
 			throw new ServerException(ex);
 		}
 	}
 
-	public String[] checkPassword(String loginName, String password) throws Exception {
-		return checkPassword(loginName, password, null);
+	public String[] checkPassword(String loginName, String passwordEncoded) throws Exception {
+		return checkPassword(loginName, passwordEncoded, null);
 	}
 
-	public String[] checkPassword(String loginName, String password, String ip) throws Exception {
+	public String[] checkPassword(String loginName, String passwordEncoded, String ip) throws Exception {
 		String ret[] = { "", "", "", "", "", "" };
 
 		IDfSession adminSession = null;
@@ -117,7 +117,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			String hostName = addr.getHostName();
 
 			boolean tryDevelop = true;
-			if (tryDevelop && password.equals("") && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
+			if (tryDevelop && passwordEncoded.equals("") && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 5000;
 				ret[0] = "zivkovick";
@@ -171,13 +171,13 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			//String password = new String(fromBase64);
 			// String password = Tools.decryptString(passwordHashed);
 
-			if (password.equals(""))
-				password = "blabla";
+			if (passwordEncoded.equals(""))
+				passwordEncoded = "blabla";
 
 			boolean ldapCheck = false;
 
 			if (!ldapCheck) {
-				userSess = AdminServiceImpl.getSession(loginName, Base64.getEncoder().encodeToString(password.getBytes()));
+				userSess = AdminServiceImpl.getSession(loginName, passwordEncoded);
 				ret[5] = AdminServiceImpl.getClientX().getLocalClient().getClientConfig().getString("primary_host") + "<br>"
 						+ userSess.getServerConfig().getString("r_server_version");
 				IDfUser dcmtUser = (IDfUser) userSess.getObjectByQualification("dm_user where user_login_name='" + loginName + "'");
@@ -202,7 +202,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 				// env.put(Context.SECURITY_PRINCIPAL, "ts\\" + user);
 
-				env.put(Context.SECURITY_CREDENTIALS, String.valueOf(password));
+				env.put(Context.SECURITY_CREDENTIALS, String.valueOf(passwordEncoded));
 
 				// Create the initial context
 				DirContext ctx = null;
@@ -262,7 +262,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		}
 
 		ret[0] = loginName;
-		ret[1] = new String(password);
+		ret[1] = new String(passwordEncoded);
 
 		Logger.getLogger(this.getClass()).info(String.format("Logged user: %s, role: %s, documentumUser %s", ret[0], ret[2], ret[3]));
 
