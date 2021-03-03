@@ -159,6 +159,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /documents/{rObjectId}/destroy:
+    post:
+      tags:
+      - provisioning
+      summary: destroy document
+      operationId: destroyDocument
+      description: deletes document in Dis platform
+      security:
+      - BasicAuth: []
+      parameters:
+      - in: header
+        name: X-Transaction-Id
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - in: path
+        name: rObjectId
+        description: unique document identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: success
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /documents/{rObjectId}/promote:
     post:
       tags:

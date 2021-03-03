@@ -1,852 +1,859 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <groupId>si.telekom.dis</groupId>
-        <artifactId>Dis</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-
-    <artifactId>Dis-server</artifactId>
-    <packaging>war</packaging>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <tomcat.version>7.0.86</tomcat.version>
-
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-        <swagger-core-version>1.5.18</swagger-core-version>
-        <beanvalidation-version>1.1.0.Final</beanvalidation-version>
-        <jersey2-version>2.22.2</jersey2-version>
-        <!-- <jersey2-version>2.27</jersey2-version> -->
-        <jackson-version>2.9.9</jackson-version>
-        <junit-version>4.13.1</junit-version>
-        <logback-version>1.1.7</logback-version>
-        <servlet-api-version>2.5</servlet-api-version>
-
-    </properties>
-
-    <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.fusesource.jansi/jansi -->
-        <dependency>
-            <groupId>org.fusesource.jansi</groupId>
-            <artifactId>jansi</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>Dis-shared</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-servlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.documentum</groupId>
-            <artifactId>Documentum</artifactId>
-            <version>7.3.0090.0047</version>
-            <classifier>centos</classifier>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.documentum</groupId>
-            <artifactId>DocumentumDms-client-api</artifactId>
-            <version>7.3.0090.0047</version>
-            <classifier>centos</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>com.documentum.services</groupId>
-            <artifactId>configservice-api</artifactId>
-            <version>7.3.0090.0047</version>
-            <classifier>centos</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>com.documentum.services</groupId>
-            <artifactId>configservice-impl</artifactId>
-            <version>7.3.0000.0205</version>
-            <classifier>centos</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/javax.mail/mail -->
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-            <version>1.5.0-b01</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rsa</groupId>
-            <artifactId>certj</artifactId>
-            <version>7.3.0090.0047</version>
-            <classifier>centos</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rsa</groupId>
-            <artifactId>cryptojcommon</artifactId>
-            <version>7.3.0090.0047</version>
-            <classifier>centos</classifier>
-        </dependency>
-        <dependency>
-            <groupId>com.rsa</groupId>
-            <artifactId>cryptojce</artifactId>
-            <version>7.3.0090.0047</version>
-            <classifier>centos</classifier>
-        </dependency>
-        <dependency>
-            <groupId>jcifs</groupId>
-            <artifactId>jcifs-krb5</artifactId>
-            <version>7.3.0090.0047</version>
-            <classifier>centos</classifier>
-        </dependency>
-        <dependency>
-            <groupId>jcmfips</groupId>
-            <artifactId>jcmfips</artifactId>
-            <version>7.3.0090.0047</version>
-            <classifier>centos</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>7.3.0090.0047</version>
-            <classifier>centos</classifier>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.3.0-b170127.1453</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-        </dependency>
-
-
-
-
-        <dependency>
-            <groupId>net.sf.saxon</groupId>
-            <artifactId>Saxon-HE</artifactId>
-            <version>9.9.1-4</version>
-        </dependency>
-
-        <!-- <dependency> -->
-        <!-- <groupId>com.microsoft.sqlserver</groupId> -->
-        <!-- <artifactId>jdbc</artifactId> -->
-        <!-- <version>6</version> -->
-        <!-- </dependency> -->
-        <!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/sqljdbc4 -->
-        <!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->
-        <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <version>8.2.2.jre8</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20201115</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.jai-imageio</groupId>
-            <artifactId>jai-imageio-core</artifactId>
-            <version>1.3.1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/javax.media/jai_core -->
-        <!-- https://mvnrepository.com/artifact/com.sun.media/jai_codec -->
-
-        <!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-tiff -->
-        <dependency>
-            <groupId>com.twelvemonkeys.imageio</groupId>
-            <artifactId>imageio-tiff</artifactId>
-            <version>3.4.2</version>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/org.apache.poi/poi-scratchpad -->
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-scratchpad</artifactId>
-            <version>4.1.1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>4.1.1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
-        <!-- <dependency> -->
-        <!-- <groupId>org.apache.tika</groupId> -->
-        <!-- <artifactId>tika-parsers</artifactId> -->
-        <!-- <version>1.22</version> -->
-        <!-- </dependency> -->
-        <!-- <dependency> -->
-        <!-- <groupId>org.apache.tika</groupId> -->
-        <!-- <artifactId>tika-parsers</artifactId> -->
-        <!-- <version>1.22</version> -->
-        <!-- </dependency> -->
-
-        <!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.4</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/javax.servlet/servlet-api -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.3</version>
-            <scope>provided</scope>
-        </dependency>
-
-
-
-
-        <dependency>
-            <groupId>org.simplejavamail</groupId>
-            <artifactId>outlook-message-parser</artifactId>
-            <version>1.5.0</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api -->
-        <dependency>
-            <groupId>javax.websocket</groupId>
-            <artifactId>javax.websocket-api</artifactId>
-            <version>1.1</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.docx4j/docx4j -->
-        <!-- <dependency> -->
-        <!-- <groupId>org.docx4j</groupId> -->
-        <!-- <artifactId>docx4j</artifactId> -->
-        <!-- <version>6.1.2</version> -->
-        <!-- </dependency> -->
-        <!-- <dependency> -->
-        <!-- <groupId>org.docx4j</groupId> -->
-        <!-- <artifactId>docx4j-JAXB-Internal</artifactId> -->
-        <!-- <version>8.1.4</version> -->
-        <!-- </dependency> -->
-
-        <!-- https://mvnrepository.com/artifact/org.apache.bcel/bcel -->
-        <dependency>
-            <groupId>org.apache.bcel</groupId>
-            <artifactId>bcel</artifactId>
-            <version>6.5.0</version>
-        </dependency>
-
-
-
-        <!-- <dependency> <groupId>org.docx4j</groupId> <artifactId>docx4j</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-bundle/target/docx4j-bundle-8.1.5-SNAPSHOT-shaded.jar</systemPath> 
-        </dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>jaxb-Internal</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-JAXB-Internal/target/docx4j-JAXB-Internal-8.1.5-SNAPSHOT.jar</systemPath> 
-        </dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>core</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-core/target/docx4j-core-8.1.5-SNAPSHOT.jar</systemPath> 
-        </dependency> -->
-
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc7</artifactId>
-            <version>12.1.0.1</version>
-            <classifier>centos</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itextpdf</artifactId>
-            <version>5.5.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itext-pdfa</artifactId>
-            <version>5.5.4</version>
-        </dependency>
-
-
-        <!-- <dependency> -->
-        <!-- <groupId>com.cloudhopper.proxool</groupId> -->
-        <!-- <artifactId>proxool</artifactId> -->
-        <!-- <version>0.9.1</version> -->
-        <!-- </dependency> -->
-
-        <!-- https://mvnrepository.com/artifact/proxool/proxool -->
-        <dependency>
-            <groupId>proxool</groupId>
-            <artifactId>proxool</artifactId>
-            <version>0.8.3</version>
-        </dependency>
-
-
-
-        <!-- https://mvnrepository.com/artifact/org.apache.tika/tika -->
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>1.24.1</version>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-parsers</artifactId>
-            <version>1.24.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>jaxb-runtime</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-jersey2-jaxrs</artifactId>
-            <scope>compile</scope>
-            <version>${swagger-core-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback-version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback-version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>${servlet-api-version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-common</artifactId>
-            <version>${jersey2-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.bundles</groupId>
-            <artifactId>jaxrs-ri</artifactId>
-            <version>${jersey2-version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet-core</artifactId>
-            <version>${jersey2-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-multipart</artifactId>
-            <version>${jersey2-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-joda</artifactId>
-            <version>${jackson-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>${jackson-version}</version>
-        </dependency>
-        <!-- Base64 encoding that works in both JVM and Android -->
-        <dependency>
-            <groupId>com.brsanthu</groupId>
-            <artifactId>migbase64</artifactId>
-            <version>2.2</version>
-        </dependency>
-
-
-        <!-- Bean Validation API support -->
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>${beanvalidation-version}</version>
-            <!-- <scope>provided</scope> -->
-        </dependency>
-
-        <!-- Bean Validation API support -->
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.1.0.Final</version>
-            <!-- <scope>provided</scope> -->
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-            <version>2.26</version>
-        </dependency>
-
-
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.21</version>
-        </dependency>
-
-        <!-- testing -->
-        <dependency>
-            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-            <artifactId>jersey-test-framework-provider-jetty</artifactId>
-            <version>${jersey2-version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-            <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>${jersey2-version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit-version}</version>
-            <scope>test</scope>
-        </dependency>
-
-
-    </dependencies>
-
-    <build>
-
-
-        <testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>
-        <testResources>
-            <testResource>
-                <directory>${basedir}/src/main/resources</directory>
-                <targetPath>${basedir}/target/test-classes</targetPath>
-                <filtering>true</filtering>
-                <includes>
-                    <include>dfc.properties</include>
-                    <include>log4j.properties</include>
-                    <include>logging.properties</include>
-                    <include>config.xml</include>
-                    <include>profile-template.xml</include>
-                </includes>
-            </testResource>
-        </testResources>
-
-        <resources>
-            <resource>
-                <directory>${basedir}/src/main/webapp</directory>
-                <targetPath>${basedir}/target/webapp</targetPath>
-                <filtering>true</filtering>
-                <includes>
-                    <include>web.xml</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <targetPath>${basedir}/target/webapp/WEB-INF/classes</targetPath>
-                <filtering>true</filtering>
-                <includes>
-                    <include>dfc.properties</include>
-                    <include>log4j.properties</include>
-                    <include>logging.properties</include>
-                    <include>config.xml</include>
-                    <include>profile-template.xml</include>
-                </includes>
-            </resource>
-        </resources>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>test</id>
-                        <!-- <phase>generate-sources</phase> -->
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <argLine>-Djava.security.egd=file:/dev/./urandom</argLine>
-
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>2.6.1</version>
-                <configuration>
-                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                    <filesets>
-                        <fileset>
-                            <directory>${project.build.directory}</directory>
-                            <excludes>
-                                <exclude>generated-sources/swagger/.swagger-codegen-ignore</exclude>
-                            </excludes>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.openapitools</groupId>
-                <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>5.0.0</version>
-                <executions>
-                    <execution>
-                        <id>generate dis rest api</id>
-                        <!-- <phase>generate-sources</phase> -->
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <generatorName>jaxrs-jersey</generatorName>
-                            <language>java</language>
-                            <library>jersey2</library>
-                            <inputSpec>${basedir}/src/main/resources/dis.yaml</inputSpec>
-                            <generateApis>true</generateApis>
-                            <modelPackage>si.telekom.dis.server.rest</modelPackage>
-                            <invokerPackage>si.telekom.dis.server.rest.invoke</invokerPackage>
-                            <ignoreFileOverride>true</ignoreFileOverride>
-                            <apiPackage>si.telekom.dis.server.rest.api</apiPackage>
-                            <generateSupportingFiles>true</generateSupportingFiles>
-                            <generateModels>true</generateModels>
-                            <sourceFolder>java</sourceFolder>
-                            <interfaceOnly>false</interfaceOnly>
-                            <useBeanValidation>true</useBeanValidation>
-                            <java8>true</java8>
-                            <dateLibrary>java8</dateLibrary>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>generate dis rest extra</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <generatorName>jaxrs-jersey</generatorName>
-                            <language>java</language>
-                            <library>jersey2</library>
-                            <inputSpec>${basedir}/src/main/resources/dis_extra.yaml</inputSpec>
-                            <generateApis>true</generateApis>
-                            <modelPackage>si.telekom.dis.server.restExtra</modelPackage>
-                            <invokerPackage>si.telekom.dis.server.restExtra.invoke</invokerPackage>
-                            <ignoreFileOverride>true</ignoreFileOverride>
-                            <apiPackage>si.telekom.dis.server.restExtra.api</apiPackage>
-                            <generateSupportingFiles>true</generateSupportingFiles>
-                            <generateModels>true</generateModels>
-                            <sourceFolder>java</sourceFolder>
-                            <interfaceOnly>false</interfaceOnly>
-                            <useBeanValidation>true</useBeanValidation>
-                            <java8>true</java8>
-                            <dateLibrary>java8</dateLibrary>
-                        </configuration>
-                    </execution>
-
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>io.swagger.parser.v3</groupId>
-                        <artifactId>swagger-parser</artifactId>
-                        <version>2.0.23</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.build.directory}/generated-sources/openapi/src/gen/java</source>
-                                <source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat7-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <charset>ISO-8859-1</charset>
-                    <mode>war</mode>
-                    <path>/${appserver.context}</path>
-                    <update>true</update>
-                    <url>http://${appserver.server}:${appserver.port}/manager/text</url>
-                    <warFile>${project.build.directory}/${project.build.finalName}.war</warFile>
-                    <server>${appserver.server}</server>
-                    <username>${appserver.username}</username>
-                    <password>${appserver.password}</password>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>tomcat-run</id>
-                        <goals>
-                            <goal>exec-war-only</goal>
-                        </goals>
-                        <phase>deploy</phase>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.jvnet.jax-ws-commons</groupId>
-                <artifactId>jaxws-maven-plugin</artifactId>
-                <version>2.3</version>
-                <configuration>
-                    <!-- Needed with JAXP 1.5 -->
-                    <vmArgs>
-                        <vmArg>-Djavax.xml.accessExternalSchema=all</vmArg>
-                    </vmArgs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>generate-stubs-catalogService</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>wsimport</goal>
-                        </goals>
-                        <configuration>
-                            <xauthfile>${basedir}/src/main/resources/authFile</xauthfile>
-                            <packageName>si.telekom.dis.server.jaxwsClient.catalogService</packageName>
-                            <encoding>UTF-8</encoding>
-
-                            <!-- <wsdlDirectory>${basedir}/src/wsdl</wsdlDirectory> -->
-                            <!-- <wsdlFiles> -->
-                            <!-- <wsdlFile>CatalogService_1_6_0.wsdl</wsdlFile> -->
-                            <!-- </wsdlFiles> -->
-
-                            <wsdlUrls>
-                                <wsdlUrl>http://services.ts.telekom.si/services/common/base/v1/CatalogService/v/1.8.0?wsdl</wsdlUrl>
-                            </wsdlUrls>
-
-                            <keep>false</keep>
-                            <portname>{http://telekom.si/services/common/base/v1}CatalogSoapBindingPort</portname>
-                            <protocol>soap1.1</protocol>
-                            <sourceDestDir>src/main/java</sourceDestDir>
-                            <verbose>true</verbose>
-                            <keep>false</keep>
-                            <xdebug>true</xdebug>
-                            <target>2.1</target>
-                            <bindingFiles>
-                                <bindingFile>${basedir}/src/remote-xjc/bindings-default.xjc</bindingFile>
-                            </bindingFiles>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>generate-stubs-eRender</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>wsimport</goal>
-                        </goals>
-                        <configuration>
-                            <xauthfile>${basedir}/src/main/resources/authFile</xauthfile>
-                            <packageName>si.telekom.dis.server.jaxwsClient.eRender</packageName>
-                            <encoding>UTF-8</encoding>
-
-                            <!-- <wsdlDirectory>${basedir}/src/wsdl</wsdlDirectory> -->
-                            <!-- <wsdlFiles> -->
-                            <!-- <wsdlFile>CatalogService_1_6_0.wsdl</wsdlFile> -->
-                            <!-- </wsdlFiles> -->
-
-                            <wsdlUrls>
-                                <wsdlUrl>http://erender-test.ts.telekom.si:8080/PdfGenerator/services?wsdl</wsdlUrl>
-                            </wsdlUrls>
-
-                            <keep>false</keep>
-                            <portname>{http://templates.mobitel.com}PdfGeneratorImplPort</portname>
-                            <protocol>soap1.1</protocol>
-                            <sourceDestDir>src/main/java</sourceDestDir>
-                            <verbose>true</verbose>
-                            <keep>false</keep>
-                            <xdebug>true</xdebug>
-                            <target>2.1</target>
-                            <bindingFiles>
-                                <bindingFile>${basedir}/src/remote-xjc/bindings-default.xjc</bindingFile>
-                            </bindingFiles>
-                        </configuration>
-                    </execution>
-
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-tools</artifactId>
-                        <version>2.2.10</version>
-                    </dependency>
-
-                </dependencies>
-            </plugin>
-        </plugins>
-
-        <pluginManagement>
-            <plugins>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>2.2</version>
-                    <configuration>
-                        <webResources>
-                            <resource>
-                                <targetPath>WEB-INF/classes</targetPath>
-                                <directory>${basedir}/src/main/resources</directory>
-                                <includes>
-                                    <include>**/dfc.properties</include>
-                                    <include>**/log4j.properties</include>
-                                    <include>**/logging.properties</include>
-                                    <include>**/config.xml</include>
-                                    <include>**/profile-template.xml</include>
-                                </includes>
-                                <filtering>true</filtering>
-                            </resource>
-                            <resource>
-                                <targetPath>WEB-INF</targetPath>
-                                <directory>${basedir}/src/main/webapp/WEB-INF</directory>
-                                <includes>
-                                    <include>**/web.xml</include>
-                                </includes>
-                                <filtering>true</filtering>
-                            </resource>
-                        </webResources>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>jetty-maven-plugin</artifactId>
-                    <configuration>
-                        <scanIntervalSeconds>1</scanIntervalSeconds>
-                        <webApp>
-                            <extraClasspath>${basedir}/../Dis-shared/target/classes/</extraClasspath>
-                        </webApp>
-                        <contextXml>${basedir}/src/main/jettyconf/context.xml</contextXml>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.tomcat.maven</groupId>
-                    <artifactId>tomcat7-maven-plugin</artifactId>
-                    <configuration>
-                        <addWarDependenciesInClassloader>false</addWarDependenciesInClassloader>
-                        <path>/</path>
-                        <uriEncoding>UTF-8</uriEncoding>
-                    </configuration>
-                </plugin>
-
-            </plugins>
-        </pluginManagement>
-    </build>
-
-    <profiles>
-        <profile>
-            <!-- XXX: We want to exclude Dis-client from 'env-dev' profile, Maven forces us to make a 'env-prod' profile -->
-            <id>env-prod</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>Dis-client</artifactId>
-                    <version>${project.version}</version>
-                    <type>war</type>
-                    <scope>runtime</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>env-dev</id>
-            <activation>
-                <property>
-                    <name>env</name>
-                    <value>dev</value>
-                </property>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.eclipse.jetty</groupId>
-                            <artifactId>jetty-maven-plugin</artifactId>
-                            <configuration>
-                                <webApp>
-                                    <resourceBases>
-                                        <resourceBase>${basedir}/src/main/webapp</resourceBase>
-                                        <resourceBase>${basedir}/../target/gwt/launcherDir/</resourceBase>
-                                    </resourceBases>
-                                </webApp>
-                            </configuration>
-                        </plugin>
-                        <plugin>
-                            <groupId>org.apache.tomcat.maven</groupId>
-                            <artifactId>tomcat7-maven-plugin</artifactId>
-                            <configuration>
-                                <contextFile>${basedir}/src/main/tomcatconf/context.xml</contextFile>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
-    </profiles>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>si.telekom.dis</groupId>
+		<artifactId>Dis</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>Dis-server</artifactId>
+	<packaging>war</packaging>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<tomcat.version>7.0.86</tomcat.version>
+
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<swagger-core-version>1.5.18</swagger-core-version>
+		<beanvalidation-version>1.1.0.Final</beanvalidation-version>
+		<jersey2-version>2.22.2</jersey2-version>
+		<!-- <jersey2-version>2.27</jersey2-version> -->
+		<jackson-version>2.9.9</jackson-version>
+		<junit-version>4.13.1</junit-version>
+		<logback-version>1.1.7</logback-version>
+		<servlet-api-version>2.5</servlet-api-version>
+
+	</properties>
+
+	<dependencies>
+		<!-- https://mvnrepository.com/artifact/org.fusesource.jansi/jansi -->
+		<dependency>
+			<groupId>org.fusesource.jansi</groupId>
+			<artifactId>jansi</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>Dis-shared</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-servlet</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.documentum</groupId>
+			<artifactId>Documentum</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.documentum</groupId>
+			<artifactId>DocumentumDms-client-api</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>com.documentum.services</groupId>
+			<artifactId>configservice-api</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>com.documentum.services</groupId>
+			<artifactId>configservice-impl</artifactId>
+			<version>7.3.0000.0205</version>
+			<classifier>centos</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.5.0-b01</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.rsa</groupId>
+			<artifactId>certj</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>com.rsa</groupId>
+			<artifactId>cryptojcommon</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.rsa</groupId>
+			<artifactId>cryptojce</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+		<dependency>
+			<groupId>jcifs</groupId>
+			<artifactId>jcifs-krb5</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+		<dependency>
+			<groupId>jcmfips</groupId>
+			<artifactId>jcmfips</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>7.3.0090.0047</version>
+			<classifier>centos</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>2.3.0-b170127.1453</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+
+
+
+
+		<dependency>
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>Saxon-HE</artifactId>
+			<version>9.9.1-4</version>
+		</dependency>
+
+		<!-- <dependency> -->
+		<!-- <groupId>com.microsoft.sqlserver</groupId> -->
+		<!-- <artifactId>jdbc</artifactId> -->
+		<!-- <version>6</version> -->
+		<!-- </dependency> -->
+		<!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/sqljdbc4 -->
+		<!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>mssql-jdbc</artifactId>
+			<version>8.2.2.jre8</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20201115</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.jai-imageio</groupId>
+			<artifactId>jai-imageio-core</artifactId>
+			<version>1.3.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.media/jai_core -->
+		<!-- https://mvnrepository.com/artifact/com.sun.media/jai_codec -->
+
+		<!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-tiff -->
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-tiff</artifactId>
+			<version>3.4.2</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi-scratchpad -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-scratchpad</artifactId>
+			<version>4.1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>4.1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.tika</groupId> -->
+		<!-- <artifactId>tika-parsers</artifactId> -->
+		<!-- <version>1.22</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.tika</groupId> -->
+		<!-- <artifactId>tika-parsers</artifactId> -->
+		<!-- <version>1.22</version> -->
+		<!-- </dependency> -->
+
+		<!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.4</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/javax.servlet/servlet-api -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.3</version>
+			<scope>provided</scope>
+		</dependency>
+
+
+
+
+		<dependency>
+			<groupId>org.simplejavamail</groupId>
+			<artifactId>outlook-message-parser</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api -->
+		<dependency>
+			<groupId>javax.websocket</groupId>
+			<artifactId>javax.websocket-api</artifactId>
+			<version>1.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.docx4j/docx4j -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.docx4j</groupId> -->
+		<!-- <artifactId>docx4j</artifactId> -->
+		<!-- <version>6.1.2</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.docx4j</groupId> -->
+		<!-- <artifactId>docx4j-JAXB-Internal</artifactId> -->
+		<!-- <version>8.1.4</version> -->
+		<!-- </dependency> -->
+
+		<!-- https://mvnrepository.com/artifact/org.apache.bcel/bcel -->
+		<dependency>
+			<groupId>org.apache.bcel</groupId>
+			<artifactId>bcel</artifactId>
+			<version>6.5.0</version>
+		</dependency>
+
+
+
+		<!-- <dependency> <groupId>org.docx4j</groupId> <artifactId>docx4j</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-bundle/target/docx4j-bundle-8.1.5-SNAPSHOT-shaded.jar</systemPath> 
+			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>jaxb-Internal</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-JAXB-Internal/target/docx4j-JAXB-Internal-8.1.5-SNAPSHOT.jar</systemPath> 
+			</dependency> <dependency> <groupId>org.docx4j</groupId> <artifactId>core</artifactId> <version>8.1.5</version> <scope>system</scope> <systemPath>/home/klemen/git/docx4j/docx4j-core/target/docx4j-core-8.1.5-SNAPSHOT.jar</systemPath> 
+			</dependency> -->
+
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc7</artifactId>
+			<version>12.1.0.1</version>
+			<classifier>centos</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+			<version>5.5.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itext-pdfa</artifactId>
+			<version>5.5.4</version>
+		</dependency>
+
+
+		<!-- <dependency> -->
+		<!-- <groupId>com.cloudhopper.proxool</groupId> -->
+		<!-- <artifactId>proxool</artifactId> -->
+		<!-- <version>0.9.1</version> -->
+		<!-- </dependency> -->
+
+		<!-- https://mvnrepository.com/artifact/proxool/proxool -->
+		<dependency>
+			<groupId>proxool</groupId>
+			<artifactId>proxool</artifactId>
+			<version>0.8.3</version>
+		</dependency>
+
+
+
+		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>1.24.1</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers</artifactId>
+			<version>1.24.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.glassfish.jaxb</groupId>
+					<artifactId>jaxb-runtime</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-jersey2-jaxrs</artifactId>
+			<scope>compile</scope>
+			<version>${swagger-core-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback-version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${logback-version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>${servlet-api-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-common</artifactId>
+			<version>${jersey2-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.bundles</groupId>
+			<artifactId>jaxrs-ri</artifactId>
+			<version>${jersey2-version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet-core</artifactId>
+			<version>${jersey2-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-multipart</artifactId>
+			<version>${jersey2-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-joda</artifactId>
+			<version>${jackson-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>${jackson-version}</version>
+		</dependency>
+		<!-- Base64 encoding that works in both JVM and Android -->
+		<dependency>
+			<groupId>com.brsanthu</groupId>
+			<artifactId>migbase64</artifactId>
+			<version>2.2</version>
+		</dependency>
+
+
+		<!-- Bean Validation API support -->
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>${beanvalidation-version}</version>
+			<!-- <scope>provided</scope> -->
+		</dependency>
+
+		<!-- Bean Validation API support -->
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>1.1.0.Final</version>
+			<!-- <scope>provided</scope> -->
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>2.26</version>
+		</dependency>
+
+
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.21</version>
+		</dependency>
+
+		<!-- testing -->
+		<dependency>
+			<groupId>org.glassfish.jersey.test-framework.providers</groupId>
+			<artifactId>jersey-test-framework-provider-jetty</artifactId>
+			<version>${jersey2-version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.test-framework.providers</groupId>
+			<artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+			<version>${jersey2-version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit-version}</version>
+			<scope>test</scope>
+		</dependency>
+
+
+	</dependencies>
+
+	<build>
+
+
+		<testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>
+		<testResources>
+			<testResource>
+				<directory>${basedir}/src/main/resources</directory>
+				<targetPath>${basedir}/target/test-classes</targetPath>
+				<filtering>true</filtering>
+				<includes>
+					<include>dfc.properties</include>
+					<include>log4j.properties</include>
+					<include>logging.properties</include>
+					<include>config.xml</include>
+					<include>profile-template.xml</include>
+				</includes>
+			</testResource>
+		</testResources>
+
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/webapp</directory>
+				<targetPath>${basedir}/target/webapp</targetPath>
+				<filtering>true</filtering>
+				<includes>
+					<include>web.xml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<targetPath>${basedir}/target/webapp/WEB-INF/classes</targetPath>
+				<filtering>true</filtering>
+				<includes>
+					<include>dfc.properties</include>
+					<include>log4j.properties</include>
+					<include>logging.properties</include>
+					<include>config.xml</include>
+					<include>profile-template.xml</include>
+				</includes>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>test</id>
+						<!-- <phase>generate-sources</phase> -->
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<argLine>-Djava.security.egd=file:/dev/./urandom</argLine>
+							<parallel>all</parallel>
+							<threadCount>10</threadCount>
+							<useUnlimitedThreads>true</useUnlimitedThreads>
+							<perCoreThreadCount>true</perCoreThreadCount>
+							<threadCountSuites>2</threadCountSuites>
+							<threadCountClasses>2</threadCountClasses>
+							<threadCountMethods>6</threadCountMethods>
+
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.6.1</version>
+				<configuration>
+					<excludeDefaultDirectories>true</excludeDefaultDirectories>
+					<filesets>
+						<fileset>
+							<directory>${project.build.directory}</directory>
+							<excludes>
+								<exclude>generated-sources/swagger/.swagger-codegen-ignore</exclude>
+							</excludes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>5.0.0</version>
+				<executions>
+					<execution>
+						<id>generate dis rest api</id>
+						<!-- <phase>generate-sources</phase> -->
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<generatorName>jaxrs-jersey</generatorName>
+							<language>java</language>
+							<library>jersey2</library>
+							<inputSpec>${basedir}/src/main/resources/dis.yaml</inputSpec>
+							<generateApis>true</generateApis>
+							<modelPackage>si.telekom.dis.server.rest</modelPackage>
+							<invokerPackage>si.telekom.dis.server.rest.invoke</invokerPackage>
+							<ignoreFileOverride>true</ignoreFileOverride>
+							<apiPackage>si.telekom.dis.server.rest.api</apiPackage>
+							<generateSupportingFiles>true</generateSupportingFiles>
+							<generateModels>true</generateModels>
+							<sourceFolder>java</sourceFolder>
+							<interfaceOnly>false</interfaceOnly>
+							<useBeanValidation>true</useBeanValidation>
+							<java8>true</java8>
+							<dateLibrary>java8</dateLibrary>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>generate dis rest extra</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<generatorName>jaxrs-jersey</generatorName>
+							<language>java</language>
+							<library>jersey2</library>
+							<inputSpec>${basedir}/src/main/resources/dis_extra.yaml</inputSpec>
+							<generateApis>true</generateApis>
+							<modelPackage>si.telekom.dis.server.restExtra</modelPackage>
+							<invokerPackage>si.telekom.dis.server.restExtra.invoke</invokerPackage>
+							<ignoreFileOverride>true</ignoreFileOverride>
+							<apiPackage>si.telekom.dis.server.restExtra.api</apiPackage>
+							<generateSupportingFiles>true</generateSupportingFiles>
+							<generateModels>true</generateModels>
+							<sourceFolder>java</sourceFolder>
+							<interfaceOnly>false</interfaceOnly>
+							<useBeanValidation>true</useBeanValidation>
+							<java8>true</java8>
+							<dateLibrary>java8</dateLibrary>
+						</configuration>
+					</execution>
+
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>io.swagger.parser.v3</groupId>
+						<artifactId>swagger-parser</artifactId>
+						<version>2.0.23</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${project.build.directory}/generated-sources/openapi/src/gen/java</source>
+								<source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<charset>ISO-8859-1</charset>
+					<mode>war</mode>
+					<path>/${appserver.context}</path>
+					<update>true</update>
+					<url>http://${appserver.server}:${appserver.port}/manager/text</url>
+					<warFile>${project.build.directory}/${project.build.finalName}.war</warFile>
+					<server>${appserver.server}</server>
+					<username>${appserver.username}</username>
+					<password>${appserver.password}</password>
+				</configuration>
+				<executions>
+					<execution>
+						<id>tomcat-run</id>
+						<goals>
+							<goal>exec-war-only</goal>
+						</goals>
+						<phase>deploy</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jvnet.jax-ws-commons</groupId>
+				<artifactId>jaxws-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<!-- Needed with JAXP 1.5 -->
+					<vmArgs>
+						<vmArg>-Djavax.xml.accessExternalSchema=all</vmArg>
+					</vmArgs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>generate-stubs-catalogService</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<xauthfile>${basedir}/src/main/resources/authFile</xauthfile>
+							<packageName>si.telekom.dis.server.jaxwsClient.catalogService</packageName>
+							<encoding>UTF-8</encoding>
+
+							<!-- <wsdlDirectory>${basedir}/src/wsdl</wsdlDirectory> -->
+							<!-- <wsdlFiles> -->
+							<!-- <wsdlFile>CatalogService_1_6_0.wsdl</wsdlFile> -->
+							<!-- </wsdlFiles> -->
+
+							<wsdlUrls>
+								<wsdlUrl>http://services.ts.telekom.si/services/common/base/v1/CatalogService/v/1.8.0?wsdl</wsdlUrl>
+							</wsdlUrls>
+
+							<keep>false</keep>
+							<portname>{http://telekom.si/services/common/base/v1}CatalogSoapBindingPort</portname>
+							<protocol>soap1.1</protocol>
+							<sourceDestDir>src/main/java</sourceDestDir>
+							<verbose>true</verbose>
+							<keep>false</keep>
+							<xdebug>true</xdebug>
+							<target>2.1</target>
+							<bindingFiles>
+								<bindingFile>${basedir}/src/remote-xjc/bindings-default.xjc</bindingFile>
+							</bindingFiles>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>generate-stubs-eRender</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<xauthfile>${basedir}/src/main/resources/authFile</xauthfile>
+							<packageName>si.telekom.dis.server.jaxwsClient.eRender</packageName>
+							<encoding>UTF-8</encoding>
+
+							<!-- <wsdlDirectory>${basedir}/src/wsdl</wsdlDirectory> -->
+							<!-- <wsdlFiles> -->
+							<!-- <wsdlFile>CatalogService_1_6_0.wsdl</wsdlFile> -->
+							<!-- </wsdlFiles> -->
+
+							<wsdlUrls>
+								<wsdlUrl>http://erender-test.ts.telekom.si:8080/PdfGenerator/services?wsdl</wsdlUrl>
+							</wsdlUrls>
+
+							<keep>false</keep>
+							<portname>{http://templates.mobitel.com}PdfGeneratorImplPort</portname>
+							<protocol>soap1.1</protocol>
+							<sourceDestDir>src/main/java</sourceDestDir>
+							<verbose>true</verbose>
+							<keep>false</keep>
+							<xdebug>true</xdebug>
+							<target>2.1</target>
+							<bindingFiles>
+								<bindingFile>${basedir}/src/remote-xjc/bindings-default.xjc</bindingFile>
+							</bindingFiles>
+						</configuration>
+					</execution>
+
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>com.sun.xml.ws</groupId>
+						<artifactId>jaxws-tools</artifactId>
+						<version>2.2.10</version>
+					</dependency>
+
+				</dependencies>
+			</plugin>
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>2.2</version>
+					<configuration>
+						<webResources>
+							<resource>
+								<targetPath>WEB-INF/classes</targetPath>
+								<directory>${basedir}/src/main/resources</directory>
+								<includes>
+									<include>**/dfc.properties</include>
+									<include>**/log4j.properties</include>
+									<include>**/logging.properties</include>
+									<include>**/config.xml</include>
+									<include>**/profile-template.xml</include>
+								</includes>
+								<filtering>true</filtering>
+							</resource>
+							<resource>
+								<targetPath>WEB-INF</targetPath>
+								<directory>${basedir}/src/main/webapp/WEB-INF</directory>
+								<includes>
+									<include>**/web.xml</include>
+								</includes>
+								<filtering>true</filtering>
+							</resource>
+						</webResources>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>jetty-maven-plugin</artifactId>
+					<configuration>
+						<scanIntervalSeconds>1</scanIntervalSeconds>
+						<webApp>
+							<extraClasspath>${basedir}/../Dis-shared/target/classes/</extraClasspath>
+						</webApp>
+						<contextXml>${basedir}/src/main/jettyconf/context.xml</contextXml>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.tomcat.maven</groupId>
+					<artifactId>tomcat7-maven-plugin</artifactId>
+					<configuration>
+						<addWarDependenciesInClassloader>false</addWarDependenciesInClassloader>
+						<path>/</path>
+						<uriEncoding>UTF-8</uriEncoding>
+					</configuration>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<profiles>
+		<profile>
+			<!-- XXX: We want to exclude Dis-client from 'env-dev' profile, Maven forces us to make a 'env-prod' profile -->
+			<id>env-prod</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>${project.groupId}</groupId>
+					<artifactId>Dis-client</artifactId>
+					<version>${project.version}</version>
+					<type>war</type>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>env-dev</id>
+			<activation>
+				<property>
+					<name>env</name>
+					<value>dev</value>
+				</property>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.eclipse.jetty</groupId>
+							<artifactId>jetty-maven-plugin</artifactId>
+							<configuration>
+								<webApp>
+									<resourceBases>
+										<resourceBase>${basedir}/src/main/webapp</resourceBase>
+										<resourceBase>${basedir}/../target/gwt/launcherDir/</resourceBase>
+									</resourceBases>
+								</webApp>
+							</configuration>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.tomcat.maven</groupId>
+							<artifactId>tomcat7-maven-plugin</artifactId>
+							<configuration>
+								<contextFile>${basedir}/src/main/tomcatconf/context.xml</contextFile>
+							</configuration>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+	</profiles>
 </project>

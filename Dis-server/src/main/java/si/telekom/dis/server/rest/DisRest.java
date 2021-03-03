@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.DfVersionPolicy;
 import com.documentum.fc.client.IDfCollection;
+import com.documentum.fc.client.IDfDocument;
 import com.documentum.fc.client.IDfFormat;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfQuery;
@@ -125,7 +126,7 @@ public class DisRest extends DocumentsApiService {
 					}
 					doc1.setAttributes(alAtts);
 					docResp.addDocumentsItem(doc1);
-					Logger.getLogger(this.getClass()).info("Added 1 object (object_name: "+doc.object_name+") to result.");
+					Logger.getLogger(this.getClass()).info("Added 1 object (object_name: " + doc.object_name + ") to result.");
 				}
 			}
 			return Response.ok(docResp).build();
@@ -185,7 +186,6 @@ public class DisRest extends DocumentsApiService {
 	public Response importDocument(String xTransactionId, ImportDocumentRequest importDocumentRequest, SecurityContext securityContext)
 			throws NotFoundException {
 		try {
-
 			User user = (User) securityContext.getUserPrincipal();
 
 			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
@@ -226,7 +226,6 @@ public class DisRest extends DocumentsApiService {
 			String loginName = user.getId();
 			String password = user.getPaswordBase64Encoded();
 
-
 			si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().demote(loginName, password, rObjectId);
 			Document doc1 = getRestDocFromSharedDoc(doc);
 
@@ -245,7 +244,6 @@ public class DisRest extends DocumentsApiService {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
 			String password = user.getPaswordBase64Encoded();
-
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			userSession = AdminServiceImpl.getSession(loginName, password);
@@ -285,7 +283,6 @@ public class DisRest extends DocumentsApiService {
 			String loginName = user.getId();
 			String password = user.getPaswordBase64Encoded();
 
-
 			si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().promote(loginName, password, rObjectId);
 			Document doc1 = getRestDocFromSharedDoc(doc);
 
@@ -305,7 +302,6 @@ public class DisRest extends DocumentsApiService {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
 			String password = user.getPaswordBase64Encoded();
-
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
@@ -387,7 +383,6 @@ public class DisRest extends DocumentsApiService {
 			User user = (User) securityContext.getUserPrincipal();
 			String loginName = user.getId();
 			String password = user.getPaswordBase64Encoded();
-
 
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
@@ -479,149 +474,34 @@ public class DisRest extends DocumentsApiService {
 
 	}
 
-/*
- * 
-	@GET
-	@Consumes(MediaType.TEXT_HTML)
-	@Produces({ MediaType.APPLICATION_JSON })
-	@Path("/dqlLookup")
-	public List<List<String>> dqlLookup(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
-			@QueryParam("dql") String dql) throws Exception {
-		// return ExplorerServiceImpl.getInstance().dqlLookup(loginName,
-		// passwordEncrypted, dql);
+	@Override
+	public Response destroyDocument(String rObjectId, String xTransactionId, SecurityContext securityContext) throws NotFoundException {
+		User user = (User) securityContext.getUserPrincipal();
+		String loginName = user.getId();
+		String password = user.getPaswordBase64Encoded();
+
+		IDfSession userSession = null;
+		IDfCollection collection = null;
 		try {
-			return ExplorerServiceImpl.getInstance().dqlLookup(loginName, passwordEncrypted, dql);
-		} catch (Exception ex) {
-			throw new WebApplicationException(ex);
+			Logger.getLogger(this.getClass()).info("destroyDocuments for " + loginName + " for r_object_id: " + rObjectId);
+			userSession = AdminServiceImpl.getSession(loginName, password);
+			IDfPersistentObject dfPersDoc = userSession.getObject(new DfId(rObjectId));
+			dfPersDoc.destroy();
+			return Response.status(200).build();
+		} catch (Throwable ex) {
+			return Response.status(500, ex.getMessage()).build();
+		} finally {
+			if (collection != null)
+				try {
+					collection.close();
+				} catch (DfException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			if (userSession != null)
+				if (userSession.isConnected())
+					userSession.getSessionManager().release(userSession);
 		}
 	}
 
-	@GET
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/getSampleNewDocumentArg")
-	// public String newDocument(@QueryParam("loginName") String loginName,
-	// @QueryParam("passwordEncrypted") String passwordEncrypted,
-	// @QueryParam("profileId") String profileId, @BeanParam HashMap<String,
-	// ArrayList<String>> attributes, @BeanParam HashMap<String,
-	// ArrayList<String>> roles,
-	// @QueryParam("templateObjectNameOrFolder") String
-	// templateObjectNameOrFolder) {
-	public NewDocumentRequest getSampleNewDocumentArg(@Context SecurityContext sc) {
-		NewDocumentRequest ndReq = new NewDocumentRequest();
-
-		ndReq.setProfileId("test");
-
-		List<Attribute> attributes = new ArrayList<Attribute>();
-		Attribute att1 = new Attribute();
-		att1.setName("title");
-		att1.addValuesItem("moj title");
-		attributes.add(att1);
-		ndReq.setAttributes(attributes);
-
-		List<RoleUsers> roleUsers = new ArrayList<RoleUsers>();
-		RoleUsers rolUser1 = new RoleUsers();
-		rolUser1.setRoleName("coordinator");
-		rolUser1.addValuesItem("zivkovick");
-		rolUser1.addValuesItem("kovacevicr");
-		roleUsers.add(rolUser1);
-		RoleUsers rolUser2 = new RoleUsers();
-		rolUser2.setRoleName("user");
-		rolUser2.addValuesItem("dm_world");
-		roleUsers.add(rolUser2);
-
-		ndReq.setRolesUsers(roleUsers);
-
-		ndReq.setTemplateObjectRObjectId("0900000191cfbdf8");
-
-		return ndReq;
-	}
-
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/importDocument")
-	// public String newDocument(@QueryParam("loginName") String loginName,
-	// @QueryParam("passwordEncrypted") String passwordEncrypted,
-	// @QueryParam("profileId") String profileId, @BeanParam HashMap<String,
-	// ArrayList<String>> attributes, @BeanParam HashMap<String,
-	// ArrayList<String>> roles,
-	// @QueryParam("templateObjectNameOrFolder") String
-	// templateObjectNameOrFolder) {
-	public String importDocument(@Context SecurityContext sc, ImportDocumentRequest importDocumentReq) {
-		try {
-			User user = (User) sc.getUserPrincipal();
-
-			Map<String, List<String>> attributes_ = new HashMap<String, List<String>>();
-			for (Attribute att : importDocumentReq.getAttributes()) {
-				attributes_.put(att.getName(), att.getValues());
-			}
-
-			Map<String, List<String>> roles_ = new HashMap<String, List<String>>();
-			for (RoleUsers role : importDocumentReq.getRolesUsers()) {
-				roles_.put(role.getRoleName(), role.getValues());
-			}
-
-// @formatter:off
-			return ExplorerServiceImpl.getInstance().importDocument(
-					user.getId(), 
-					user.getPassword(), 
-					importDocumentReq.getProfileId(),
-					null,
-					importDocumentReq.getStateId(), 
-					attributes_, 
-					roles_, 
-					importDocumentReq.getContentBase64().getBytes(),
-					importDocumentReq.getFormat());
-// @formatter:on
-		} catch (Exception ex) {
-			throw new WebApplicationException(ex.getMessage());
-		}
-	}
-
-	@GET
-	@Consumes(MediaType.TEXT_HTML)
-	@Produces({ MediaType.APPLICATION_JSON })
-	@Path("/getProfilesForClassSign")
-	public List<String> getProfilesForClassSign(@Context SecurityContext sc, @QueryParam("classSign") String classSign,
-			@QueryParam("wizzardType") String wizardType) {
-		ArrayList<String> ret = new ArrayList<String>();
-		try {
-			User user = (User) sc.getUserPrincipal();
-			//@formatter:on
-			List<Profile> profiles = AdminServiceImpl.getInstance().getProfilesForClassSign(user.getId(),
-					Base64.encodeBase64String(user.getPassword().getBytes()), classSign, wizardType);
-//@formatter:off
-			
-			for (Profile profile : profiles) {
-				ret.add(profile.id);
-			}
-		} catch (Exception ex) {
-			throw new WebApplicationException(ex.getMessage());
-		}
-		return ret;
-	}
-
-	@GET
-	@Consumes(MediaType.TEXT_HTML)
-	@Produces({ MediaType.APPLICATION_JSON })
-	@Path("/promote")
-	public Void promote(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
-			@QueryParam("r_object_id") String r_object_id) throws Exception {
-		return ExplorerServiceImpl.getInstance().promote(loginName, passwordEncrypted, r_object_id);
-	}
-
-	@GET
-	@Consumes(MediaType.TEXT_HTML)
-	@Produces({ MediaType.APPLICATION_JSON })
-	@Path("/demote")
-	public Void demote(@QueryParam("loginName") String loginName, @QueryParam("passwordEncrypted") String passwordEncrypted,
-			@QueryParam("r_object_id") String r_object_id) throws Exception {
-		return ExplorerServiceImpl.getInstance().demote(loginName, passwordEncrypted, r_object_id);
-	}
- * 	
- */
-	
-	
-	
 }

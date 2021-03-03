@@ -123,13 +123,18 @@ public class RestTest extends JerseyTest {
 
 		final Client client = ClientBuilder.newClient();
 		client.register(feature);
-
+		
 		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
 		client.property(ClientProperties.READ_TIMEOUT, 10000000);
+		
+		String X_Transaction_Id = String.valueOf(System.currentTimeMillis()); 
 
-	//@formatter:off	
+//@formatter:off	
 		Response response;
-		response = client.target(baseUri.toString() + "/documents/import").request(MediaType.APPLICATION_JSON).post(Entity.json(
+		response = client.target(baseUri.toString() + "/documents/import")
+				.request(MediaType.APPLICATION_JSON)
+				.header("X-Transaction-Id", X_Transaction_Id).
+				post(Entity.json(
 			"{  " +
 		  "\"profileId\": \"epredloga\"," +
 		  "\"folderId\": \"/temp\"," +
@@ -153,21 +158,28 @@ public class RestTest extends JerseyTest {
 		  "  \"data\": \"dGVzdA==\"" +
 		  "}" +
 			"}"));
-			//@formatter:on			
+//@formatter:on			
 		String json = response.readEntity(String.class);
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		Document doc;
 		try {
 			doc = objectMapper.readValue(json.getBytes(), Document.class);
-			
-			// System.out.println(responseTxt);
-			assertEquals("should return status 200", 200, response.getStatus());
-			assertNotNull("Should return user list", response.getEntity().toString());
+
+			assertEquals("Import document should return status 200", 200, response.getStatus());
 			assertNotNull("Should return document", doc);
 
-			assertNotNull("Should return r_object_id for document", doc.getrObjectId());			
-			
+			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
+
+//@formatter:off
+			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
+					.request(MediaType.APPLICATION_JSON)
+					.header("X-Transaction-Id", X_Transaction_Id)
+					.post(Entity.text(""));
+//@formatter:on			
+
+			assertEquals("should return status 200", 200, response.getStatus());
+
 		} catch (JsonParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -178,8 +190,6 @@ public class RestTest extends JerseyTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-
 
 	}
 
