@@ -3,7 +3,6 @@ package si.telekom.dis.server.rest;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -15,12 +14,12 @@ import java.util.regex.Pattern;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.DfVersionPolicy;
 import com.documentum.fc.client.IDfCollection;
-import com.documentum.fc.client.IDfDocument;
 import com.documentum.fc.client.IDfFormat;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfQuery;
@@ -249,7 +248,7 @@ public class DisRest extends DocumentsApiService {
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			IDfPersistentObject persObj = userSession.getObject(new DfId(rObjectId));
 			IDfSysObject sysObj = (IDfSysObject) persObj;
-			if (format.equals(""))
+			if (format == null || format.equals(""))
 				format = sysObj.getContentType();
 			IDfFormat formatObj = userSession.getFormat(format);
 
@@ -258,16 +257,14 @@ public class DisRest extends DocumentsApiService {
 
 			ByteArrayInputStream bacontentStreamIs = sysObj.getContentEx(format, 0);
 
-			try (ByteArrayOutputStream binaryOutput = new ByteArrayOutputStream()) {
-				try (ObjectOutputStream objectStream = new ObjectOutputStream(binaryOutput)) {
-					objectStream.writeObject(bacontentStreamIs);
-				}
-				byte[] content = Base64.getEncoder().encode(binaryOutput.toByteArray());
+			byte[] content = IOUtils.toByteArray(bacontentStreamIs);
+			byte[] base64Encoded = Base64.getEncoder().encode(content);
+			
+			return Response.ok(base64Encoded).build();
 
-				return Response.ok(content).build();
-			}
+		} catch (
 
-		} catch (Exception ex) {
+		Exception ex) {
 			return Response.status(500, ex.getMessage()).build();
 		} finally {
 			if (userSession != null)

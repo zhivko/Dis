@@ -140,7 +140,7 @@ paths:
       - in: query
         name: format
         description: format of document or null for primary content if empty or null take primary content else renditions. format can be any of documentum formats like pdf tiff word odf xlsx11 xlsx12
-        required: true
+        required: false
         schema:
           type: string
           example: pdf

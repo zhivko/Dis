@@ -129,6 +129,8 @@ public class RestTest extends JerseyTest {
 		
 		String X_Transaction_Id = String.valueOf(System.currentTimeMillis()); 
 
+		String documentContent = "dGVzdA==";
+		
 //@formatter:off	
 		Response response;
 		response = client.target(baseUri.toString() + "/documents/import")
@@ -155,7 +157,7 @@ public class RestTest extends JerseyTest {
 		  "\"content\":" +
 		  "{" +
 		  "  \"format\": \"crtext\"," +
-		  "  \"data\": \"dGVzdA==\"" +
+		  "  \"data\": \"" + documentContent + "\"" +
 		  "}" +
 			"}"));
 //@formatter:on			
@@ -168,9 +170,23 @@ public class RestTest extends JerseyTest {
 
 			assertEquals("Import document should return status 200", 200, response.getStatus());
 			assertNotNull("Should return document", doc);
-
 			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
+			
+			// ***************    test read content of document  ******************
+			response = client.target(baseUri.toString() + "/documents/"+doc.getrObjectId()+"/content").request().get();
+			assertEquals("should return status 200", 200, response.getStatus());
 
+			String base64EncodedString = response.readEntity(String.class);
+			String content = AdminServiceImpl.getInstance().base64Decode(base64EncodedString);
+			String originalContent = AdminServiceImpl.getInstance().base64Decode(documentContent);
+			assertNotNull("Content should contain something", response.getEntity().toString());			
+			assertEquals("Content should be equal", originalContent, content);
+			
+			
+			// ***************    test destroy document  ******************
+			
+			
+			
 //@formatter:off
 			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
 					.request(MediaType.APPLICATION_JSON)
