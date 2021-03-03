@@ -177,8 +177,8 @@ public class RestTest extends JerseyTest {
 			assertEquals("should return status 200", 200, response.getStatus());
 
 			String base64EncodedString = response.readEntity(String.class);
-			String content = AdminServiceImpl.getInstance().base64Decode(base64EncodedString);
-			String originalContent = AdminServiceImpl.getInstance().base64Decode(documentContent);
+			String content = AdminServiceImpl.base64Decode(base64EncodedString);
+			String originalContent = AdminServiceImpl.base64Decode(documentContent);
 			assertNotNull("Content should contain something", response.getEntity().toString());			
 			assertEquals("Content should be equal", originalContent, content);
 			
