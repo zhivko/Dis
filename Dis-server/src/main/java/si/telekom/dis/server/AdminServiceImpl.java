@@ -184,7 +184,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public static String BARCODE_SQL_SERVER_PORT = "1433";
 	public static String BARCODE_SQL_SERVER_DB_NAME = "DM_Mobitel_docbase";
 	public static boolean MOVE_TO_EFFECTIVE_JOB_ENABLED = false;
-
+	public static String PDFGENERATOR_WSDL_ENDPOINT;
+	public static String ERENDER_WSDL_ENDPOINT;
+	
 	public static DfClientX CX;
 	static Document docConfig;
 	static String configPathFileName;
@@ -199,6 +201,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 */
 	protected static String retentionAddUnit;
 	public static HashMap<String, IDfGroup> allGroups = new HashMap<String, IDfGroup>();
+
+
 
 	static {
 
@@ -437,6 +441,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			AdminServiceImpl.superUserDomain = context.getInitParameter("documentum.superUserDomain");
 
 			AdminServiceImpl.retentionAddUnit = context.getInitParameter("retention.addUnit");
+			
+			AdminServiceImpl.PDFGENERATOR_WSDL_ENDPOINT = context.getInitParameter("PDFGENERATOR_WSDL_ENDPOINT");
+			AdminServiceImpl.ERENDER_WSDL_ENDPOINT = context.getInitParameter("ERENDER_WSDL_ENDPOINT");
 
 			AdminServiceImpl.configPath = context.getInitParameter("configPath");
 		} catch (Throwable ex) {

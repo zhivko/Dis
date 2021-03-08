@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}int" form="qualified"/>
+ *         &lt;element name="templateId" type="{http://www.w3.org/2001/XMLSchema}int" form="qualified"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -28,27 +28,27 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "getTemplateFields", propOrder = {
-    "typeId"
+    "templateId"
 })
 @XmlRootElement(name = "getTemplateFields")
 public class GetTemplateFields {
 
-    protected int typeId;
+    protected int templateId;
 
     /**
-     * Gets the value of the typeId property.
+     * Gets the value of the templateId property.
      * 
      */
-    public int getTypeId() {
-        return typeId;
+    public int getTemplateId() {
+        return templateId;
     }
 
     /**
-     * Sets the value of the typeId property.
+     * Sets the value of the templateId property.
      * 
      */
-    public void setTypeId(int value) {
-        this.typeId = value;
+    public void setTemplateId(int value) {
+        this.templateId = value;
     }
 
 }

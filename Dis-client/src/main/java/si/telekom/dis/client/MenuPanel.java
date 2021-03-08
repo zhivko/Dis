@@ -43,6 +43,7 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import si.telekom.dis.client.action.AdminConfigureERender;
+import si.telekom.dis.client.action.DocumentGeneratePdf;
 import si.telekom.dis.client.action.EditRegisteredTable;
 import si.telekom.dis.client.action.ExplorerSettings;
 import si.telekom.dis.client.action.ImportDocument;
@@ -511,7 +512,7 @@ public class MenuPanel extends Composite {
 		vp.add(NewDocument.getMenuItem());
 		vp.add(ImportDocument.getMenuItem());
 		vp.add(NewFolder.getMenuItem());
-
+		vp.add(DocumentGeneratePdf.getMenuItem());
 		vp.add(ExplorerSettings.getMenuItem());
 		return vp;
 	}

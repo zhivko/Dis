@@ -1,6 +1,8 @@
 
 package si.telekom.dis.server.jaxwsClient.eRender;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -17,12 +19,11 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="rObjectId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
- *         &lt;element name="docBase" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
- *         &lt;element name="dctmFormat" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
- *         &lt;element name="osName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
- *         &lt;element name="domain" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
- *         &lt;element name="password" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
+ *         &lt;element name="templateId" type="{http://www.w3.org/2001/XMLSchema}int" form="qualified"/>
+ *         &lt;element name="hashMapKeyValue" type="{http://erender.telekom.si/}HashMapWrapper" minOccurs="0" form="qualified"/>
+ *         &lt;element name="mimeType" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
+ *         &lt;element name="barcode" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
+ *         &lt;element name="roles" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0" form="qualified"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -33,165 +34,136 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "getContent", propOrder = {
-    "rObjectId",
-    "docBase",
-    "dctmFormat",
-    "osName",
-    "domain",
-    "password"
+    "templateId",
+    "hashMapKeyValue",
+    "mimeType",
+    "barcode",
+    "roles"
 })
 @XmlRootElement(name = "getContent")
 public class GetContent {
 
-    protected String rObjectId;
-    protected String docBase;
-    protected String dctmFormat;
-    protected String osName;
-    protected String domain;
-    protected String password;
+    protected int templateId;
+    protected HashMapWrapper hashMapKeyValue;
+    protected String mimeType;
+    protected String barcode;
+    protected List<String> roles;
 
     /**
-     * Gets the value of the rObjectId property.
+     * Gets the value of the templateId property.
+     * 
+     */
+    public int getTemplateId() {
+        return templateId;
+    }
+
+    /**
+     * Sets the value of the templateId property.
+     * 
+     */
+    public void setTemplateId(int value) {
+        this.templateId = value;
+    }
+
+    /**
+     * Gets the value of the hashMapKeyValue property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link HashMapWrapper }
+     *     
+     */
+    public HashMapWrapper getHashMapKeyValue() {
+        return hashMapKeyValue;
+    }
+
+    /**
+     * Sets the value of the hashMapKeyValue property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link HashMapWrapper }
+     *     
+     */
+    public void setHashMapKeyValue(HashMapWrapper value) {
+        this.hashMapKeyValue = value;
+    }
+
+    /**
+     * Gets the value of the mimeType property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getRObjectId() {
-        return rObjectId;
+    public String getMimeType() {
+        return mimeType;
     }
 
     /**
-     * Sets the value of the rObjectId property.
+     * Sets the value of the mimeType property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setRObjectId(String value) {
-        this.rObjectId = value;
+    public void setMimeType(String value) {
+        this.mimeType = value;
     }
 
     /**
-     * Gets the value of the docBase property.
+     * Gets the value of the barcode property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getDocBase() {
-        return docBase;
+    public String getBarcode() {
+        return barcode;
     }
 
     /**
-     * Sets the value of the docBase property.
+     * Sets the value of the barcode property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setDocBase(String value) {
-        this.docBase = value;
+    public void setBarcode(String value) {
+        this.barcode = value;
     }
 
     /**
-     * Gets the value of the dctmFormat property.
+     * Gets the value of the roles property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDctmFormat() {
-        return dctmFormat;
-    }
-
-    /**
-     * Sets the value of the dctmFormat property.
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the roles property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDctmFormat(String value) {
-        this.dctmFormat = value;
-    }
-
-    /**
-     * Gets the value of the osName property.
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getRoles().add(newItem);
+     * </pre>
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getOsName() {
-        return osName;
-    }
-
-    /**
-     * Sets the value of the osName property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setOsName(String value) {
-        this.osName = value;
-    }
-
-    /**
-     * Gets the value of the domain property.
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link String }
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDomain() {
-        return domain;
-    }
-
-    /**
-     * Sets the value of the domain property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
      */
-    public void setDomain(String value) {
-        this.domain = value;
-    }
-
-    /**
-     * Gets the value of the password property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
-     * Sets the value of the password property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setPassword(String value) {
-        this.password = value;
+    public List<String> getRoles() {
+        if (roles == null) {
+            roles = new ArrayList<String>();
+        }
+        return this.roles;
     }
 
 }

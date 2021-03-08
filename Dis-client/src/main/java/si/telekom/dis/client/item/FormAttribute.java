@@ -311,9 +311,15 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 
 	public List<String> getValues() {
 		ArrayList<String> values = new ArrayList<String>();
+//		if(this.att.dcmtAttName.equals("bn_template_value"))
+//		{
+//			MainPanel.log("bn_template_value");
+//		}
+		
 		if (att.isRepeating)
 			for (int i = 0; i < this.values.getItemCount(); i++) {
-				String val = split(getValue(), "|")[att.dropDownCol];
+				String theValue = this.values.getValue(i);
+				String val = split(theValue, "|")[att.dropDownCol];
 				values.add(val);
 			}
 		else if (att.dropDownCol != 0) {

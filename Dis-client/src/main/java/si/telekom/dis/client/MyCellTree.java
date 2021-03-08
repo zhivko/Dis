@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.cellview.client.CellTree;
 import com.google.gwt.user.cellview.client.CellTree.CellTreeMessages;
@@ -28,6 +29,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.TreeViewModel;
 
 import si.telekom.dis.client.CustomTreeModel.MyAsyncDataProvider;
+import si.telekom.dis.client.action.DocumentGeneratePdf;
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.Document;
 
@@ -39,8 +41,7 @@ public class MyCellTree<T> extends CellTree {
 	PopupPanel popupMenu;
 	ExplorerPanel explorerOrSearch;
 	final ImagesFormats imagesFormats = (ImagesFormats) GWT.create(ImagesFormats.class);
-	
-	
+
 	public MyCellTree(TreeViewModel viewModel, T rootValue, String objectIdOrDql, ExplorerPanel explorerOrSearch_, int size) {
 		super(viewModel, rootValue, GWT.create(CellTree.Resources.class), GWT.create(CellTree.CellTreeMessages.class), size);
 		// super(viewModel, rootValue);
@@ -93,7 +94,7 @@ public class MyCellTree<T> extends CellTree {
 			});
 			lblUnCheckAll.setStyleName("popUpItem");
 
-			String headerString = getMenuItemHtml("Izvozi v TSV",  imagesFormats.f_excel());
+			String headerString = getMenuItemHtml("Izvozi v TSV", imagesFormats.f_excel());
 			HTML htmlExportToTSV = new HTML(headerString);
 			htmlExportToTSV.addClickHandler(new ClickHandler() {
 				@Override
@@ -119,7 +120,7 @@ public class MyCellTree<T> extends CellTree {
 									alreadyAddedHeader = true;
 								}
 
-								csvData = csvData + "\"" + doc.type_name + "\"" +"\t";
+								csvData = csvData + "\"" + doc.type_name + "\"" + "\t";
 								csvData = csvData + "\"" + doc.object_name + "\"" + "\t";
 								csvData = csvData + "\"" + doc.releaseNo + "\"" + "\t";
 								for (String attName : doc.attributes.keySet()) {
@@ -138,11 +139,23 @@ public class MyCellTree<T> extends CellTree {
 						}
 					}
 					writeTextToClipboard(csvData);
-					MainPanel.log("Added "+docCount+" documents data to clipboard as tab separated file.  Paste it (Ctrl+V) in Excel or Libreoffice CALC.");
+					MainPanel.log("Added " + docCount + " documents data to clipboard as tab separated file.  Paste it (Ctrl+V) in Excel or Libreoffice CALC.");
 					popupMenu.hide();
 				}
 			});
 			htmlExportToTSV.setStyleName("popUpItem");
+
+			String headerStringERenderPdf = getMenuItemHtml("ERender PDF", imagesFormats.f_pdf());
+			HTML generatePdf = new HTML(headerStringERenderPdf);
+			generatePdf.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					DocumentGeneratePdf genPdf = new DocumentGeneratePdf();
+					genPdf.show();
+					popupMenu.hide();
+				}
+			});
+			generatePdf.setStyleName("popUpItem");
 
 			Label lblDownloadChecked = new Label("Prenesi izbrane dokumente");
 			lblDownloadChecked.setStyleName("popUpItem");
@@ -177,11 +190,12 @@ public class MyCellTree<T> extends CellTree {
 			vp1.add(lblUnCheckAll);
 			vp1.add(lblDownloadChecked);
 			vp1.add(htmlExportToTSV);
+			vp1.add(generatePdf);
 
-			Label labelSeparator= new Label("-----------------");
+			Label labelSeparator = new Label("-----------------");
 			labelSeparator.setStyleName("popUpItem");
-			vp1.add(labelSeparator);	
-			
+			vp1.add(labelSeparator);
+
 			ExplorerPanel.explorerService.getActionsForObject(loginName, loginPass, explorerOrSearch.r_object_id, new AsyncCallback<List<Action>>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -307,12 +321,13 @@ public class MyCellTree<T> extends CellTree {
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setWidth("5px");
 		hPanel.add(hp);
-		
+
 		Label label = new Label(text);
 		hPanel.add(label);
 
 		// Return the HTML string for the panel
 		return hPanel.getElement().getString();
-	}	
-	
+	}
+
+
 }

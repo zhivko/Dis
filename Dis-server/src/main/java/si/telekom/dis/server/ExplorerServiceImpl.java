@@ -130,8 +130,8 @@ import com.documentum.operations.IDfOperationError;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.itextpdf.text.pdf.PdfReader;
 
-import si.telekom.dis.server.jaxwsClient.eRender.PdfGenerator;
-import si.telekom.dis.server.jaxwsClient.eRender.PdfGeneratorImplService;
+import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGenerator;
+import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGeneratorImplService;
 import si.telekom.dis.server.reports.IIncludeInReport;
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.Attribute;
@@ -1004,7 +1004,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 	@Override
 	public ProfileAttributesAndValues getProfileAttributesAndValues(String loginName, String password, String r_object_id) throws ServerException {
-		Logger.getLogger(this.getClass()).info("getProfileAttributesAndValues started for r_object_id=" + r_object_id);
+		Logger.getLogger(this.getClass()).info("getProfileAttributesAndValues started for r_object_id: " + r_object_id);
 		ProfileAttributesAndValues ret = new ProfileAttributesAndValues();
 		IDfSession userSession = null;
 		long t1 = System.currentTimeMillis();
@@ -1294,14 +1294,19 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			int maxRowsReturned = 200;
 			int recNo = 0;
 			while (collection.next()) {
-				String id = collection.getValueAt(0).toString();
-				String value = collection.getValueAt(1).toString();
-				String[] val = { id, value };
+				ArrayList<String> al = new ArrayList<String>();
+				for (int i = 0; i < collection.getAttrCount(); i++) {
+					String value = collection.getValueAt(i).toString();
+					al.add(value);
+				}
+				String[] val = (String[]) al.toArray(new String[collection.getAttrCount()]);
 				ret.add(val);
 				recNo++;
 				if (recNo > maxRowsReturned) {
 					break;
 				}
+				
+
 			}
 
 			Logger.getLogger(this.getClass()).info("getValuesFromDql: " + completeDql + " returned " + ret.size() + " suggestions.");
@@ -1463,7 +1468,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 	@Override
 	public Void setAttributes(String loginName, String password, String r_object_id, List<AttributeValue> values) throws ServerException {
-		Logger.getLogger(this.getClass()).info("SetAttribute started.");
+		Logger.getLogger(this.getClass()).info("SetAttribute started for loginName: " + loginName + " for object r_object_id: " + r_object_id);
 		IDfSession userSession = null;
 		IDfCollection collection = null;
 		try {
@@ -1523,7 +1528,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								// 3,ID
 								// 4,Time/Date
 								// 5,Double
-								
+
 								if (attr.domain_type.equals("0")) {
 									dfDocument.setBoolean(attName, Boolean.valueOf(attValue));
 								} else if (attr.domain_type.equals("1")) {

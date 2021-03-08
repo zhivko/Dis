@@ -41,7 +41,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Template", namespace = "http://erender.telekom.si/", propOrder = {
+@XmlType(name = "Template", propOrder = {
     "id",
     "rObjectId",
     "objectName",
@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.XmlType;
     "roles",
     "title"
 })
-@XmlRootElement(name = "Template", namespace = "http://erender.telekom.si/")
+@XmlRootElement(name = "Template")
 public class Template {
 
     protected Integer id;

@@ -28,11 +28,11 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "KeyValue", namespace = "http://templates.mobitel.com", propOrder = {
+@XmlType(name = "KeyValue", propOrder = {
     "key",
     "value"
 })
-@XmlRootElement(name = "KeyValue", namespace = "http://templates.mobitel.com")
+@XmlRootElement(name = "KeyValue")
 public class KeyValue {
 
     protected String key;

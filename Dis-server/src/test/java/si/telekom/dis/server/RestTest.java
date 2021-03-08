@@ -174,7 +174,7 @@ public class RestTest extends JerseyTest {
 			
 			// ***************    test read content of document  ******************
 			response = client.target(baseUri.toString() + "/documents/"+doc.getrObjectId()+"/content").request().get();
-			assertEquals("should return status 200", 200, response.getStatus());
+			assertEquals("Should return status 200", 200, response.getStatus());
 
 			String base64EncodedString = response.readEntity(String.class);
 			String content = AdminServiceImpl.base64Decode(base64EncodedString);
@@ -184,9 +184,6 @@ public class RestTest extends JerseyTest {
 			
 			
 			// ***************    test destroy document  ******************
-			
-			
-			
 //@formatter:off
 			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
 					.request(MediaType.APPLICATION_JSON)
@@ -194,7 +191,7 @@ public class RestTest extends JerseyTest {
 					.post(Entity.text(""));
 //@formatter:on			
 
-			assertEquals("should return status 200", 200, response.getStatus());
+			assertEquals("Should return status 200", 200, response.getStatus());
 
 		} catch (JsonParseException e) {
 			// TODO Auto-generated catch block

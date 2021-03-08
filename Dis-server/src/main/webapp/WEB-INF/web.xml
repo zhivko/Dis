@@ -182,6 +182,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 		<servlet-name>uploadServ</servlet-name>
 		<url-pattern>/WebUi2/uploadServlet</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>eRenderServlet</servlet-name>
+		<servlet-class>si.telekom.dis.server.ERenderServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>eRenderServlet</servlet-name>
+		<url-pattern>/WebUi2/eRenderServlet</url-pattern>
+	</servlet-mapping>	
 
 	<!-- Default page to serve -->
 	<welcome-file-list>
@@ -268,6 +277,13 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 		<param-name>MOVE_TO_EFFECTIVE_JOB_ENABLED</param-name>
 		<param-value>${MOVE_TO_EFFECTIVE_JOB_ENABLED}</param-value>
 	</context-param>
+
+	<context-param>
+		<description>PdfGenerator Endpoint</description>
+		<param-name>PDFGENERATOR_WSDL_ENDPOINT</param-name>
+		<param-value>${PDFGENERATOR_WSDL_ENDPOINT}</param-value>
+	</context-param>
+
 
 
 </web-app>

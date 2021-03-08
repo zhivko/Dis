@@ -429,11 +429,11 @@
 
 
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.21</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.slf4j</groupId> -->
+<!-- 			<artifactId>slf4j-log4j12</artifactId> -->
+<!-- 			<version>1.7.21</version> -->
+<!-- 		</dependency> -->
 
 		<!-- testing -->
 		<dependency>
@@ -701,6 +701,40 @@
 					</execution>
 
 					<execution>
+						<id>generate-stubs-pdfGenerator</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<xauthfile>${basedir}/src/main/resources/authFile</xauthfile>
+							<packageName>si.telekom.dis.server.jaxwsClient.pdfGenerator</packageName>
+							<encoding>UTF-8</encoding>
+
+							<!-- <wsdlDirectory>${basedir}/src/wsdl</wsdlDirectory> -->
+							<!-- <wsdlFiles> -->
+							<!-- <wsdlFile>CatalogService_1_6_0.wsdl</wsdlFile> -->
+							<!-- </wsdlFiles> -->
+
+							<wsdlUrls>
+								<wsdlUrl>http://erender-test.ts.telekom.si:8080/PdfGenerator/services?wsdl</wsdlUrl>
+							</wsdlUrls>
+
+							<keep>false</keep>
+							<portname>{http://templates.mobitel.com}PdfGeneratorImplPort</portname>
+							<protocol>soap1.1</protocol>
+							<sourceDestDir>src/main/java</sourceDestDir>
+							<verbose>true</verbose>
+							<keep>false</keep>
+							<xdebug>true</xdebug>
+							<target>2.1</target>
+							<bindingFiles>
+								<bindingFile>${basedir}/src/remote-xjc/bindings-default.xjc</bindingFile>
+							</bindingFiles>
+						</configuration>
+					</execution>
+
+					<execution>
 						<id>generate-stubs-eRender</id>
 						<phase>generate-sources</phase>
 						<goals>
@@ -717,7 +751,7 @@
 							<!-- </wsdlFiles> -->
 
 							<wsdlUrls>
-								<wsdlUrl>http://erender-test.ts.telekom.si:8080/PdfGenerator/services?wsdl</wsdlUrl>
+								<wsdlUrl>http://erender-test.ts.telekom.si:8080/PdfGenerator/erenderServices?wsdl</wsdlUrl>
 							</wsdlUrls>
 
 							<keep>false</keep>

@@ -38,7 +38,7 @@ public class DocumentProperties extends WindowBox {
 		instance = this;
 
 		r_object_id = r_object_id_;
-		setText("Lastnosti");
+		setText("Lastnosti (r_object_id: " + r_object_id_ + ")");
 		setGlassEnabled(true);
 
 		tpAtts = new TabPanel();
@@ -125,7 +125,7 @@ public class DocumentProperties extends WindowBox {
 							public void onSuccess(Void result) {
 								MainPanel.log("Profile attributes written to object succesfully.");
 								MenuPanel.activeExplorerInstance.refreshLastSelectedNode();
-								DocumentProperties.this.hide(true);
+								//DocumentProperties.this.hide(true);
 							}
 						});
 			}
@@ -193,8 +193,9 @@ public class DocumentProperties extends WindowBox {
 							if (fa != null && !fa.getValue().equals(""))
 								al.add(split(fa.getValue(), "|")[fa.att.dropDownCol]);
 						} else {
+							String attName = fa.att.dcmtAttName;
 							for (String val : fa.getValues()) {
-								if (val != null && val.equals(""))
+								if (val != null)
 									al.add(split(val, "|")[fa.att.dropDownCol]);
 							}
 						}
