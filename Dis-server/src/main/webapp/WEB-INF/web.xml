@@ -190,8 +190,17 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 	<servlet-mapping>
 		<servlet-name>eRenderServlet</servlet-name>
 		<url-pattern>/WebUi2/eRenderServlet</url-pattern>
-	</servlet-mapping>	
-
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>classSignConfig</servlet-name>
+		<servlet-class>si.telekom.dis.server.ClassSignConfig</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>classSignConfig</servlet-name>
+		<url-pattern>/WebUi2/classSignConfig</url-pattern>
+	</servlet-mapping>
+	
 	<!-- Default page to serve -->
 	<welcome-file-list>
 		<welcome-file>WebUi2.html</welcome-file>
@@ -284,6 +293,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 		<param-value>${PDFGENERATOR_WSDL_ENDPOINT}</param-value>
 	</context-param>
 
+	<context-param>
+		<description>ERender Endpoint</description>
+		<param-name>ERENDER_WSDL_ENDPOINT</param-name>
+		<param-value>${ERENDER_WSDL_ENDPOINT}</param-value>
+	</context-param>
 
 
 </web-app>

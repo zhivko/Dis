@@ -28,17 +28,6 @@ public interface ERender {
 
     /**
      * 
-     * @return
-     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.Template>
-     */
-    @WebMethod
-    @WebResult(name = "template", targetNamespace = "")
-    @RequestWrapper(localName = "getTemplates", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplates")
-    @ResponseWrapper(localName = "getTemplatesResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplatesResponse")
-    public List<Template> getTemplates();
-
-    /**
-     * 
      * @param hashMapKeyValue
      * @param roles
      * @param document
@@ -65,20 +54,6 @@ public interface ERender {
         Holder<List<String>> roles,
         @WebParam(name = "document", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.OUT)
         Holder<byte[]> document);
-
-    /**
-     * 
-     * @param arg0
-     * @return
-     *     returns java.lang.String
-     */
-    @WebMethod
-    @WebResult(name = "jobId", targetNamespace = "http://erender.telekom.si/")
-    @RequestWrapper(localName = "getTemplateExtension", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateExtension")
-    @ResponseWrapper(localName = "getTemplateExtensionResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateExtensionResponse")
-    public String getTemplateExtension(
-        @WebParam(name = "arg0", targetNamespace = "")
-        String arg0);
 
     /**
      * 
@@ -158,6 +133,45 @@ public interface ERender {
 
     /**
      * 
+     * @param arg0
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod
+    @WebResult(name = "jobId", targetNamespace = "http://erender.telekom.si/")
+    @RequestWrapper(localName = "getTemplateExtension", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateExtension")
+    @ResponseWrapper(localName = "getTemplateExtensionResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateExtensionResponse")
+    public String getTemplateExtension(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0);
+
+    /**
+     * 
+     * @return
+     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.Template>
+     */
+    @WebMethod
+    @WebResult(name = "template", targetNamespace = "")
+    @RequestWrapper(localName = "getTemplates", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplates")
+    @ResponseWrapper(localName = "getTemplatesResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplatesResponse")
+    public List<Template> getTemplates();
+
+    /**
+     * 
+     * @param templateId
+     * @return
+     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.KeyValue>
+     */
+    @WebMethod
+    @WebResult(name = "templateField", targetNamespace = "")
+    @RequestWrapper(localName = "getTemplateFields", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFields")
+    @ResponseWrapper(localName = "getTemplateFieldsResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFieldsResponse")
+    public List<KeyValue> getTemplateFields(
+        @WebParam(name = "templateId", targetNamespace = "http://erender.telekom.si/")
+        int templateId);
+
+    /**
+     * 
      * @param sCompanyPar
      * @param iTypePar
      * @param nQuantityPar
@@ -187,20 +201,6 @@ public interface ERender {
         int nQuantityPar,
         @WebParam(name = "sourceSystem", targetNamespace = "http://erender.telekom.si/")
         String sourceSystem);
-
-    /**
-     * 
-     * @param templateId
-     * @return
-     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.KeyValue>
-     */
-    @WebMethod
-    @WebResult(name = "templateField", targetNamespace = "")
-    @RequestWrapper(localName = "getTemplateFields", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFields")
-    @ResponseWrapper(localName = "getTemplateFieldsResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFieldsResponse")
-    public List<KeyValue> getTemplateFields(
-        @WebParam(name = "templateId", targetNamespace = "http://erender.telekom.si/")
-        int templateId);
 
     /**
      * 

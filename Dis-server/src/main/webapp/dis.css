@@ -165,3 +165,10 @@ div#LogHtml
 {
 	font-size: smaller;
 }
+
+.com-google-gwt-user-cellview-client-CellTree-Style-cellTreeTopItem {
+    font-weight: bold;
+    color: #4b4a4a;	
+    margin-top: 0px;
+    padding: 0px 13px 3px 10px !important;
+}

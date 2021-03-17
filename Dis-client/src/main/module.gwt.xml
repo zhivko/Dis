@@ -61,7 +61,7 @@
 		<include name='/js/*.js' />
 	</public>
 
-	<stylesheet src='dis.css' />
+<!-- 	<stylesheet src='/dis.css' /> -->
 	<!-- <script src='js/theme.js'/> -->
 
 </module>

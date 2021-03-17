@@ -111,8 +111,8 @@ public class WebUi2 implements EntryPoint {
 		// });
 
 		authenticated = false;
-		nameField.getElement().setPropertyString("placeholder", "vnesi prijavno ime");
-		passField.getElement().setPropertyString("placeholder", "vnesi geslo");
+		//nameField.getElement().setPropertyString("placeholder", "vnesi prijavno ime");
+		//passField.getElement().setPropertyString("placeholder", "vnesi geslo");
 
 		// We can add style names to widgets
 		loginButton.addStyleName("sendButton");
@@ -207,11 +207,13 @@ public class WebUi2 implements EntryPoint {
 				// String passCrypted = Tools.encryptString(passField.getText());
 				// String passCrypted =
 				// Base64Utils.toBase64(passField.getText().getBytes(Charset.forName("UTF-8")));
+				GWT.log("log 0");
 				String passCrypted = b64encode(passField.getText());
 
 				loginService.login(nameField.getText(), passCrypted, new AsyncCallback<String[]>() {
 					public void onFailure(Throwable caught) {
 						// Show the RPC error message to the user
+						GWT.log("log 1");
 						if (!devTry) {
 							Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 								@Override
@@ -232,6 +234,7 @@ public class WebUi2 implements EntryPoint {
 					}
 
 					public void onSuccess(String[] result) {
+						GWT.log("setting login name and pass: " + (String) result[0] + " : " + (String) result[1]);
 						nameField.setText((String) result[0]);
 						passField.setText((String) result[1]);
 						authenticated = true;
@@ -242,19 +245,9 @@ public class WebUi2 implements EntryPoint {
 		}
 
 		// Add a handler to send the name to the server
+		
 		MyHandler handler = new MyHandler(false);
-		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-			@Override
-			public void execute() {
-				Timer timer = new Timer() {
-					@Override
-					public void run() {
-						handler.sendNameToServer(true);
-					}
-				};
-				timer.schedule(300);
-			}
-		});
+
 		loginButton.addClickHandler(handler);
 
 		passField.addKeyUpHandler(handler);

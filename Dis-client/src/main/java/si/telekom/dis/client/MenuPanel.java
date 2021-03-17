@@ -147,7 +147,6 @@ public class MenuPanel extends Composite {
 							adminPanel.add(actionConfigureERender);
 						}
 						
-						
 						MainPanel.log("Loading doctypes...");
 						if (spDocTypes == null) {
 							MainPanel.log("First time creating doctypes...");

@@ -32,11 +32,10 @@ public class DocumentApiDump extends WindowBox {
 		setGlassEnabled(true);
 
 		html = new HTML();
-		html.setWidth("50%");
-		html.setHeight("50%");
 		
 		sp=new ScrollPanel();
-		sp.setHeight("500px");
+		sp.setWidth("600px");
+		sp.setHeight("800px");
 		sp.add(html);
 		
 		

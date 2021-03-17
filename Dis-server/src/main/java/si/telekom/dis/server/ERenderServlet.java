@@ -15,6 +15,8 @@ import javax.xml.ws.Holder;
 
 import org.apache.log4j.Logger;
 
+import com.google.gwt.user.datepicker.client.DateBox.Format;
+
 import si.telekom.dis.server.jaxwsClient.eRender.ERender;
 import si.telekom.dis.server.jaxwsClient.eRender.ERenderImplService;
 import si.telekom.dis.server.jaxwsClient.eRender.HashMapWrapper;
@@ -31,11 +33,13 @@ import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGeneratorImplService;
 public class ERenderServlet extends HttpServlet {
 	String loginName;
 	String loginPassword;
+	String format;
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		loginName = req.getParameter("loginName");
 		loginPassword = req.getParameter("loginPassword");
+		format = req.getParameter("format");
 		byte[] result;
 		byte[] decodedPdf;
 		try {
@@ -45,6 +49,10 @@ public class ERenderServlet extends HttpServlet {
 				QName qname = new QName("http://templates.mobitel.com/", "PdfGeneratorImplService");
 
 				URL serviceUrl = new URL(AdminServiceImpl.PDFGENERATOR_WSDL_ENDPOINT);
+				//serviceUrl = new URL("http://erender.ts.telekom.si/PdfGenerator/services?wsdl");
+				//serviceUrl = new URL("http://erender-test.ts.telekom.si:8080/PdfGeneratorStaging/services?wsdl");
+				//serviceUrl = new URL("http://erender-test.ts.telekom.si:8080/PdfGeneratorSb1/services?wsdl");
+
 				PdfGeneratorImplService pdfGeneratorImplService = new PdfGeneratorImplService(serviceUrl, qname);
 				PdfGenerator client = pdfGeneratorImplService.getPdfGeneratorImplPort();
 
@@ -56,8 +64,9 @@ public class ERenderServlet extends HttpServlet {
 
 				QName qname = new QName("http://erender.telekom.si/", "ERenderImplService");
 
-				//URL serviceUrl = new URL(AdminServiceImpl.PDFGENERATOR_WSDL_ENDPOINT);
-				URL serviceUrl = new URL("http://localhost:8081/PdfGenerator/erenderServices?wsdl");
+				URL serviceUrl = new URL(AdminServiceImpl.ERENDER_WSDL_ENDPOINT);
+				Logger.getLogger(this.getClass()).info("ERender webservice url endpoint: " + serviceUrl);
+				//serviceUrl = new URL("http://erender.ts.telekom.si/PdfGenerator/erenderServices?wsdl");
 				ERenderImplService erenderImplService = new ERenderImplService(serviceUrl, qname);
 				ERender client = erenderImplService.getERenderImplPort();
 
@@ -67,26 +76,29 @@ public class ERenderServlet extends HttpServlet {
 				Holder<String> barcode = new Holder<>();
 				Holder<List<String>> roles = new Holder<>();
 				Holder<byte[]> document = new Holder<>();
-				
+
 				HashMapWrapper.Parameters params = new HashMapWrapper.Parameters();
 				hm.setParameters(params);
-				
+
 				client.getContent(typeId.intValue(), hm, mimeType, barcode, roles, document);
 				decodedPdf = document.value;
 			}
-			String pdfFileName = "getPdf";
-			resp.setContentType("application/pdf");
+			if(format.equalsIgnoreCase("html"))
+				resp.setContentType("text/html");
+			else	
+				resp.setContentType("application/pdf");
 			resp.setContentLength((int) decodedPdf.length);
-
 			ByteArrayInputStream baIs = new ByteArrayInputStream(decodedPdf);
 			OutputStream responseOutputStream = resp.getOutputStream();
 			int bytes;
 			while ((bytes = baIs.read()) != -1) {
 				responseOutputStream.write(bytes);
 			}
-			Logger.getLogger(this.getClass()).info("Returned pdf");
+			Logger.getLogger(this.getClass()).info("Returned pdf. Size: " + decodedPdf.length);
+			WsServer.log(loginName, "Pdf produced size: " + decodedPdf.length);
 		} catch (Exception_Exception e) {
 			Logger.getLogger(this.getClass()).error(e.getMessage());
+			WsServer.log(loginName, e.getMessage());
 		}
 
 	}

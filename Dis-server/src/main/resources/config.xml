@@ -422,19 +422,21 @@
                <userGroup name="documentum-admin"/>
             </userGroups>
          </query>
-         <query name="ePredloge splošni pogoji - GD">
-				select r_object_id from mob_form_template where
+         <query name="ePredloge splošni pogoji - GD">				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
-				mob_template_number like
-				'GD%'
-				ENABLE (RETURN_RANGE 1 10
-				'r_modify_date desc')
+				mob_template_number like 'GD%' 
+				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 
 
-				<userGroups>
-               <userGroup id="dm_world"/>
+				
+            
+            
+         <userGroups>
+               <userGroup id="" name=""/>
             </userGroups>
-            <orderBys/>
+            <orderBys>
+               <orderBy direction="A" name="mob_template_id"/>
+            </orderBys>
             <filterClass/>
          </query>
          <query name="Prodajne ponudbe - PP">
@@ -1711,11 +1713,10 @@
             <orderBys/>
             <filterClass/>
          </query>
-         <query name="ePredloge po nazivu">
-				select r_object_id from mob_form_template where mob_short_name like '%&lt;1&gt;%' ENABLE (RETURN_RANGE 1 100 'r_modify_date desc')
+         <query name="ePredloge po nazivu">select r_object_id from mob_form_template where title (Del naziva predloge) 
+like '%&lt;1&gt;%' ENABLE (RETURN_RANGE 1 100 'r_modify_date desc')
 
-
-				<userGroups>
+         <userGroups>
                <userGroup id="dm_world" name="dm_world"/>
             </userGroups>
             <orderBys/>

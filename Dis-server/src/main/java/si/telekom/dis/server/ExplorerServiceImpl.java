@@ -3856,7 +3856,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
                 // @formatter:on
 				rs = stmt.executeQuery(sql);
 
-				// lets delete deplate_default for this template_id
+				// lets delete teplate_default for this template_id
 				sql = "delete " + scheme + ".T_MSG_TEMPLATE_DEFAULT where msg_template_id=" + msg_template_id;
 				stmt.execute(sql);
 

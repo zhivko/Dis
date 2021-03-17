@@ -116,7 +116,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			InetAddress addr = InetAddress.getByName(ip);
 			String hostName = addr.getHostName();
 
-			boolean tryDevelop = true;
+			boolean tryDevelop = false;
 			if (tryDevelop && passwordEncoded.equals("") && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 5000;
