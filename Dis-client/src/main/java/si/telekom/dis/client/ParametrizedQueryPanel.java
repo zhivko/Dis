@@ -59,6 +59,7 @@ public class ParametrizedQueryPanel extends WindowBox {
 			}
 		});
 		getContentPanel().add(sp);
+		refresh(parametrizedQuery);
 	}
 
 	protected void runQuery() {

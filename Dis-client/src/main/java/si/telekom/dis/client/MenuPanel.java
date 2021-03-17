@@ -517,11 +517,11 @@ public class MenuPanel extends Composite {
 	}
 
 	public void createSearchItems() {
-		if (vpSearchButtons != null) {
-			vpSearchButtons.removeFromParent();
-			vpSearchButtons = null;
-		}
-
+//		if (vpSearchButtons != null) {
+//			vpSearchButtons.removeFromParent();
+//			vpSearchButtons = null;
+//		}
+//
 		if (vpSearchButtons == null) {
 			vpSearchButtons = new VerticalPanel();
 			spSearchItems.add(vpSearchButtons);
