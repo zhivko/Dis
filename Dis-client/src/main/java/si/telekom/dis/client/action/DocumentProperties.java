@@ -125,7 +125,7 @@ public class DocumentProperties extends WindowBox {
 							public void onSuccess(Void result) {
 								MainPanel.log("Profile attributes written to object succesfully.");
 								MenuPanel.activeExplorerInstance.refreshLastSelectedNode();
-								//DocumentProperties.this.hide(true);
+								DocumentProperties.this.hide(true);
 							}
 						});
 			}
