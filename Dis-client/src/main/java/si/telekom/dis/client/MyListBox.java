@@ -17,6 +17,15 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class MyListBox extends Composite {
 	private Label caption = new Label();
 	private ListBox listBox = new ListBox();
+	private String id;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	public MyListBox(String captionTxt, int widthInPixels) {
 		this(captionTxt, false);
@@ -26,7 +35,7 @@ public class MyListBox extends Composite {
 	public MyListBox(String captionTxt) {
 		this(captionTxt, false);
 	}
-	
+
 	public void addItem(String value, String txt)
 	{
 		listBox.addItem(value, txt);

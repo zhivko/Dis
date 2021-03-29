@@ -186,7 +186,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public static boolean MOVE_TO_EFFECTIVE_JOB_ENABLED = false;
 	public static String PDFGENERATOR_WSDL_ENDPOINT;
 	public static String ERENDER_WSDL_ENDPOINT;
-	
+
 	public static DfClientX CX;
 	static Document docConfig;
 	static String configPathFileName;
@@ -201,8 +201,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 */
 	protected static String retentionAddUnit;
 	public static HashMap<String, IDfGroup> allGroups = new HashMap<String, IDfGroup>();
-
-
 
 	static {
 
@@ -441,7 +439,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			AdminServiceImpl.superUserDomain = context.getInitParameter("documentum.superUserDomain");
 
 			AdminServiceImpl.retentionAddUnit = context.getInitParameter("retention.addUnit");
-			
+
 			AdminServiceImpl.PDFGENERATOR_WSDL_ENDPOINT = context.getInitParameter("PDFGENERATOR_WSDL_ENDPOINT");
 			AdminServiceImpl.ERENDER_WSDL_ENDPOINT = context.getInitParameter("ERENDER_WSDL_ENDPOINT");
 
@@ -533,7 +531,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		ret.add(new Action("document.removeVersionLabel", "odstrani labelo verzije", permit.WRITE));
 		ret.add(new Action("document.cancelCheckOut", "Prekliči checkout", permit.WRITE));
 		ret.add(new Action("document.apiDump", "ApiDump objekta", permit.BROWSE));
-		
+
 		ArrayList<extPermit> extPermitPromoteDemote = new ArrayList<>();
 		extPermitPromoteDemote.add(extPermit.CHANGE_PERMIT);
 		extPermitPromoteDemote.add(extPermit.CHANGE_LOCATION);
@@ -2714,7 +2712,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public List<List<String>> getRegTableValues(String loginName, String loginPass, String regTableId, int start, int length) throws ServerException {
+	public List<List<String>> getRegTableValues(String loginName, String loginPass, String regTableId, String filters, int start, int length)
+			throws ServerException {
 		List<List<String>> ret = new ArrayList<List<String>>();
 		IDfSession userSession = null;
 		IDfCollection coll = null;
@@ -2729,8 +2728,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			String fields = (String) getRegTableFields(regTableId)[2];
 
-			IDfQuery queryRead = new DfQuery("select " + fields + " from dm_dbo." + regTableId);
-			Logger.getLogger(this.getClass()).info(String.format("[%s] dql for regTable: %s start...", loginName, queryRead.getDQL()));
+			IDfQuery queryRead;
+			if (!filters.equals(""))
+				queryRead = new DfQuery("select " + fields + " from dm_dbo." + regTableId + " where " + filters);
+			else
+				queryRead = new DfQuery("select " + fields + " from dm_dbo." + regTableId);
+
+			Logger.getLogger(this.getClass()).info(String.format("[%s] dql for regTable: %s", loginName, queryRead.getDQL()));
 			coll = queryRead.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 			Logger.getLogger(this.getClass()).info(String.format("[%s] dql done..", loginName, queryRead.getDQL()));
 			long j = 0;
@@ -3070,10 +3074,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 							ret.dqlParts.add(partOfDql);
 							ret.labels.add("\\(" + label + "\\)");
 							ret.arguments.add(m.group(0));
-							
+
 							Logger.getLogger(this.getClass()).info("PartDql: " + partDql);
-							Logger.getLogger(this.getClass()).info("\tAtt: " + a.dcmtAttName + " ("+a.label+")");
-							
+							Logger.getLogger(this.getClass()).info("\tAtt: " + a.dcmtAttName + " (" + a.label + ")");
+
 							dqlQuery = dqlQuery.replace(partDql, "");
 							break;
 						}
@@ -4071,8 +4075,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		return ret;
 	}
-	
-	
+
 	public static void beginTransaction(IDfSession userSession) throws Exception {
 		userSession.beginTrans();
 	}

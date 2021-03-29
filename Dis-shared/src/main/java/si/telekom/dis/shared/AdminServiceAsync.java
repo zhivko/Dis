@@ -31,7 +31,7 @@ public interface AdminServiceAsync {
 
 	void registerTable(String loginName, String password, String tableName, AsyncCallback<Void> callback) throws ServerException;
 
-	void getRegTableValues(String loginName, String loginPass, String regTableId, int start, int length,
+	void getRegTableValues(String loginName, String loginPass, String regTableId, String filters, int start, int length, 
 			AsyncCallback<List<List<String>>> asyncCallback) throws ServerException;
 
 	void getRegTables(String loginName, String loginPass, AsyncCallback<List<String>> asyncCallback) throws ServerException;

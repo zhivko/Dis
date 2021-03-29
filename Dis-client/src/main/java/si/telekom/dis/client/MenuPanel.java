@@ -686,7 +686,7 @@ public class MenuPanel extends Composite {
 						String regTableId = splittedId[1];
 						MainPanel.clearPanel();
 						EditRegisteredTable editTable = new EditRegisteredTable(regTableId);
-						MainPanel.getPanel().add(editTable);
+						//MainPanel.getPanel().add(editTable);
 						MainPanel.log("Loading regtable: " + regTableId);
 					}
 					selectedDcmtType = id.split(":")[1];

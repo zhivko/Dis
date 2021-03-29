@@ -67,6 +67,7 @@ public class ERenderServlet extends HttpServlet {
 				URL serviceUrl = new URL(AdminServiceImpl.ERENDER_WSDL_ENDPOINT);
 				Logger.getLogger(this.getClass()).info("ERender webservice url endpoint: " + serviceUrl);
 				//serviceUrl = new URL("http://erender.ts.telekom.si/PdfGenerator/erenderServices?wsdl");
+				//serviceUrl = new URL("http://localhost:8081/PdfGenerator/erenderServices?wsdl");
 				ERenderImplService erenderImplService = new ERenderImplService(serviceUrl, qname);
 				ERender client = erenderImplService.getERenderImplPort();
 

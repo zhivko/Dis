@@ -57,6 +57,17 @@ public interface ERender {
 
     /**
      * 
+     * @return
+     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.Template>
+     */
+    @WebMethod
+    @WebResult(name = "template", targetNamespace = "")
+    @RequestWrapper(localName = "getTemplates", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplates")
+    @ResponseWrapper(localName = "getTemplatesResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplatesResponse")
+    public List<Template> getTemplates();
+
+    /**
+     * 
      * @param pdfContent
      * @param watermark
      * @param fontSize
@@ -144,17 +155,6 @@ public interface ERender {
     public String getTemplateExtension(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0);
-
-    /**
-     * 
-     * @return
-     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.Template>
-     */
-    @WebMethod
-    @WebResult(name = "template", targetNamespace = "")
-    @RequestWrapper(localName = "getTemplates", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplates")
-    @ResponseWrapper(localName = "getTemplatesResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplatesResponse")
-    public List<Template> getTemplates();
 
     /**
      * 

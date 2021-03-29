@@ -33,7 +33,7 @@ public interface AdminService extends RemoteService {
 
 	void registerTable(String loginName, String password, String tableName) throws ServerException;
 
-	List<List<String>> getRegTableValues(String loginName, String loginPass, String regTableId, int start, int length) throws ServerException;
+	List<List<String>> getRegTableValues(String loginName, String loginPass, String regTableId, String filters, int start, int length) throws ServerException;
 
 	List<String> getRegTables(String loginName, String loginPass) throws ServerException;
 

@@ -50,12 +50,12 @@ public class DocumentGeneratePdf extends WindowBox {
 		sp.add(html);
 
 		txtBoxInetId = new MyTxtBox("inet_id eObrazca");
-//		txtBoxInetId.getTextBox().addChangeHandler(new ChangeHandler() {
-//			@Override
-//			public void onChange(ChangeEvent event) {
-//				refreshInetId();
-//			}
-//		});
+		// txtBoxInetId.getTextBox().addChangeHandler(new ChangeHandler() {
+		// @Override
+		// public void onChange(ChangeEvent event) {
+		// refreshInetId();
+		// }
+		// });
 		txtBoxInetId.getTextBox().addKeyUpHandler(new KeyUpHandler() {
 
 			@Override
@@ -84,14 +84,14 @@ public class DocumentGeneratePdf extends WindowBox {
 				refreshTypeId();
 			}
 		});
-//		fa.addKeyUpHandler(new KeyUpHandler() {
-//
-//			@Override
-//			public void onKeyUp(KeyUpEvent event) {
-//				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER)
-//					refreshTypeId();
-//			}
-//		});
+		// fa.addKeyUpHandler(new KeyUpHandler() {
+		//
+		// @Override
+		// public void onKeyUp(KeyUpEvent event) {
+		// if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER)
+		// refreshTypeId();
+		// }
+		// });
 
 		getContentPanel().add(sp);
 
@@ -115,11 +115,13 @@ public class DocumentGeneratePdf extends WindowBox {
 	protected void refreshTypeId() {
 		SafeUri safeUri = DocumentGeneratePdf.this.calculateSafeUriGetContent(fa.getValue().split("\\|")[0]);
 		html.setUrl(safeUri);
+		hidePrint();
 	}
 
 	protected void refreshInetId() {
 		SafeUri uri = calculateSafeUriGetPdf(txtBoxInetId.getValue());
 		html.setUrl(uri);
+		hidePrint();
 	}
 
 	public SafeUri calculateSafeUriGetPdf(String id) {
@@ -129,15 +131,12 @@ public class DocumentGeneratePdf extends WindowBox {
 
 	public SafeUri calculateSafeUriGetContent(String id) {
 		String format = "pdf";
-		if(fa.getValue().endsWith("html"))
+		if (fa.getValue().endsWith("html"))
 			format = "html";
-		
-		
+
 		return UriUtils.fromString(GWT.getHostPageBaseURL() + "WebUi2/eRenderServlet?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
 				+ MainPanel.getInstance().loginPass + "&typeId=" + id + "&format=" + format);
 	}
-	
-	
 
 	public static Widget getMenuItem() {
 		// TODO Auto-generated method stub
@@ -151,5 +150,22 @@ public class DocumentGeneratePdf extends WindowBox {
 		});
 		return b;
 	}
+
+	private native void hidePrint()
+	/*-{
+		var $printSearch = setInterval(function() {
+			if ($wnd.$("button[id='print']").length > 0 || $wnd.$("button[id='print']").is(':visible')) {
+				hidePrint();
+			} else {
+				//doNothing
+				console.log('Searching...');
+			}
+		}, 150);
+
+		function hidePrint() {
+			$wnd.$("button[id='print']").css('display', 'none');
+		}
+
+	}-*/;
 
 }
