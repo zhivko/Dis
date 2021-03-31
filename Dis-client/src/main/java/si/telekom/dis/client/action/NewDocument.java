@@ -523,7 +523,28 @@ public class NewDocument extends WindowBox {
 									fillDependendAttributes(fa.att.dcmtAttName);
 								};
 							});
+							
+							if (att.defaultValue != null) {
+								if (att.defaultValueIsDql) {
+									explorerService.getDefaultValueDql(att.defaultValue, new AsyncCallback<List<List<String>>>() {
+										@Override
+										public void onSuccess(List<List<String>> result) {
+											ArrayList<String> al = new ArrayList<String>();
+											al.add(result.get(0).get(0));
+											fa.setValue(al);
+										}
 
+										@Override
+										public void onFailure(Throwable caught) {
+											MainPanel.log(caught.getMessage());
+										}
+									});
+								} else if (att.defaultValueIsConstant) {
+									ArrayList<String> al = new ArrayList<String>();
+									al.add(att.defaultValue);
+									fa.setValue(al);
+								}
+							}						
 							allFaAl.add(fa);
 						}
 					}

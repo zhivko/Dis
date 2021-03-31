@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -129,6 +130,8 @@ import com.documentum.operations.IDfCopyOperation;
 import com.documentum.operations.IDfOperationError;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.itextpdf.text.pdf.PdfReader;
+import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+import com.microsoft.sqlserver.jdbc.SQLServerResultSet;
 
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGenerator;
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGeneratorImplService;
@@ -1305,7 +1308,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				if (recNo > maxRowsReturned) {
 					break;
 				}
-				
 
 			}
 
@@ -2013,77 +2015,83 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			// create new if needed
 			adminSess = AdminServiceImpl.getAdminSession();
+
+			String aclNameFromClassSign = findAclNameFromClassSign(persObject.getString("mob_classification_id"));
+
 			IDfACL objAcl = (IDfACL) adminSess.getACL(sysObj.getACL().getDomain(), sysObj.getACL().getObjectName());
-			if (objAcl.getObjectName().startsWith("mob_") || objAcl.getObjectName().startsWith("dm_")) {// adminSess
-				objAcl = (IDfACL) adminSess.newObject("dm_acl");
-				objAcl.setObjectName("dis_acl_" + System.currentTimeMillis());
-				objAcl.setDomain("dm_dbo");
-				objAcl.save();
-			}
+			if (aclNameFromClassSign == null || aclNameFromClassSign.equals("")) {
+				if (objAcl.getObjectName().startsWith("mob_") || objAcl.getObjectName().startsWith("dm_")) {// adminSess
+					objAcl = (IDfACL) adminSess.newObject("dm_acl");
+					objAcl.setObjectName("dis_acl_" + System.currentTimeMillis());
+					objAcl.setDomain("dm_dbo");
+					objAcl.save();
+				}
+				objAcl.grant("dm_world", 1, "");
+				objAcl.grant("dm_owner", 7, "CHANGE_OWNER,CHANGE_PERMIT");
+				objAcl.grant("documentum-admin", 7, "CHANGE_OWNER,CHANGE_PERMIT");
+				
+				IDfList permits = null;
+				permits = objAcl.getPermissions();
 
-			objAcl.grant("dm_world", 1, "");
-			objAcl.grant("dm_owner", 7, "CHANGE_OWNER,CHANGE_PERMIT");
-			objAcl.grant("documentum-admin", 7, "CHANGE_OWNER,CHANGE_PERMIT");
+				for (String roleId : roleUserGroups.keySet()) {
+					for (String userGroup : roleUserGroups.get(roleId)) {
+						IDfQuery queryInsert2 = new DfQuery("insert into dm_dbo.T_DOCMAN_R (r_object_id,object_name,role_id,user_group_name) values('"
+								+ persObject.getId("r_object_id") + "','" + ((IDfSysObject) persObject).getObjectName() + "','" + roleId + "','" + userGroup + "')");
+						IDfCollection coll2 = queryInsert2.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+						coll2.close();
 
-			IDfList permits = null;
-			permits = objAcl.getPermissions();
-
-			for (String roleId : roleUserGroups.keySet()) {
-				for (String userGroup : roleUserGroups.get(roleId)) {
-					IDfQuery queryInsert2 = new DfQuery("insert into dm_dbo.T_DOCMAN_R (r_object_id,object_name,role_id,user_group_name) values('"
-							+ persObject.getId("r_object_id") + "','" + ((IDfSysObject) persObject).getObjectName() + "','" + roleId + "','" + userGroup + "')");
-					IDfCollection coll2 = queryInsert2.execute(userSession, IDfQuery.DF_EXEC_QUERY);
-					coll2.close();
-
-					// remove all permit for this user
-					if (permits != null) {
-						for (int i = 0; i < permits.getCount(); i++) {
-							IDfPermit userPermit = (IDfPermit) permits.get(i);
-							if (userPermit.getAccessorName().equals(userGroup)) {
-								Logger.getLogger(this.getClass().getName())
-										.info("revoking permit for accessor name:" + userPermit.getAccessorName() + " permit: " + userPermit.getPermitType());
-								objAcl.revokePermit(userPermit);
+						// remove all permit for this user
+						if (permits != null) {
+							for (int i = 0; i < permits.getCount(); i++) {
+								IDfPermit userPermit = (IDfPermit) permits.get(i);
+								if (userPermit.getAccessorName().equals(userGroup)) {
+									Logger.getLogger(this.getClass().getName())
+											.info("revoking permit for accessor name:" + userPermit.getAccessorName() + " permit: " + userPermit.getPermitType());
+									objAcl.revokePermit(userPermit);
+								}
 							}
 						}
-					}
 
-					// setAclFor each user in role
-					List<Action> actions = getActionsForObject(userSession, userGroup, persObject);
-					// Logger.getLogger(this.getClass().getName()).info("user: " +
-					// userGroup);
-					int maxGrant = 0;
-					String allExtPermissions = "";
-					for (Action action : actions) {
-						if (maxGrant < action.permit.value()) {
-							maxGrant = action.permit.value();
-						}
+						// setAclFor each user in role
+						List<Action> actions = getActionsForObject(userSession, userGroup, persObject);
+						// Logger.getLogger(this.getClass().getName()).info("user: " +
+						// userGroup);
+						int maxGrant = 0;
+						String allExtPermissions = "";
+						for (Action action : actions) {
+							if (maxGrant < action.permit.value()) {
+								maxGrant = action.permit.value();
+							}
 
-						for (ExtendedPermit.extPermit exp : action.extPermits) {
-							if (!allExtPermissions.contains(exp.value())) {
-								allExtPermissions = allExtPermissions + exp.value() + ",";
+							for (ExtendedPermit.extPermit exp : action.extPermits) {
+								if (!allExtPermissions.contains(exp.value())) {
+									allExtPermissions = allExtPermissions + exp.value() + ",";
+								}
 							}
 						}
-					}
 
-					if (allExtPermissions.length() > 0) {
-						allExtPermissions = allExtPermissions.substring(0, allExtPermissions.length() - 1);
-					}
+						if (allExtPermissions.length() > 0) {
+							allExtPermissions = allExtPermissions.substring(0, allExtPermissions.length() - 1);
+						}
 
-					IDfUser user = userSession.getUser(userGroup);
-					if (user != null || userGroup.equals("dm_world") || userGroup.equals("dm_group") || userGroup.equals("dm_owner")) {
-						objAcl.grant(userGroup, maxGrant, allExtPermissions);
-						Logger.getLogger(this.getClass().getName()).info("\tgranted: " + maxGrant + " extPermit: " + allExtPermissions + " for " + userGroup);
-					} else {
-						Logger.getLogger(this.getClass().getName()).info("No such user: " + userGroup);
-					}
+						IDfUser user = userSession.getUser(userGroup);
+						if (user != null || userGroup.equals("dm_world") || userGroup.equals("dm_group") || userGroup.equals("dm_owner")) {
+							objAcl.grant(userGroup, maxGrant, allExtPermissions);
+							Logger.getLogger(this.getClass().getName()).info("\tgranted: " + maxGrant + " extPermit: " + allExtPermissions + " for " + userGroup);
+						} else {
+							Logger.getLogger(this.getClass().getName()).info("No such user: " + userGroup);
+						}
 
+					}
+				}
+				objAcl.save();				
+			} else {
+				objAcl = userSession.getACL("dm_dbo", aclNameFromClassSign);
+				if (objAcl == null) {
+					throw new Exception("Such acl: " + aclNameFromClassSign + " doesnt exist in domain dm_dbo. Not applying it to document.");
 				}
 			}
 
-			// objAcl.setDomain("dm_dbo");
-			objAcl.save();
-
-			// sysObj.setACLDomain("dm_dbo");
 			sysObj.fetch(null);
 			sysObj.setACLName(objAcl.getObjectName());
 			sysObj.setACLDomain(objAcl.getDomain());
@@ -2113,6 +2121,73 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				adminSess.getSessionManager().release(adminSess);
 			}
 		}
+	}
+
+	private String findAclNameFromClassSign(String sClassSign) throws Exception {
+		String acl_name = null;
+
+		Connection con = null;
+		PreparedStatement prep = null;
+		SQLServerResultSet rs = null;
+		try {
+			con = BarcodeHandlerImpl.getConnection();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+
+//@formatter:off					
+					String sqlQuery = 
+"									 SELECT tc.\"id\"             AS tc_id, " + 
+"						       tc.classification_plan_id, " + 
+"						       tc.code, " + 
+"						       tc.name             AS NAME, " + 
+"						       tc.short_name, " + 
+"						       tc.retention_type_id, " + 
+"						       tc.retention_start_id, " +
+"									 tc.acl_name,	" + 				
+"						       classPlan.\"version\"       AS \"version\", " + 
+"						       classPlan.valid_from, " + 
+"						       classPlan.valid_to, " + 
+"						       trt.calculate_month AS \"month\" " + 
+"						FROM   dbo.T_CLASSIFICATION_PLAN classPlan, " + 
+"						       dbo.T_CLASSIFICATION tc, " + 
+"						       dbo.T_RETENTION_TYPE trt " + 
+"						WHERE   " + 
+"							   tc.code = '"+sClassSign+"' " + 
+"						       AND tc.classification_plan_id = classPlan.\"id\" " + 
+"						       AND trt.\"id\" = tc.retention_type_id " + 
+"						       AND classPlan.name = 'KNTS' " + 
+"						       AND Sysdatetime() >= classPlan.valid_from " + 
+"						       AND ( Sysdatetime() <= classPlan.valid_to " + 
+"						              OR ISNULL(classPlan.valid_to,'') = '')";  
+//@formatter:on
+
+			prep = (PreparedStatement) con.prepareStatement(sqlQuery);
+			rs = (SQLServerResultSet) prep.executeQuery();
+
+			if (rs.next()) {
+				acl_name = rs.getString("acl_name");
+				Logger.getLogger(this.getClass()).info("Found acl_class from T_CLASSIFICATION table. acl_name: " + acl_name);
+			}
+		} catch (Exception ex) {
+			throw ex;
+
+		} finally {
+			try {
+				// rs.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			try {
+				prep.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			try {
+				con.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		return acl_name;
 	}
 
 	@Override
@@ -3536,13 +3611,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 		}
 		dql = resultLine;
+		dql = dql.replaceAll("\t", " ");
 
 		IDfSession userSession = null;
 		IDfCollection collection = null;
 		try {
 			// try to get profile from local path - if it doesnt exist load it from
 			// documentum
-			String regExpr = ".*(RETURN_RANGE [0-9]+ [0-9]+( '.*')?)";
+			String regExpr = ".*(RETURN_RANGE [0-9]+ [0-9]+\\s*('.*')?)";
 
 			Pattern p = Pattern.compile(regExpr, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);// .
 			// represents

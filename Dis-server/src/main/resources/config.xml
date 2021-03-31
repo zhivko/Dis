@@ -448,10 +448,15 @@
 				'r_modify_date desc')
 
 
-				<userGroups>
-               <userGroup id="dm_world"/>
+				
+            
+            
+         <userGroups>
+               <userGroup id="dm_world" name="dm_world"/>
             </userGroups>
-            <orderBys/>
+            <orderBys>
+               <orderBy direction="A" name="mob_template_id"/>
+            </orderBys>
             <filterClass/>
          </query>
          <query name="Tiskovine VSE">

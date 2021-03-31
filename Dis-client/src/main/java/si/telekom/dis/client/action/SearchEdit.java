@@ -112,11 +112,12 @@ public class SearchEdit extends WindowBox {
 			@Override
 			public void onValueChange(ValueChangeEvent<List<String>> event) {
 				// TODO Auto-generated method stub
-				pqp.parametrizedQuery.orderBys = faSortAtts.getValues(true); // event.getValue();
 				if (pqp.parametrizedQuery.orderBys.size() > lbSortOrder.getItemCount()) {
 					lbSortOrder.addItem("A");
 				}
+				pqp.parametrizedQuery.orderBys = faSortAtts.getValues(true); // event.getValue();
 				pqp.parametrizedQuery.orderByDirections = getVauesOfListBox(lbSortOrder);
+				orderByDirections = getVauesOfListBox(lbSortOrder);
 			}
 		});
 
@@ -137,6 +138,7 @@ public class SearchEdit extends WindowBox {
 					else
 						lbSortOrder.setItemText(lbSortOrder.getSelectedIndex(), "A");
 
+					pqp.parametrizedQuery.orderBys = faSortAtts.getValues(true); // event.getValue();
 					pqp.parametrizedQuery.orderByDirections = getVauesOfListBox(lbSortOrder);
 					orderByDirections = getVauesOfListBox(lbSortOrder);
 				}

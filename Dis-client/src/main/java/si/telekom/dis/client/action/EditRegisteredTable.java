@@ -248,7 +248,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 																		if(!mlb.getValue().equals(""))
 																			filter = "\"" + colName + "\"='" + mlb.getValue() + "'";
 																		if(!txtBox.getValue().equals(""))
-																			filter = "\"" + colName + "\"='" + txtBox.getValue() + "'";
+																			filter = "lower(\"" + colName + "\") like '%" + txtBox.getValue().toLowerCase() + "%'";
 																		if (filters.equals(""))
 																			filters = filter;
 																		else

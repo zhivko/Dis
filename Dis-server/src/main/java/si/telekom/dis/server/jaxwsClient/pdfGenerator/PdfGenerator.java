@@ -1292,6 +1292,41 @@ public interface PdfGenerator {
 
     /**
      * 
+     * @param accessorName
+     * @param password
+     * @param docBase
+     * @param basicPermit
+     * @param extPermit
+     * @param domain
+     * @param rObjectIds
+     * @param osName
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @RequestWrapper(localName = "grant", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.Grant")
+    @ResponseWrapper(localName = "grantResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GrantResponse")
+    public void grant(
+        @WebParam(name = "rObjectIds", targetNamespace = "http://templates.mobitel.com/")
+        List<String> rObjectIds,
+        @WebParam(name = "accessorName", targetNamespace = "http://templates.mobitel.com/")
+        String accessorName,
+        @WebParam(name = "basicPermit", targetNamespace = "http://templates.mobitel.com/")
+        int basicPermit,
+        @WebParam(name = "extPermit", targetNamespace = "http://templates.mobitel.com/")
+        String extPermit,
+        @WebParam(name = "osName", targetNamespace = "http://templates.mobitel.com/")
+        String osName,
+        @WebParam(name = "password", targetNamespace = "http://templates.mobitel.com/")
+        String password,
+        @WebParam(name = "domain", targetNamespace = "http://templates.mobitel.com/")
+        String domain,
+        @WebParam(name = "docBase", targetNamespace = "http://templates.mobitel.com/")
+        String docBase)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
      * @param arg3
      * @param arg2
      * @param arg5
@@ -1325,41 +1360,6 @@ public interface PdfGenerator {
         String arg6,
         @WebParam(name = "arg7", targetNamespace = "")
         Boolean arg7)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param accessorName
-     * @param password
-     * @param docBase
-     * @param basicPermit
-     * @param extPermit
-     * @param domain
-     * @param rObjectIds
-     * @param osName
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @RequestWrapper(localName = "grant", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.Grant")
-    @ResponseWrapper(localName = "grantResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GrantResponse")
-    public void grant(
-        @WebParam(name = "rObjectIds", targetNamespace = "http://templates.mobitel.com/")
-        List<String> rObjectIds,
-        @WebParam(name = "accessorName", targetNamespace = "http://templates.mobitel.com/")
-        String accessorName,
-        @WebParam(name = "basicPermit", targetNamespace = "http://templates.mobitel.com/")
-        int basicPermit,
-        @WebParam(name = "extPermit", targetNamespace = "http://templates.mobitel.com/")
-        String extPermit,
-        @WebParam(name = "osName", targetNamespace = "http://templates.mobitel.com/")
-        String osName,
-        @WebParam(name = "password", targetNamespace = "http://templates.mobitel.com/")
-        String password,
-        @WebParam(name = "domain", targetNamespace = "http://templates.mobitel.com/")
-        String domain,
-        @WebParam(name = "docBase", targetNamespace = "http://templates.mobitel.com/")
-        String docBase)
         throws Exception_Exception
     ;
 

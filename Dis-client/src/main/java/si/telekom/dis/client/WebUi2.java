@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -136,8 +137,7 @@ public class WebUi2 implements EntryPoint {
 		nameField.selectAll();
 
 		// Create the popup dialog box
-		dialogBox.setText("Remote Procedure Call");
-		dialogBox.setAnimationEnabled(true);
+		dialogBox.setText("Login");
 		final Button closeButton = new Button("Close");
 		// We can set the id of a widget by accessing its Element
 		closeButton.getElement().setId("closeButton");
@@ -145,10 +145,16 @@ public class WebUi2 implements EntryPoint {
 		final HTML serverResponseLabel = new HTML();
 		VerticalPanel dialogVPanel = new VerticalPanel();
 		dialogVPanel.addStyleName("dialogVPanel");
-		dialogVPanel.add(new HTML("<b>Sending name to the server:</b>"));
+		dialogVPanel.add(new HTML("<b>Loging to DIS server with login name:</b>"));
 		dialogVPanel.add(textToServerLabel);
 		dialogVPanel.add(new HTML("<br><b>Server replies:</b><br>"));
-		dialogVPanel.add(serverResponseLabel);
+		
+		ScrollPanel sp = new ScrollPanel();
+		sp.add(serverResponseLabel);
+		sp.setWidth("500px");
+		sp.setHeight("200px");
+		
+		dialogVPanel.add(sp);
 		dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
 		dialogVPanel.add(closeButton);
 		dialogBox.setWidget(dialogVPanel);
@@ -218,13 +224,11 @@ public class WebUi2 implements EntryPoint {
 							Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 								@Override
 								public void execute() {
-									dialogBox.setWidth("400px");
-									dialogBox.setHeight("500px");
 									dialogBox.center();
 								}
 							});
 
-							dialogBox.setText("Remote Procedure Call - Failure");
+							dialogBox.setText("Login failed");
 							serverResponseLabel.addStyleName("serverResponseLabelError");
 							serverResponseLabel.setHTML(caught.getMessage());
 							closeButton.setFocus(true);

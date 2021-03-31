@@ -82,7 +82,7 @@ public class BarcodeHandlerImpl implements IBarcodeHandler {
 		}
 	}
 
-	public Connection getConnection() throws Exception {
+	public static Connection getConnection() throws Exception {
 		SQLServerDataSource ds = null;
 		Connection con = null;	
 		try {
@@ -99,7 +99,7 @@ public class BarcodeHandlerImpl implements IBarcodeHandler {
 			con = ds.getConnection();
 			con.setAutoCommit(false); // this starts first transaction
 		} catch (Exception ex) {
-			Logger logger = Logger.getLogger(this.getClass().getName());
+			Logger logger = Logger.getLogger(BarcodeHandlerImpl.class);
 			StringWriter errorStringWriter = new StringWriter();
 			PrintWriter pw = new PrintWriter(errorStringWriter);
 			ex.printStackTrace(pw);
