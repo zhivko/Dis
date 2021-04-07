@@ -194,9 +194,9 @@ public class DocumentView extends WindowBox {
 								if (sp.getWidget() != null)
 									sp.remove(sp.getWidget());
 								
-								HTML html = new HTML(new SafeHtmlBuilder().appendEscapedLines(response.getText()).toSafeHtml());
+								//HTML html = new HTML(new SafeHtmlBuilder().appendEscapedLines(response.getText()).toSafeHtml());
 								
-								//HTML html = new HTML(response.getText());
+								HTML html = new HTML(response.getText());
 								sp.add(html);
 								DocumentView.this.center();
 							} else {

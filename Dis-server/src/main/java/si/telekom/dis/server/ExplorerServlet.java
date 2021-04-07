@@ -160,6 +160,7 @@ public class ExplorerServlet extends HttpServlet {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 			if (rendition.equals("msg")) {
+				transformedToHTML = true;
 				File msgfile = File.createTempFile(sysObj.getObjectId().getId().toString(), rendition);
 				IOUtils.copy(bacontentStreamIs, new FileOutputStream(msgfile.getAbsolutePath()));
 
@@ -311,8 +312,11 @@ public class ExplorerServlet extends HttpServlet {
 			resp.setContentLength(baOs.size());
 			resp.setStatus(200);
 
-			if ((transformedToHTML || DocumentViewFileTypes.couldDisplayFormats.contains(rendition)) && !download) {
-				resp.setContentType(mimeType);
+			if ((DocumentViewFileTypes.couldDisplayFormats.contains(rendition)) && !download) {
+				if(transformedToHTML)
+					resp.setContentType("text/html");
+				else
+					resp.setContentType(mimeType);
 				resp.setHeader("Content-disposition", "inline; filename=content." + dosExtension);
 				resp.setHeader("fileName", "\"" + fileName + "." + dosExtension + "\"");
 			} else {

@@ -113,10 +113,86 @@ public class RestTest extends JerseyTest {
 		assertNotNull("Should return user list", response.getEntity().toString());
 	}
 
+	
 	@Test
 	public void testDocumentsCreate() {
-		// http://localhost:8080/Dis-server/api/documents/query?dql=select * from
-		// dm_cabinet
+		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
+		// HttpAuthenticationFeature feature =
+		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
+
+		final Client client = ClientBuilder.newClient();
+		client.register(feature);
+		
+		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
+		client.property(ClientProperties.READ_TIMEOUT, 10000000);
+		
+		String X_Transaction_Id = String.valueOf(System.currentTimeMillis()); 
+
+
+//@formatter:off	
+		Response response;
+		response = client.target(baseUri.toString() + "/documents/create")
+				.request(MediaType.APPLICATION_JSON)
+				.header("X-Transaction-Id", X_Transaction_Id).
+				post(Entity.json(
+			"{  " +
+		  "\"profileId\": \"epredloga\"," +
+		  "\"folderId\": \"/temp\"," +
+		  "\"stateId\": \"effective\"," +
+		  "\"attributes\": " +
+		  "[" +
+		  "  { \"name\": \"mob_classification_id\", \"values\": [ \"394\" ] }," +
+		  "  { \"name\": \"subject\", \"values\": [ \"test\" ] }," +
+		  "  { \"name\": \"mob_short_name\", \"values\": [ \"testna predloga čez REST\" ] }," +
+		  "  { \"name\": \"title\", \"values\": [ \"testna predloga čez REST\" ] }," +
+		  "  { \"name\": \"mob_template_id\", \"values\": [ \"450\" ] }" +
+		  "]," +
+		  "\"rolesUsers\":" +
+		  "[" +
+		  "  { \"roleId\": \"coordinator\", \"values\": [ \"kovacevicr\", \"zivkovick\"] }," +
+		  "  { \"roleId\": \"user\", \"values\": [ \"dm_world\" ] }" +
+		  "]," +
+		  "\"templateObjectRObjectId\":\"090b811f8011cae9\"" +
+			"}"));
+//@formatter:on			
+		String json = response.readEntity(String.class);
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		Document doc;
+		try {
+			doc = objectMapper.readValue(json.getBytes(), Document.class);
+
+			assertEquals("Import document should return status 200", 200, response.getStatus());
+			assertNotNull("Should return document", doc);
+			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
+			
+			// ***************    test destroy document  ******************
+//@formatter:off
+			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
+					.request(MediaType.APPLICATION_JSON)
+					.header("X-Transaction-Id", X_Transaction_Id)
+					.post(Entity.text(""));
+//@formatter:on			
+
+			assertEquals("Should return status 200", 200, response.getStatus());
+
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	
+	
+	@Test
+	public void testDocumentsImport() {
 		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
 		// HttpAuthenticationFeature feature =
 		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");

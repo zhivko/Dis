@@ -1,6 +1,7 @@
 package si.telekom.dis.client.action;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.gwt.cell.client.ClickableTextCell;
@@ -33,6 +34,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.ProvidesKey;
@@ -57,11 +59,17 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 	List<Row> rows = new ArrayList<EditRegisteredTable.Row>();
 	String regTableId;
 
+	ArrayList<TextBox> alTb = new ArrayList<TextBox>();
+
 	HorizontalPanel hpFilter = new HorizontalPanel();
 
 	static String filters = "";
 
 	MyDataProvider dataProvider;
+
+	VerticalPanel vpNewRecord;
+
+	Button btnOK;
 
 	public EditRegisteredTable(String regTableId) {
 		super();
@@ -75,7 +83,27 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 		getOkButton().addClickHandler(this);
 
 		cellTable = new MyCellTable();
+		vpNewRecord = new VerticalPanel();
+		btnOK = new Button("OK");
+		btnOK.addClickHandler(new ClickHandler() {
 
+			@Override
+			public void onClick(ClickEvent event) {
+				// TODO Auto-generated method stub
+				String sqlFields = "";
+				String sqlValues = "";
+
+				Iterator<Widget> widgets = vpNewRecord.iterator();
+				for (TextBox tb : alTb) {
+					sqlValues = "'" + tb.getText() + "',";
+					sqlFields = sqlFields + tb.getElement().getId() + ",";
+				}
+				sqlFields = sqlFields.substring(0, sqlFields.length() - 1);
+				sqlValues = sqlValues.substring(0, sqlFields.length() - 1);
+				String sqlInsert = "insert into dm_dbo." + regTableId + "(" + sqlFields + ") values(" + sqlValues + ")";// values()";
+				MainPanel.log(sqlInsert);
+			}
+		});
 		createEditTableCols(true);
 
 		MySimplePager pager;
@@ -98,6 +126,21 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 		getPanel().add(pager);
 
 		getOkButton().addClickHandler(this);
+
+		Button buttonNew = new Button("New");
+		buttonNew.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				PopupPanel pop = new PopupPanel(true, true);
+				pop.add(vpNewRecord);
+				pop.show();
+				pop.center();
+
+			}
+		});
+
+		getCommandPanel().add(buttonNew);
+
 		this.setAnimationEnabled(false);
 		instance = this;
 		this.center();
@@ -202,6 +245,17 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 														col.setSortable(true);
 														col.setDataStoreName(columnNames.get(j));
 
+														HorizontalPanel hp = new HorizontalPanel();
+														Label lb = new Label();
+														TextBox tb = new TextBox();
+														tb.getElement().setId(columnNames.get(j));
+														lb.setText(columnNames.get(j));
+														lb.setWidth("300px");
+														hp.add(lb);
+														hp.add(tb);
+														vpNewRecord.add(hp);
+														alTb.add(tb);
+
 														Header<String> columnHeader = new Header<String>(new ClickableTextCell()) {
 															@Override
 															public String getValue() {
@@ -213,7 +267,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 															@Override
 															public void update(String value) {
 																VerticalPanel vp = new VerticalPanel();
-																MyListBox mlb = new MyListBox("All values",true);
+																MyListBox mlb = new MyListBox("All values", true);
 																String colName = columnNames.get(j).replace("\"", "");
 																explorerService.dqlLookup(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
 																		"select distinct \"" + colName + "\" from dm_dbo." + regTableId + " order by \"" + colName + "\"",
@@ -224,6 +278,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 																					mlb.addItem(result.get(k).get(0));
 																				}
 																			}
+
 																			@Override
 																			public void onFailure(Throwable caught) {
 																				MainPanel.log(caught.getMessage());
@@ -235,7 +290,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 																hp1.add(lb1);
 																hp1.add(mlb);
 																hp1.add(txtBox);
-																PopupPanel pop = new PopupPanel(true,true);
+																PopupPanel pop = new PopupPanel(true, true);
 																vp.add(hp1);
 																pop.add(vp);
 																HorizontalPanel hp2 = new HorizontalPanel();
@@ -244,10 +299,10 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 																	@Override
 																	public void onClick(ClickEvent event) {
 																		// TODO Auto-generated method stub
-																		String filter="";
-																		if(!mlb.getValue().equals(""))
+																		String filter = "";
+																		if (!mlb.getValue().equals(""))
 																			filter = "\"" + colName + "\"='" + mlb.getValue() + "'";
-																		if(!txtBox.getValue().equals(""))
+																		if (!txtBox.getValue().equals(""))
 																			filter = "lower(\"" + colName + "\") like '%" + txtBox.getValue().toLowerCase() + "%'";
 																		if (filters.equals(""))
 																			filters = filter;
@@ -255,16 +310,15 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 																			filters = filters + " and " + filter;
 																		dataProvider.onRangeChanged(cellTable);
 																		cellTable.redraw();
-																		
+
 																		pop.hide();
 																	}
 																});
 																hp2.add(button);
-																vp.add(hp2);	
+																vp.add(hp2);
 																pop.show();
 																pop.center();
-																
-																
+
 															}
 														});
 
@@ -280,41 +334,54 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 													}
 													break;
 												}
+												vpNewRecord.add(btnOK);
 
-//												int i = 0;
-//												for (String colName : columnNames) {
-//													String colName1 = colName.replace("\"", "");
-//													if (colName1.equals("classification_plan_id") || colName1.equals("code")) {
-//														// VerticalPanel vp = new VerticalPanel();
-//														MyListBox lb = new MyListBox("filter: " + colName1 + "  ", true);
-//
-//														Attribute regCol = new Attribute(colName1);
-//														regCol.isLimitedToValueList = false;
-//														regCol.setType(Attribute.types.DROPDOWN.type);
-//														regCol.dqlValueListDefinition = "select distinct " + colName1 + " from dm_dbo." + regTableId + " order by " + colName1;
-//														FormAttribute fa = new FormAttribute(regCol);
-//														fa.addValueChangeHandler(new ValueChangeHandler<List<String>>() {
-//															public void onValueChange(ValueChangeEvent<List<String>> event) {
-//																filters = "";
-//																for (int i = 0; i < EditRegisteredTable.this.hpFilter.getWidgetCount(); i++) {
-//																	FormAttribute fa1 = (FormAttribute) EditRegisteredTable.this.hpFilter.getWidget(i);
-//																	if (filters.equals(""))
-//																		filters = fa1.getAtribute().getId() + "='" + fa1.getValue() + "'";
-//																	else
-//																		filters = filters + " and " + fa1.getAtribute().getId() + "='" + fa1.getValue() + "'";
-//																}
-//																if (!filters.equals(""))
-//																	dataProvider.onRangeChanged(cellTable);
-//															};
-//														});
-//
-//														// vp.add(lb);
-//														// TextBox tb = new TextBox();
-//														// vp.add(tb);
-//														EditRegisteredTable.this.hpFilter.add(lb);
-//													}
-//													i++;
-//												}
+												// int i = 0;
+												// for (String colName : columnNames) {
+												// String colName1 = colName.replace("\"", "");
+												// if (colName1.equals("classification_plan_id") ||
+												// colName1.equals("code")) {
+												// // VerticalPanel vp = new VerticalPanel();
+												// MyListBox lb = new MyListBox("filter: " + colName1 +
+												// " ", true);
+												//
+												// Attribute regCol = new Attribute(colName1);
+												// regCol.isLimitedToValueList = false;
+												// regCol.setType(Attribute.types.DROPDOWN.type);
+												// regCol.dqlValueListDefinition = "select distinct " +
+												// colName1 + " from dm_dbo." + regTableId + " order by
+												// " + colName1;
+												// FormAttribute fa = new FormAttribute(regCol);
+												// fa.addValueChangeHandler(new
+												// ValueChangeHandler<List<String>>() {
+												// public void
+												// onValueChange(ValueChangeEvent<List<String>> event) {
+												// filters = "";
+												// for (int i = 0; i <
+												// EditRegisteredTable.this.hpFilter.getWidgetCount();
+												// i++) {
+												// FormAttribute fa1 = (FormAttribute)
+												// EditRegisteredTable.this.hpFilter.getWidget(i);
+												// if (filters.equals(""))
+												// filters = fa1.getAtribute().getId() + "='" +
+												// fa1.getValue() + "'";
+												// else
+												// filters = filters + " and " +
+												// fa1.getAtribute().getId() + "='" + fa1.getValue() +
+												// "'";
+												// }
+												// if (!filters.equals(""))
+												// dataProvider.onRangeChanged(cellTable);
+												// };
+												// });
+												//
+												// // vp.add(lb);
+												// // TextBox tb = new TextBox();
+												// // vp.add(tb);
+												// EditRegisteredTable.this.hpFilter.add(lb);
+												// }
+												// i++;
+												// }
 												// cellTable.getEmptyTableWidget().getElement().appendChild(EditRegisteredTable.this.hpFilter.getElement());
 												// cellTable.setHeaderBuilder(new
 												// MyCustomHeaderBuilder(cellTable, false));
@@ -377,7 +444,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 									rows.add(row);
 								}
 								updateRowData(range.getStart(), rows);
-								
+
 								Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 									@Override
 									public void execute() {

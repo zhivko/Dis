@@ -106,6 +106,11 @@ public class ActionDialogBox extends DialogBox {
 		return okButton;
 	}
 	
+	
+	public HorizontalPanel getCommandPanel()
+	{
+		return commandPanel;
+	}
 
 
 }

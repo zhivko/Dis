@@ -130,7 +130,6 @@ import com.documentum.operations.IDfCopyOperation;
 import com.documentum.operations.IDfOperationError;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.itextpdf.text.pdf.PdfReader;
-import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSet;
 
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGenerator;
@@ -2017,9 +2016,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			adminSess = AdminServiceImpl.getAdminSession();
 
 			String aclNameFromClassSign = findAclNameFromClassSign(persObject.getString("mob_classification_id"));
-
-			IDfACL objAcl = (IDfACL) adminSess.getACL(sysObj.getACL().getDomain(), sysObj.getACL().getObjectName());
+			IDfACL objAcl=null;
 			if (aclNameFromClassSign == null || aclNameFromClassSign.equals("")) {
+				objAcl = (IDfACL) adminSess.getACL(sysObj.getACL().getDomain(), sysObj.getACL().getObjectName());
 				if (objAcl.getObjectName().startsWith("mob_") || objAcl.getObjectName().startsWith("dm_")) {// adminSess
 					objAcl = (IDfACL) adminSess.newObject("dm_acl");
 					objAcl.setObjectName("dis_acl_" + System.currentTimeMillis());
@@ -2029,7 +2028,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				objAcl.grant("dm_world", 1, "");
 				objAcl.grant("dm_owner", 7, "CHANGE_OWNER,CHANGE_PERMIT");
 				objAcl.grant("documentum-admin", 7, "CHANGE_OWNER,CHANGE_PERMIT");
-				
+
 				IDfList permits = null;
 				permits = objAcl.getPermissions();
 
@@ -2084,11 +2083,19 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 					}
 				}
-				objAcl.save();				
+				objAcl.save();
 			} else {
 				objAcl = userSession.getACL("dm_dbo", aclNameFromClassSign);
 				if (objAcl == null) {
 					throw new Exception("Such acl: " + aclNameFromClassSign + " doesnt exist in domain dm_dbo. Not applying it to document.");
+				}
+				for (String roleId : roleUserGroups.keySet()) {
+					for (String userGroup : roleUserGroups.get(roleId)) {
+						IDfQuery queryInsert2 = new DfQuery("insert into dm_dbo.T_DOCMAN_R (r_object_id,object_name,role_id,user_group_name) values('"
+								+ persObject.getId("r_object_id") + "','" + ((IDfSysObject) persObject).getObjectName() + "','" + roleId + "','" + userGroup + "')");
+						IDfCollection coll2 = queryInsert2.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+						coll2.close();
+					}
 				}
 			}
 
@@ -3410,6 +3417,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			String dqlOfObjects = "";
 			if (!rObjectIdOfObjectOrFolder.startsWith("/")) {
 				dqlOfObjects = "select r_object_id from dm_document where r_object_id='" + rObjectIdOfObjectOrFolder + "'";
+				IDfPersistentObject obj = userSession.getObjectByQualification("dm_document where r_object_id='" + rObjectIdOfObjectOrFolder + "'");
+				if (obj == null)
+					throw new Exception("No such template (r_object_id='" + rObjectIdOfObjectOrFolder + "')");
 			} else {
 				dqlOfObjects = "select r_object_id from dm_document where folder('" + rObjectIdOfObjectOrFolder + "')";
 			}
@@ -3418,6 +3428,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			query.setDQL(dqlOfObjects);
 			long milis1 = System.currentTimeMillis();
 			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
+
 			while (collection.next()) {
 				long milis2 = System.currentTimeMillis();
 
@@ -3842,14 +3853,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			if (msg_template_type == null) {
 				throw new ServerException("BN Template type is not defined.");
 			}
-			if (topic_id == 0) {
-				throw new ServerException("BN topic_id is not defined.");
-			}
 			if (msg_template_description == null) {
 				throw new ServerException("BN Description is not defined.");
-			}
-			if (process_point == null) {
-				throw new ServerException("BN Process point is not defined.");
 			}
 			if (rules_conditions == null) {
 				throw new ServerException("BN rules_conditions is not defined.");
@@ -3909,11 +3914,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				// @formatter:off
                 sql = "MERGE INTO " + scheme + ".T_MSG_TEMPLATE USING dual ON ( msg_template_id="
                         + msg_template_id + " )"
-                        + "	WHEN MATCHED THEN UPDATE SET msg_template_type='" + msg_template_type + "', topic_id= " + topic_id
+                        + "	WHEN MATCHED THEN UPDATE SET msg_template_type='" + msg_template_type + "', topic_id= " + (topic_id ==0 ? "NULL": topic_id)
                         + "	WHEN NOT MATCHED THEN "
                         + "		INSERT(msg_template_id,msg_template_type,topic_id) VALUES("
                         + msg_template_id
-                        + ",'" + msg_template_type + "'," + topic_id + ")";
+                        + ",'" + msg_template_type + "'," + (topic_id ==0 ? "NULL": topic_id) + ")";
                 // @formatter:on
 				rs = stmt.executeQuery(sql);
 
@@ -3921,13 +3926,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
                 sql = "MERGE INTO " + scheme + ".T_MSG_TEMPLATE_TOPIC USING dual ON ( msg_template_id="
                         + msg_template_id + " )"
                         + "	WHEN MATCHED THEN UPDATE SET msg_template_description='" + msg_template_description + "',"
-                        + "process_point='" + process_point + "',"
+                        + "process_point=" + (process_point.equals("") ? "'NA'": "'" + process_point + "'") + ","
                         + "rules_conditions='" + rules_conditions + "'"
                         + "	WHEN NOT MATCHED THEN "
                         + "		INSERT(msg_template_id,msg_template_description,process_point,rules_conditions) VALUES("
                         + msg_template_id
                         + ",'" + msg_template_description + "'"
-                        + ",'" + process_point + "'"
+                        + "," + (process_point.equals("") ? "'NA'": "'" + process_point + "'") 
                         + ",'" + rules_conditions + "')";
                 // @formatter:on
 				rs = stmt.executeQuery(sql);

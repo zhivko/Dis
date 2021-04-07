@@ -130,7 +130,7 @@ public class DisRest extends DocumentsApiService {
 			}
 			return Response.ok(docResp).build();
 		} catch (Throwable ex) {
-			return Response.status(500, ex.getMessage()).build();
+			return Response.status(500).entity(ex.getMessage()).build();
 		} finally {
 			if (collection != null)
 				try {
@@ -176,7 +176,7 @@ public class DisRest extends DocumentsApiService {
 			return Response.ok(doc1).build();
 
 		} catch (Throwable ex) {
-			return Response.status(500, ex.getMessage()).build();
+			return Response.status(500).entity(ex.getMessage()).build();
 		} finally {
 		}
 	}
@@ -213,7 +213,7 @@ public class DisRest extends DocumentsApiService {
 			return Response.ok(doc1).build();
 
 		} catch (Throwable ex) {
-			return Response.status(500, ex.toString()).build();
+			return Response.status(500).entity(ex.getMessage()).build();
 		} finally {
 		}
 	}
@@ -230,7 +230,7 @@ public class DisRest extends DocumentsApiService {
 
 			return Response.ok(doc1).build();
 		} catch (Throwable ex) {
-			return Response.status(500, ex.getMessage()).build();
+			return Response.status(500).entity(ex.getMessage()).build();
 		} finally {
 		}
 	}
@@ -259,13 +259,10 @@ public class DisRest extends DocumentsApiService {
 
 			byte[] content = IOUtils.toByteArray(bacontentStreamIs);
 			byte[] base64Encoded = Base64.getEncoder().encode(content);
-			
+
 			return Response.ok(base64Encoded).build();
-
-		} catch (
-
-		Exception ex) {
-			return Response.status(500, ex.getMessage()).build();
+		} catch (Exception ex) {
+			return Response.status(500).entity(ex.getMessage()).build();
 		} finally {
 			if (userSession != null)
 				if (userSession.isConnected())
@@ -285,7 +282,7 @@ public class DisRest extends DocumentsApiService {
 
 			return Response.ok(doc1).build();
 		} catch (Throwable ex) {
-			return Response.status(500, ex.getMessage()).build();
+			return Response.status(500).entity(ex.getMessage()).build();
 		} finally {
 		}
 	}
@@ -308,10 +305,10 @@ public class DisRest extends DocumentsApiService {
 				Document doc1 = getRestDocFromSharedDoc(doc);
 				return Response.ok(doc1).build();
 			} else {
-				return Response.status(404, "Such document doesn't exist.").build();
+				return Response.status(404).entity("Such document doesn't exist.").build();
 			}
 		} catch (Throwable ex) {
-			return Response.status(500, ex.getMessage()).build();
+			return Response.status(500).entity(ex.getMessage()).build();
 		} finally {
 			if (collection != null)
 				try {
@@ -364,6 +361,10 @@ public class DisRest extends DocumentsApiService {
 
 			i++;
 		}
+		
+		if(tmpRoleUsers!=null)
+			rolesUsers.add(tmpRoleUsers);
+		
 		doc1.setRolesUsers(rolesUsers);
 
 		return doc1;
@@ -452,10 +453,10 @@ public class DisRest extends DocumentsApiService {
 				Document doc1 = getRestDocFromSharedDoc(doc);
 				return Response.ok(doc1).build();
 			} else {
-				return Response.status(404, "Such document doesn't exist.").build();
+				return Response.status(404).entity("Such document doesn't exist.").build();
 			}
 		} catch (Throwable ex) {
-			return Response.status(500, ex.getMessage()).build();
+			return Response.status(500).entity(ex.getMessage()).build();
 		} finally {
 			if (collection != null)
 				try {
@@ -486,7 +487,7 @@ public class DisRest extends DocumentsApiService {
 			dfPersDoc.destroy();
 			return Response.status(200).build();
 		} catch (Throwable ex) {
-			return Response.status(500, ex.getMessage()).build();
+			return Response.status(500).entity(ex.getMessage()).build();
 		} finally {
 			if (collection != null)
 				try {

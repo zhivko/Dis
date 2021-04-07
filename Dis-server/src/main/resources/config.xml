@@ -186,25 +186,32 @@
          <query name="ePredloge - VSE predloge">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm')
-				ENABLE (RETURN_RANGE 1 10
-				'r_modify_date desc')
-				<userGroups>
-               <userGroup id="dm_world"/>
+				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
+            
+            
+         <userGroups>
+               <userGroup id="" name=""/>
             </userGroups>
+            <orderBys/>
+            <filterClass/>
          </query>
          <query name="ePredloge - GO">
 				select r_object_id from mob_form_template where
 				folder('/MOB/Standard/Template/eForm') and
 				mob_template_number like
-				'GO%'
+				'GO%' and 
+(r_version_label='effective' or r_version_label='draft') 
 				ENABLE (RETURN_RANGE 1 10
 				'r_modify_date desc')
-				<userGroups>
-               <userGroup id="dm_world"/>
+				
+            
+         <userGroups>
+               <userGroup id="" name=""/>
             </userGroups>
             <orderBys>
                <orderBy direction="D" name="mob_template_id"/>
             </orderBys>
+            <filterClass/>
          </query>
          <query name="Naročniški dokument - iskanje po SPP ID">select r_object_id from mob_subscriber_document where mob_subscriber_number (SPP ID stranke) ='&lt;1&gt;' ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 				

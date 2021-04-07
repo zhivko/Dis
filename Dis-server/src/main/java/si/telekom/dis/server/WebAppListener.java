@@ -1,5 +1,9 @@
 package si.telekom.dis.server;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
@@ -9,6 +13,8 @@ import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import si.telekom.dis.server.jobs.MoveMobFormTemplateToEffective;
 
 public final class WebAppListener implements ServletContextAttributeListener, ServletContextListener {
 
@@ -74,8 +80,17 @@ public final class WebAppListener implements ServletContextAttributeListener, Se
 			e.printStackTrace();
 		}
 
+		if (AdminServiceImpl.MOVE_TO_EFFECTIVE_JOB_ENABLED) {
+			Logger.getLogger(AdminServiceImpl.class).info("Starting MOVE_TO_EFFECTIVE_JOB");
+			MoveMobFormTemplateToEffective job = new MoveMobFormTemplateToEffective();
+			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+			scheduler.scheduleAtFixedRate(job, 0, 60, TimeUnit.MINUTES);
+		}
+		
 	}
 
+	
+	
 	// -------------------------------------------------------- Private Methods
 
 	/**

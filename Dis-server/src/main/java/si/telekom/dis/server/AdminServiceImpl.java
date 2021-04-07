@@ -354,6 +354,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				started = true;
 				// MassClassify();
 				// checkPermForUser();
+				//set398();
 
 			}
 		});
@@ -394,14 +395,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		t1.setName("SyncGroups");
 		t1.start();
 
-		if (MOVE_TO_EFFECTIVE_JOB_ENABLED) {
-			Logger.getLogger(AdminServiceImpl.class).info("Starting MOVE_TO_EFFECTIVE_JOB");
-			MoveMobFormTemplateToEffective job = new MoveMobFormTemplateToEffective();
-			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-			scheduler.scheduleAtFixedRate(job, 0, 60, TimeUnit.MINUTES);
-		}
 		// correctAcls();
-
 	}
 
 	static boolean deleteDirectory(File directoryToBeDeleted) {
@@ -3741,7 +3735,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// ---- DEV
 			AdminServiceImpl.repositoryName = "TS_Dev";
 			AdminServiceImpl.superUserName = "zivkovick";
-			AdminServiceImpl.superUserPassword = "Doitman789012";
+			AdminServiceImpl.superUserPassword = "Doitman890123";
 			AdminServiceImpl.superUserDomain = "ts";
 			String m_docbroker = "bsw-documentum.ts.telekom.si";
 			configPath = "/app/render/DocMan-DEV";
@@ -3749,7 +3743,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// ---- TEST
 			// AdminServiceImpl.repositoryName = "Mobitel";
 			// AdminServiceImpl.superUserName = "zivkovick";
-			// AdminServiceImpl.superUserPassword = "Doitman789012";
+			// AdminServiceImpl.superUserPassword = "Doitman890123";
 			// AdminServiceImpl.superUserDomain = "ts";
 			// String m_docbroker = "BTW-DOCUMENT-T.ts.telekom.si";
 			// configPath = "/app/render/DocMan-TEST";
@@ -3757,7 +3751,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// -- PROD
 			// AdminServiceImpl.repositoryName = "Mobitel";
 			// AdminServiceImpl.superUserName = "zivkovick";
-			// AdminServiceImpl.superUserPassword = "Doitman789012";
+			// AdminServiceImpl.superUserPassword = "Doitman890123";
 			// AdminServiceImpl.superUserDomain = "ts";
 			// String m_docbroker = "bpw-dmfs-cl1.ts.telekom.si";
 			// configPath = "/app/render/DocMan-test";
@@ -3874,7 +3868,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	private static void MassClassify() {
 		try {
 			String loginUser = "zivkovick";
-			String loginPassword = Base64Utils.toBase64("Doitman789012".getBytes());
+			String loginPassword = Base64Utils.toBase64("--".getBytes());
 			IDfSession userSess = getSession("zivkovick", loginPassword);
 
 			String dql = "select r_object_id,object_name,mob_template_id,mob_releaseno,mob_language,r_version_label from mob_form_template A where A.mob_releaseno in (select max(mob_releaseno) from mob_form_template where object_name = A.object_name) 				and not mob_template_number like 'PI%' and any r_version_label='effective' and A.r_object_id not in (select r_object_id from dm_dbo.T_DOCMAN_R where r_object_id=A.r_object_id and role_id='erender') order by mob_template_id, mob_releaseno";
@@ -3934,7 +3928,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		try {
 			String loginUser = "zivkovick";
-			String loginPassword = Base64Utils.toBase64("Doitman789012".getBytes());
+			String loginPassword = Base64Utils.toBase64("--".getBytes());
 			IDfSession userSess = getSession(loginUser, loginPassword);
 
 			IDfQuery q = new DfQuery(dql);
@@ -3960,6 +3954,36 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			}
 			coll.close();
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public static void set398() {
+		// kill $(lsof -ti tcp:9876)
+		String dql = "select r_object_id from mob_form_template where folder('/MOB/Standard/Template/eForm') and not mob_classification_id_cont = '398' and r_object_id='0900000192049e41'";
+
+		try {
+			IDfSession userSess = getAdminSession();
+
+			IDfQuery q = new DfQuery(dql);
+
+			IDfCollection coll = q.execute(userSess, IDfQuery.DF_EXECREAD_QUERY);
+			while (coll.next()) {
+				IDfSysObject document = (IDfSysObject) userSess.getObject(new DfId(coll.getString("r_object_id")));
+				try {
+					document.setString("mob_classification_id_cont", "398");
+					document.save();
+					Logger.getLogger(AdminServiceImpl.class)
+							.info("Done setting mob_classification_id_cont on r_object_id: " + document.getId("r_object_id").toString());
+				} catch (Exception ex) {
+					Logger.getLogger(AdminServiceImpl.class)
+							.error("Error setting mob_classification_id_cont on r_object_id: " + document.getId("r_object_id").toString());
+				}
+			}
+			coll.close();
+			userSess.getSessionManager().release(userSess);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

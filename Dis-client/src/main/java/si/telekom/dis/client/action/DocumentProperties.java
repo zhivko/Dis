@@ -78,6 +78,8 @@ public class DocumentProperties extends WindowBox {
 											fillDependendAttributes(fa.att.dcmtAttName);
 										};
 									});
+									if(att.dcmtAttName.equals("mob_classification_id_cont"))
+										MainPanel.log("mob_classification_id_cont");
 									List<String> values = result.values.get(att.dcmtAttName);
 									if (values != null) {
 										fa.setValue(values);
