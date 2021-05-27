@@ -40,6 +40,8 @@ public interface AdminService extends RemoteService {
 	List<String> getRegTableFieldNames(String loginName, String loginPass, String regTableName) throws ServerException;
 
 	void updateRegTableRow(String loginName, String loginPass, String regTableId, String value, int columnIndex, String pkValue) throws ServerException;
+	
+	void insertCSVToRegTable(String loginName, String loginPass, String regTableId, String csvValues) throws ServerException;
 
 	List<MyParametrizedQuery> getSearchQueries(String loginName, String dctmUserName, String loginPass) throws ServerException;
 
@@ -50,7 +52,7 @@ public interface AdminService extends RemoteService {
 	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
 			List<String> orderBy, List<String> orderBydirections, String filterClass) throws ServerException;
 
-	String duplicateParametrizedQuery(String loginName, String loginPass, String oldName, String name) throws ServerException;
+	String duplicateParametrizedQuery(String loginName, String loginPass, String oldName, String name, String query) throws ServerException;
 
 	String deleteParametrizedQuery(String loginName, String loginPass, String name) throws ServerException;
 
@@ -64,5 +66,9 @@ public interface AdminService extends RemoteService {
 	void deleteCollId(String loginName, String loginPass, int templateId, String col_id) throws ServerException;
 
 	void transferToAllEnvironments(String loginName, String loginPass, int templateId) throws ServerException;
+	
+	List<String> getRegTableFieldTypes(String tableName) throws ServerException;
+	
+	void runDql(String loginName, String loginPassword, String dql) throws ServerException;
 
 }

@@ -86,8 +86,11 @@ public class ERenderServlet extends HttpServlet {
 			}
 			if(format.equalsIgnoreCase("html"))
 				resp.setContentType("text/html");
-			else	
+			else if(format.equalsIgnoreCase("html"))
 				resp.setContentType("application/pdf");
+			else if(format.equalsIgnoreCase("crtext"))
+				resp.setContentType("text/plain");
+			
 			resp.setContentLength((int) decodedPdf.length);
 			ByteArrayInputStream baIs = new ByteArrayInputStream(decodedPdf);
 			OutputStream responseOutputStream = resp.getOutputStream();

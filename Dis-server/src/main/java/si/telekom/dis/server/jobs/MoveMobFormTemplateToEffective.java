@@ -42,10 +42,13 @@ public class MoveMobFormTemplateToEffective implements Runnable {
 		Thread.currentThread().setName("job_MoveMobFormTemplateToEffective");
 		try {
 			userSession = AdminServiceImpl.getAdminSession();
-
-			String dql = "select r_object_id from mob_form_template where not mob_valid_from is nulldate and "
-					+ "DATEDIFF(day,\"mob_valid_from\", date(today)) > 0 and any r_version_label in ('draft') group by r_object_id enable (return_range 1 30 'r_object_id')";
-
+//@formatter:off
+			String dql = "select r_object_id from mob_form_template where not mob_valid_from is nulldate and " +
+									 "DATEDIFF(day,mob_valid_from, date(today)) > 0 and " +
+									 "any r_version_label in ('draft') and " +
+									 "r_object_id not in (select r_object_id where any r_version_label in ('effective'))" + 
+									 "group by r_object_id enable (return_range 1 30 'r_object_id')";
+//@formatter:on
 			Logger.getLogger(this.getClass()).info("Dql: " + dql);
 
 			IDfQuery q = new DfQuery(dql);

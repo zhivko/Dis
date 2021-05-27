@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="group" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
  *         &lt;element name="web_portals" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0" form="qualified"/>
  *         &lt;element name="roles" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0" form="qualified"/>
- *         &lt;element name="mob_classification_id_cont" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
  *         &lt;element name="title" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0" form="qualified"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -54,7 +53,6 @@ import javax.xml.bind.annotation.XmlType;
     "group",
     "webPortals",
     "roles",
-    "mobClassificationIdCont",
     "title"
 })
 @XmlRootElement(name = "Template")
@@ -79,8 +77,6 @@ public class Template {
     @XmlElement(name = "web_portals")
     protected List<String> webPortals;
     protected List<String> roles;
-    @XmlElement(name = "mob_classification_id_cont")
-    protected String mobClassificationIdCont;
     protected String title;
 
     /**
@@ -355,30 +351,6 @@ public class Template {
             roles = new ArrayList<String>();
         }
         return this.roles;
-    }
-
-    /**
-     * Gets the value of the mobClassificationIdCont property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getMobClassificationIdCont() {
-        return mobClassificationIdCont;
-    }
-
-    /**
-     * Sets the value of the mobClassificationIdCont property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setMobClassificationIdCont(String value) {
-        this.mobClassificationIdCont = value;
     }
 
     /**

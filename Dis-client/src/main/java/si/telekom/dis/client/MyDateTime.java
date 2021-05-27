@@ -21,10 +21,11 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class MyDateTime extends Composite implements HasValueChangeHandlers<String>, HasKeyUpHandlers {
+public class MyDateTime extends Composite implements HasValueChangeHandlers<String>, HasKeyUpHandlers, MyHasValue<String> {
 	private TextBox textBoxDateTime = new TextBox();
 	private Date date;
 	String germanFormat = "dd.MM.yyyy HH:mm:ss";
@@ -219,7 +220,10 @@ public class MyDateTime extends Composite implements HasValueChangeHandlers<Stri
 	}
 
 	public String getValue() {
-		return this.textBoxDateTime.getText();
+		if(textBoxDateTime.getText().equals("__.__.____ __:__:__"))
+			return null;
+		else
+			return this.textBoxDateTime.getText();
 	}
 
 	public Date getValueDate() {
@@ -265,4 +269,8 @@ public class MyDateTime extends Composite implements HasValueChangeHandlers<Stri
 		return textBoxDateTime.addDomHandler(handler, KeyUpEvent.getType());
 	}
 
+	public void disable()
+	{
+		textBoxDateTime.setEnabled(false);
+	}
 }

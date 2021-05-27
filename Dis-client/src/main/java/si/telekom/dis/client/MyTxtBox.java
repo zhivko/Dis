@@ -13,7 +13,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class MyTxtBox extends Composite {
+public class MyTxtBox extends Composite implements MyHasValue<String> {
 	private Label caption = new Label();
 	private TextBox textBox = new TextBox();
 	
@@ -90,6 +90,12 @@ public class MyTxtBox extends Composite {
 	public void setName(String string) {
 		textBox.setName(string);
 		
+	}
+
+	@Override
+	public void disable() {
+		// TODO Auto-generated method stub
+		textBox.setEnabled(false);
 	}
 
 }

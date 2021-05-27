@@ -103,36 +103,19 @@ public class WebUi2 implements EntryPoint {
 
 	public void onModuleLoad() {
 
-		// GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
-		// @Override
-		// public void onUncaughtException(@NotNull Throwable e) {
-		// e.printStackTrace();
-		// //ensureNotUmbrellaError(e);
-		// }
-		// });
-
 		authenticated = false;
-		//nameField.getElement().setPropertyString("placeholder", "vnesi prijavno ime");
-		//passField.getElement().setPropertyString("placeholder", "vnesi geslo");
 
-		// We can add style names to widgets
 		loginButton.addStyleName("sendButton");
 
 		loginButton.setEnabled(true);
 		loginButton.setFocus(true);
 
-		// Add the nameField and sendButton to the RootPanel
-		// Use RootPanel.get() to get the entire body element
 		RootPanel.get("loginNameFieldContainer").add(nameField);
 		RootPanel.get("loginPassFieldContainer").add(passField);
 		RootPanel.get("sendButtonContainer").add(loginButton);
 
 		RootPanel.get("errorLabelContainer").add(errorLabel);
 
-		// MyDateTime mdt = new MyDateTime();
-		// RootPanel.get("loginPassFieldContainer").add(mdt);
-
-		// Focus the cursor on the name field when the app loads
 		nameField.setFocus(true);
 		nameField.selectAll();
 
@@ -166,17 +149,18 @@ public class WebUi2 implements EntryPoint {
 			}
 		});
 
+		
 		// Create a handler for the sendButton and nameField
 		class MyHandler implements ClickHandler, KeyUpHandler {
 			/**
 			 * Fired when the user clicks on the sendButton.
 			 */
+			boolean devTry;
+			
 			public MyHandler(boolean devTry_) {
 				super();
 				this.devTry = devTry_;
 			}
-
-			boolean devTry = false;
 
 			public void onClick(ClickEvent event) {
 				sendNameToServer(false);
@@ -249,13 +233,25 @@ public class WebUi2 implements EntryPoint {
 		}
 
 		// Add a handler to send the name to the server
-		
 		MyHandler handler = new MyHandler(false);
-
 		loginButton.addClickHandler(handler);
-
 		passField.addKeyUpHandler(handler);
+		
+		
+		boolean devTry = true;
+		if(devTry)
+		{
+			Timer timer = new Timer()
+      {
+          @Override
+          public void run()
+          {
+          	handler.sendNameToServer(false);
+          }
+      };
 
+      timer.schedule(1000);
+		}			
 	}
 
 	private static native String b64encode(String a) /*-{

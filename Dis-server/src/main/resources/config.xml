@@ -189,28 +189,35 @@
 				ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
             
             
+         
+            
+            
          <userGroups>
-               <userGroup id="" name=""/>
+               <userGroup id="dm_world" name="dm_world"/>
             </userGroups>
             <orderBys/>
             <filterClass/>
          </query>
-         <query name="ePredloge - GO">
-				select r_object_id from mob_form_template where
-				folder('/MOB/Standard/Template/eForm') and
-				mob_template_number like
-				'GO%' and 
-(r_version_label='effective' or r_version_label='draft') 
-				ENABLE (RETURN_RANGE 1 10
-				'r_modify_date desc')
-				
+         <query name="Predloge brez mob_classification_id_cont">select r_object_id from mob_form_template where 
+(mob_classification_id_cont is null or mob_classification_id_cont='') and 
+(any r_version_label='draft' or any r_version_label='effective')  
+enable (return_range 1 20 'r_object_id')
+         
+            
+            
+         
+           
+            
+         
+            
+            
+         
+            
             
          <userGroups>
-               <userGroup id="" name=""/>
+               <userGroup id="dm_world" name="dm_world"/>
             </userGroups>
-            <orderBys>
-               <orderBy direction="D" name="mob_template_id"/>
-            </orderBys>
+            <orderBys/>
             <filterClass/>
          </query>
          <query name="Naročniški dokument - iskanje po SPP ID">select r_object_id from mob_subscriber_document where mob_subscriber_number (SPP ID stranke) ='&lt;1&gt;' ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
@@ -438,8 +445,11 @@
 				
             
             
+         
+            
+            
          <userGroups>
-               <userGroup id="" name=""/>
+               <userGroup id="dm_world" name="dm_world"/>
             </userGroups>
             <orderBys>
                <orderBy direction="A" name="mob_template_id"/>
@@ -1626,9 +1636,11 @@
             <orderBys/>
             <filterClass/>
          </query>
-         <query name="SAP računi, ki so se popravljali v tem tednu">SELECT
-				r_object_id FROM mob_incoming_invoice WHERE DATEDIFF(week, "r_modify_date" , DATE(TODAY))&lt;=1 and r_creator_name='Captiva Administrator' ENABLE
-				(RETURN_RANGE 1 100 'r_modify_date desc')
+         <query name="SAP računi, ki so se popravljali v tem tednu">SELECT 
+r_object_id FROM mob_incoming_invoice WHERE DATEDIFF(week, "r_modify_date" , DATE(TODAY))&lt;=1 and  r_creator_name='Captiva Administrator' and 
+mobc_invoice_type_finance &lt;&gt; mobs_invoice_type_base and 
+not object_name like '2101%' 
+ENABLE (RETURN_RANGE 1 100 'r_modify_date desc')
 
 
 
@@ -1644,13 +1656,16 @@
 
 
 
-				<userGroups>
+				
+            
+            
+         <userGroups>
                <userGroup id="kovacevicr" name="kovacevicr"/>
                <userGroup id="DRizvic" name="DRizvic"/>
                <userGroup id="Mstajner" name="Mstajner"/>
             </userGroups>
             <orderBys/>
-            <filterClass>si.telekom.dis.server.reports.FilterSapObjects</filterClass>
+            <filterClass/>
          </query>
          <query name="SODO elektrika dokumenti z manjkajočim klas znak">
 				select r_object_id from mob_subscriber_document where owner_name='service_elektrika' and mob_source='SODO' and mob_classification_id=' ' ENABLE
@@ -1754,6 +1769,50 @@ ENABLE (RETURN_RANGE 1 100 'r_modify_date desc')
 				
 				
 			
+            
+            
+         
+            
+            
+         <userGroups>
+               <userGroup id="dm_world" name="dm_world"/>
+            </userGroups>
+            <orderBys/>
+            <filterClass/>
+         </query>
+         <query name="Predloge brez mob_classification_id_cont">select r_object_id from mob_form_template where 
+(mob_classification_id_cont is null or mob_classification_id_cont='') and 
+(any r_version_label='draft' or any r_version_label='effective')  
+enable (return_range 1 20 'r_object_id')
+         
+            
+            
+         
+           
+            
+         
+            
+            
+         
+            
+            
+         <userGroups>
+               <userGroup id="dm_world" name="dm_world"/>
+            </userGroups>
+            <orderBys/>
+            <filterClass/>
+         </query>
+         <query name="Predloge brez nastavljenega a_effective_date">select r_object_id from mob_form_template where 
+(mob_classification_id_cont is null or mob_classification_id_cont='') and 
+(any r_version_label='draft' or any r_version_label='effective')  
+enable (return_range 1 20 'r_object_id')
+         
+            
+            
+         
+           
+            
+         
             
             
          

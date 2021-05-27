@@ -243,66 +243,71 @@ public class ExplorerServlet extends HttpServlet {
 				MyTransformerErrorListener transfErrList = new MyTransformerErrorListener();
 				factory.setErrorListener(transfErrList);
 
-				Source xslSource = factory.getAssociatedStylesheet(domSource, null, null, null);
-				if (xslSource != null) {
-					Logger.getLogger(getClass()).info("stylesheet: " + xslSource.getSystemId());
+				try {
+					Source xslSource = factory.getAssociatedStylesheet(domSource, null, null, null);
+					if (xslSource != null) {
+						Logger.getLogger(getClass()).info("stylesheet: " + xslSource.getSystemId());
 
-					URIResolver uriResolver = factory.getURIResolver();
+						URIResolver uriResolver = factory.getURIResolver();
 
-					String href = SystemIDResolver.getAbsoluteURI(xslSource.getSystemId(), null);
+						String href = SystemIDResolver.getAbsoluteURI(xslSource.getSystemId(), null);
 
-					URL url = new URL(href);
-					URLConnection con = url.openConnection();
-					InputStream in = con.getInputStream();
-					String encoding = con.getContentEncoding();
-					encoding = encoding == null ? "UTF-8" : encoding;
-					String body = IOUtils.toString(in, encoding);
+						URL url = new URL(href);
+						URLConnection con = url.openConnection();
+						InputStream in = con.getInputStream();
+						String encoding = con.getContentEncoding();
+						encoding = encoding == null ? "UTF-8" : encoding;
+						String body = IOUtils.toString(in, encoding);
 
-					// String fileHref =
-					// "/home/klemen/Downloads/SkupinaTelekom_2_0_vizualizacija.xslt";
-					SAXSource source = new SAXSource(new InputSource(new ByteArrayInputStream(body.getBytes())));
+						// String fileHref =
+						// "/home/klemen/Downloads/SkupinaTelekom_2_0_vizualizacija.xslt";
+						SAXSource source = new SAXSource(new InputSource(new ByteArrayInputStream(body.getBytes())));
 
-					Transformer transformer = factory.newTransformer(source);
+						Transformer transformer = factory.newTransformer(source);
 
-					if (!transfErrList.getMsgs().equals("")) {
-						String msg = "Unsucesfull transforming xml with stlyesheet: " + xslSource.getSystemId() + "\n" + transfErrList.getMsgs();
-						Logger.getLogger(getClass()).info(msg);
-						WsServer.log(loginName, msg);
-						baOs.write(transfErrList.getMsgs().getBytes());
-						baOs.write("\n".getBytes());
+						if (!transfErrList.getMsgs().equals("")) {
+							String msg = "Unsucesfull transforming xml with stlyesheet: " + xslSource.getSystemId() + "\n" + transfErrList.getMsgs();
+							Logger.getLogger(getClass()).info(msg);
+							WsServer.log(loginName, msg);
+							baOs.write(transfErrList.getMsgs().getBytes());
+							baOs.write("\n".getBytes());
+						}
+
+						if (transformer != null) {
+							String msg = "Succesfully transformed xml with stlyesheet: " + xslSource.getSystemId();
+							baOs = new ByteArrayOutputStream();
+							StreamResult result = new StreamResult(baOs);
+							transformer.transform(domSource, result);
+							bacontentStreamIs = new ByteArrayInputStream(baOs.toByteArray());
+							transformedToHTML = true;
+							WsServer.log(loginName, msg);
+							Logger.getLogger(getClass()).info(msg);
+
+						}
+					} else {
+
+						Transformer transformer = TransformerFactory.newInstance().newTransformer();
+						transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+						transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+						// initialize StreamResult with File object to save to file
+						StreamResult result = new StreamResult(new StringWriter());
+						DOMSource source = new DOMSource(document);
+						transformer.transform(source, result);
+						String xmlString = result.getWriter().toString();
+
+						// ByteArrayInputStream baIs2 =
+						// sysObj.getContentEx(format.getName(),
+						// 0);
+						// byte[] bytes = IOUtils.toByteArray(baIs2);
+						// String content = new String(bytes);
+						// xmlString = xmlString.replace("\n", "\n<br>");
+						// String newContent = escapeXml(xmlString);
+						bacontentStreamIs = new ByteArrayInputStream(xmlString.getBytes());
 					}
-
-					if (transformer != null) {
-						String msg = "Succesfully transformed xml with stlyesheet: " + xslSource.getSystemId();
-						baOs = new ByteArrayOutputStream();
-						StreamResult result = new StreamResult(baOs);
-						transformer.transform(domSource, result);
-						bacontentStreamIs = new ByteArrayInputStream(baOs.toByteArray());
-						transformedToHTML = true;
-						WsServer.log(loginName, msg);
-						Logger.getLogger(getClass()).info(msg);
-
-					}
-				} else {
-
-					Transformer transformer = TransformerFactory.newInstance().newTransformer();
-					transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-					transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-					// initialize StreamResult with File object to save to file
-					StreamResult result = new StreamResult(new StringWriter());
-					DOMSource source = new DOMSource(document);
-					transformer.transform(source, result);
-					String xmlString = result.getWriter().toString();
-
-					// ByteArrayInputStream baIs2 = sysObj.getContentEx(format.getName(),
-					// 0);
-					// byte[] bytes = IOUtils.toByteArray(baIs2);
-					// String content = new String(bytes);
-					// xmlString = xmlString.replace("\n", "\n<br>");
-					// String newContent = escapeXml(xmlString);
-					bacontentStreamIs = new ByteArrayInputStream(xmlString.getBytes());
+					baIs.close();
+				} catch (Exception ex1) {
+					Logger.getLogger(this.getClass()).warn("Unable to process xml: " + ex1.getMessage());
 				}
-				baIs.close();
 			}
 
 			baOs.write(IOUtils.toByteArray(bacontentStreamIs));
@@ -313,7 +318,7 @@ public class ExplorerServlet extends HttpServlet {
 			resp.setStatus(200);
 
 			if ((DocumentViewFileTypes.couldDisplayFormats.contains(rendition)) && !download) {
-				if(transformedToHTML)
+				if (transformedToHTML)
 					resp.setContentType("text/html");
 				else
 					resp.setContentType(mimeType);
@@ -446,7 +451,7 @@ public class ExplorerServlet extends HttpServlet {
 					Element userDefined = (Element) expr2.evaluate(doc, XPathConstants.NODE);
 
 					allColIds.addAll(systemFieldsAl);
-					
+
 					for (String col_id : allColIds) {
 						XPathExpression expr1 = xpath.compile("/office:document-meta/office:meta/meta:user-defined[@meta:name='" + col_id + "']");
 						NodeList nodes1 = (NodeList) expr1.evaluate(doc, XPathConstants.NODESET);
@@ -461,17 +466,17 @@ public class ExplorerServlet extends HttpServlet {
 							newNode.setAttribute("meta:name", col_id);
 							newNode.setAttribute("meta:value-type", "string");
 							newNode.setTextContent("value");
-//							builder.parse(new ByteArrayInputStream("<meta:user-defined meta:name=\"name\">value</meta:user-defined>".getBytes()))
-//									.getDocumentElement();
+							// builder.parse(new ByteArrayInputStream("<meta:user-defined
+							// meta:name=\"name\">value</meta:user-defined>".getBytes()))
+							// .getDocumentElement();
 							// }
-//							newNode.getAttributes().getNamedItem("meta:name").setNodeValue(col_id);
+							// newNode.getAttributes().getNamedItem("meta:name").setNodeValue(col_id);
 							userDefined.appendChild(newNode);
 							changed = true;
 						}
 					}
-					
-					if(changed)
-					{
+
+					if (changed) {
 						ByteArrayOutputStream ret = new ByteArrayOutputStream();
 						// XERCES 1 or 2 additionnal classes.
 						OutputFormat of = new OutputFormat("XML", "UTF-8", false);
@@ -496,7 +501,7 @@ public class ExplorerServlet extends HttpServlet {
 
 						files.put("meta.xml", ret.toByteArray());
 					}
-					
+
 					is.close();
 				}
 			}

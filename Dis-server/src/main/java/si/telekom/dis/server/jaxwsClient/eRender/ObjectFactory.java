@@ -24,11 +24,11 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _OverlayPdfPdfContent_QNAME = new QName("http://erender.telekom.si/", "pdfContent");
     private final static QName _GetContentForLanguageResponseDocument_QNAME = new QName("http://erender.telekom.si/", "document");
-    private final static QName _WinwordToPdfWinwordContent_QNAME = new QName("http://erender.telekom.si/", "winwordContent");
-    private final static QName _WinwordToPdfResponsePdfContent_QNAME = new QName("", "pdfContent");
     private final static QName _OverlayPdfResponsePdfWithOverlay_QNAME = new QName("http://erender.telekom.si/", "pdfWithOverlay");
+    private final static QName _MergeContentOfItemsResponsePdfContent_QNAME = new QName("http://erender.telekom.si/", "pdfContent");
+    private final static QName _WinwordToPdfResponsePdfContent_QNAME = new QName("", "pdfContent");
+    private final static QName _WinwordToPdfWinwordContent_QNAME = new QName("http://erender.telekom.si/", "winwordContent");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: si.telekom.dis.server.jaxwsClient.eRender
@@ -265,15 +265,6 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "pdfContent", scope = OverlayPdf.class)
-    public JAXBElement<byte[]> createOverlayPdfPdfContent(byte[] value) {
-        return new JAXBElement<byte[]>(_OverlayPdfPdfContent_QNAME, byte[].class, OverlayPdf.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
     @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "document", scope = GetContentForLanguageResponse.class)
     public JAXBElement<byte[]> createGetContentForLanguageResponseDocument(byte[] value) {
         return new JAXBElement<byte[]>(_GetContentForLanguageResponseDocument_QNAME, byte[].class, GetContentForLanguageResponse.class, ((byte[]) value));
@@ -283,9 +274,9 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "winwordContent", scope = WinwordToPdf.class)
-    public JAXBElement<byte[]> createWinwordToPdfWinwordContent(byte[] value) {
-        return new JAXBElement<byte[]>(_WinwordToPdfWinwordContent_QNAME, byte[].class, WinwordToPdf.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "pdfWithOverlay", scope = OverlayPdfResponse.class)
+    public JAXBElement<byte[]> createOverlayPdfResponsePdfWithOverlay(byte[] value) {
+        return new JAXBElement<byte[]>(_OverlayPdfResponsePdfWithOverlay_QNAME, byte[].class, OverlayPdfResponse.class, ((byte[]) value));
     }
 
     /**
@@ -303,16 +294,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "pdfContent", scope = MergeContentOfItemsResponse.class)
     public JAXBElement<byte[]> createMergeContentOfItemsResponsePdfContent(byte[] value) {
-        return new JAXBElement<byte[]>(_OverlayPdfPdfContent_QNAME, byte[].class, MergeContentOfItemsResponse.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "pdfContent", scope = MergeContentResponse.class)
-    public JAXBElement<byte[]> createMergeContentResponsePdfContent(byte[] value) {
-        return new JAXBElement<byte[]>(_OverlayPdfPdfContent_QNAME, byte[].class, MergeContentResponse.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_MergeContentOfItemsResponsePdfContent_QNAME, byte[].class, MergeContentOfItemsResponse.class, ((byte[]) value));
     }
 
     /**
@@ -328,9 +310,27 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "pdfWithOverlay", scope = OverlayPdfResponse.class)
-    public JAXBElement<byte[]> createOverlayPdfResponsePdfWithOverlay(byte[] value) {
-        return new JAXBElement<byte[]>(_OverlayPdfResponsePdfWithOverlay_QNAME, byte[].class, OverlayPdfResponse.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "winwordContent", scope = WinwordToPdf.class)
+    public JAXBElement<byte[]> createWinwordToPdfWinwordContent(byte[] value) {
+        return new JAXBElement<byte[]>(_WinwordToPdfWinwordContent_QNAME, byte[].class, WinwordToPdf.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "pdfContent", scope = OverlayPdf.class)
+    public JAXBElement<byte[]> createOverlayPdfPdfContent(byte[] value) {
+        return new JAXBElement<byte[]>(_MergeContentOfItemsResponsePdfContent_QNAME, byte[].class, OverlayPdf.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://erender.telekom.si/", name = "pdfContent", scope = MergeContentResponse.class)
+    public JAXBElement<byte[]> createMergeContentResponsePdfContent(byte[] value) {
+        return new JAXBElement<byte[]>(_MergeContentOfItemsResponsePdfContent_QNAME, byte[].class, MergeContentResponse.class, ((byte[]) value));
     }
 
 }

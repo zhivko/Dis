@@ -346,20 +346,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					dql = "select r_object_id from dm_sysobject where folder('" + path + "') ENABLE(RETURN_RANGE " + rangeStart + " " + rangeEnd
 							+ " 'r_object_id DESC')";
 				} else {
-					if (current) {
+					dql = "dm_document(all) where r_object_id = '" + source_r_object_id + "'";
+					IDfPersistentObject persObj = userSession.getObjectByQualification(dql);
+					if (persObj != null) {
+						ArrayList<Document> al = new ArrayList<Document>();
+						al.add(docFromSysObject((IDfSysObject) persObj, loginName, userSession));
+						return al;
+					} else {
 						dql = "dm_document where i_chronicle_id in (select i_chronicle_id from dm_document(all) where r_object_id = '" + source_r_object_id
 								+ "')";
-						IDfPersistentObject persObj = userSession.getObjectByQualification(dql);
-						if (persObj != null) {
-							ArrayList<Document> al = new ArrayList<Document>();
-							al.add(docFromSysObject((IDfSysObject) persObj, loginName, userSession));
-							return al;
-						} else {
-							dql = "select r_object_id from dm_sysobject where object_name='" + source_r_object_id + "'";
-						}
-					} else {
-						dql = "dm_document where where r_object_id = '" + source_r_object_id + "')";
-						IDfPersistentObject persObj = userSession.getObjectByQualification(dql);
+						persObj = userSession.getObjectByQualification(dql);
 						if (persObj != null) {
 							ArrayList<Document> al = new ArrayList<Document>();
 							al.add(docFromSysObject((IDfSysObject) persObj, loginName, userSession));
@@ -805,73 +801,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					roleUserGroups.get(roleId).add(userGroupNames);
 				}
 
-				if (userGroupNames.equals("dm_world")) {
-					rolesOfUser.add(roleId);
-				} else {
-					IDfGroup group = null;
+				String roleToAdd = setRolesOfUser(userGroupNames, roleId, userSession, forUserOrGroup);
+				if (roleToAdd!=null && !rolesOfUser.contains(roleToAdd))
+					rolesOfUser.add(roleToAdd);
 
-					if (AdminServiceImpl.allGroups != null) {
-						group = AdminServiceImpl.allGroups.get(userGroupNames);
-					} else {
-						group = userSession.getGroup(userGroupNames);
-					}
-
-					if (group != null) {
-						// IDfGroup group = (IDfGroup)objGroup;
-						// ldap query template
-						// ldap query:
-						// {0} is the nested group, it should be a Distinguished name
-						// DN=CN={groupName},OU=FIM-Managed Groups,DC=ts,DC=telekom,DC=si
-						// {1} is the user sAMAccountName you want (you could use any other
-						// user property than sAMAccountName within (sAMAccountName={1}))
-
-						// group search base: DC=ts,DC=telekom,DC=si
-						// (&(memberOf:1.2.840.113556.1.4.1941:=CN=Procesi,OU=FIM-Managed
-						// Groups,DC=ts,DC=telekom,DC=si)(objectCategory=group))
-						String groupDn = "CN=" + userGroupNames + ",OU=FIM-Managed Groups,DC=ts,DC=telekom,DC=si";
-						String ldapQuery = "(&(memberOf:1.2.840.113556.1.4.1941:={0})(objectCategory=person)(objectClass=user)(sAMAccountName={1}))";
-						ldapQuery = ldapQuery.replaceAll("\\{0\\}", groupDn);
-						ldapQuery = ldapQuery.replaceAll("\\{1\\}", forUserOrGroup);
-
-						Logger.getLogger(this.getClass()).debug("Member ldap query: " + ldapQuery);
-
-						long t4 = System.currentTimeMillis();
-						boolean isMember = AdminServiceImpl.getInstance().isMember(forUserOrGroup, userGroupNames);
-						long t5 = System.currentTimeMillis();
-						if (t5 - t4 > 1000) {
-							String msg = "Warning: ldap query: " + ldapQuery + " took " + (t5 - t4) + "ms.";
-							WsServer.log(userSession.getLoginUserName(), msg);
-							Logger.getLogger(this.getClass()).warn(msg);
-						}
-						// if (!rolesOfUser.contains(roleId))
-						if (isMember || forUserOrGroup.toLowerCase().equals(userGroupNames.toLowerCase())) {
-							if (!rolesOfUser.contains(roleId)) {
-								rolesOfUser.add(roleId);
-							}
-						}
-
-						// move over users in group
-						for (int j = 0; j < group.getUsersNamesCount(); j++) {
-							String userName = group.getUsersNames(j);
-							if (forUserOrGroup.toLowerCase().equals(userName.toLowerCase())) {
-								if (!rolesOfUser.contains(roleId)) {
-									rolesOfUser.add(roleId);
-								}
-							}
-						}
-
-					} else {
-						// try user
-						IDfUser user = userSession.getUser(userGroupNames);
-						if (user != null) {
-							if (user.getUserLoginName().equalsIgnoreCase(forUserOrGroup)) {
-								if (!rolesOfUser.contains(roleId)) {
-									rolesOfUser.add(roleId);
-								}
-							}
-						}
-					}
-				}
 				hasNext = collection2.next();
 			}
 			collection2.close();
@@ -885,8 +818,85 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 		}
 
+		// add roles from profile for default users of profile roles
+		if (prof != null)
+			for (int i = 0; i < prof.roles.size(); i++) {
+				Role role = prof.roles.get(i);
+				for (int k = 0; k < role.defaultUserGroups.size(); k++) {
+					
+					UserGroup groupOrUser = role.defaultUserGroups.get(k);
+					Logger.getLogger(this.getClass().getName()).info("Role: " + role.getId() + " defaultUser: " + groupOrUser.getId());
+
+//					if(groupOrUser.getId().equals("varnost-dctm-dostop"))
+//						System.out.println();
+//					
+					String roleToAdd = setRolesOfUser(groupOrUser.getId(), role.getId(), userSession, forUserOrGroup);
+					if (roleToAdd!=null && !rolesOfUser.contains(roleToAdd))
+						rolesOfUser.add(roleToAdd);
+				}
+			}
+
 		Object[] ret = { persObj, prof, rolesOfUser, stateId, roleUserGroups, isClassified };
 		return ret;
+	}
+
+	private String setRolesOfUser(String userGroupNames, String roleId, IDfSession userSession, String forUserOrGroup) throws Throwable {
+		if (userGroupNames.equals("dm_world")) {
+			return roleId;
+		} else {
+			MyIDfGroup group = AdminServiceImpl.allGroups.get(userGroupNames);
+
+			if (group != null) {
+				// IDfGroup group = (IDfGroup)objGroup;
+				// ldap query template
+				// ldap query:
+				// {0} is the nested group, it should be a Distinguished name
+				// DN=CN={groupName},OU=FIM-Managed Groups,DC=ts,DC=telekom,DC=si
+				// {1} is the user sAMAccountName you want (you could use any other
+				// user property than sAMAccountName within (sAMAccountName={1}))
+
+				// group search base: DC=ts,DC=telekom,DC=si
+				// (&(memberOf:1.2.840.113556.1.4.1941:=CN=Procesi,OU=FIM-Managed
+				// Groups,DC=ts,DC=telekom,DC=si)(objectCategory=group))
+				String groupDn = "CN=" + userGroupNames + ",OU=FIM-Managed Groups,DC=ts,DC=telekom,DC=si";
+				String ldapQuery = "(&(memberOf:1.2.840.113556.1.4.1941:={0})(objectCategory=person)(objectClass=user)(sAMAccountName={1}))";
+				ldapQuery = ldapQuery.replaceAll("\\{0\\}", groupDn);
+				ldapQuery = ldapQuery.replaceAll("\\{1\\}", forUserOrGroup);
+
+				Logger.getLogger(this.getClass()).debug("Member ldap query: " + ldapQuery);
+
+				long t4 = System.currentTimeMillis();
+				boolean isMember = AdminServiceImpl.getInstance().isMember(forUserOrGroup, userGroupNames);
+				long t5 = System.currentTimeMillis();
+				if (t5 - t4 > 1000) {
+					String msg = "Warning: ldap query: " + ldapQuery + " took " + (t5 - t4) + "ms.";
+					WsServer.log(userSession.getLoginUserName(), msg);
+					Logger.getLogger(this.getClass()).warn(msg);
+				}
+				// if (!rolesOfUser.contains(roleId))
+				if (isMember || forUserOrGroup.toLowerCase().equals(userGroupNames.toLowerCase())) {
+					return roleId;
+				}
+
+				// move over users in group
+				for (int j = 0; j < group.getUsersNamesCount(); j++) {
+					String userName = group.getUsersNames(j);
+					if (forUserOrGroup.toLowerCase().equals(userName.toLowerCase())) {
+						return roleId;
+					}
+				}
+
+			} else {
+				// try user
+				IDfUser user = userSession.getUser(userGroupNames);
+				if (user != null) {
+					if (user.getUserLoginName().equalsIgnoreCase(forUserOrGroup)) {
+						return roleId;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	public void checkDocmanSExist(IDfPersistentObject persObject, IDfSession userSession, Profile prof) throws Exception {
@@ -1659,6 +1669,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					coll.close();
 				}
 
+				String dql = "delete from dm_dbo.T_dm_audittrail_s where audited_obj_id='" + persObject.getId("r_object_id") + "'";
+				queryDelete = new DfQuery(dql);
+				coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+				if (coll.next()) {
+					int rowsDeleted = coll.getInt("rows_deleted");
+					WsServer.log(loginName, "Executing delete in T_dm_audittrail_s..." + rowsDeleted + " rows deleted.");
+					coll.close();
+				}
+
 				IDfQuery queryDelete2 = new DfQuery("delete from dm_dbo.T_DOCMAN_R where r_object_id='" + persObject.getId("r_object_id") + "'");
 
 				Logger.getLogger(this.getClass()).info("Delete dql: " + queryDelete2.getDQL());
@@ -1679,6 +1698,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					if (coll.next()) {
 						int rowsDeleted = coll.getInt("rows_deleted");
 						WsServer.log(loginName, "Executing delete in DOCMAN_S..." + rowsDeleted + " rows deleted.");
+						coll.close();
+					}
+
+					String dql = "delete from dm_dbo.T_dm_audittrail_s where audited_obj_id='" + r_object_id + "'";
+					queryDelete = new DfQuery(dql);
+					coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+					if (coll.next()) {
+						int rowsDeleted = coll.getInt("rows_deleted");
+						WsServer.log(loginName, "Executing delete in T_dm_audittrail_s..." + rowsDeleted + " rows deleted.");
 						coll.close();
 					}
 
@@ -1785,8 +1813,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
-			AdminServiceImpl.beginTransaction(userSession);
 			for (String r_object_id : r_object_ids) {
+				AdminServiceImpl.beginTransaction(userSession);
 				WsServer.log(loginName, "Deleting " + r_object_id + " ...");
 				IDfPersistentObject persObject = userSession.getObject(new DfId(r_object_id));
 				if (persObject == null) {
@@ -1825,13 +1853,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				} else {
 					dfDocument.destroy();
 				}
+				// WsServer.log(loginName, "Commiting transaction ...");
+				userSession.commitTrans();
+				// WsServer.log(loginName, "Commiting transaction ...Done.");
 
 				WsServer.log(loginName, "Deleting " + r_object_id + " ... DONE.");
 			}
 
-			WsServer.log(loginName, "Commiting transaction ...");
-			userSession.commitTrans();
-			WsServer.log(loginName, "Commiting transaction ...Done.");
 			Logger.getLogger(this.getClass()).info(String.format("deleteObjects end for user [%s].", loginName));
 
 		} catch (Exception ex) {
@@ -2016,7 +2044,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			adminSess = AdminServiceImpl.getAdminSession();
 
 			String aclNameFromClassSign = findAclNameFromClassSign(persObject.getString("mob_classification_id"));
-			IDfACL objAcl=null;
+			IDfACL objAcl = null;
 			if (aclNameFromClassSign == null || aclNameFromClassSign.equals("")) {
 				objAcl = (IDfACL) adminSess.getACL(sysObj.getACL().getDomain(), sysObj.getACL().getObjectName());
 				if (objAcl.getObjectName().startsWith("mob_") || objAcl.getObjectName().startsWith("dm_")) {// adminSess
@@ -2590,6 +2618,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			ArrayList<String> rolesOfUser = (ArrayList<String>) profileAndRolesOfUserAndState[2];
 			String currentStateId = (String) profileAndRolesOfUserAndState[3];
 
+			if (currentStateId.equals(stateId))
+				throw new Exception("Object already in state: " + currentStateId);
+
 			boolean shouldSupersede;
 			if (stateId.equals("effective") && !currentStateId.equals("archive")) {
 				shouldSupersede = true;
@@ -2954,15 +2985,33 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			end = end + 1;
 
 			String dql;
+			// if (eventFilter == null || eventFilter.equals("")) {
+			// dql = "select r_object_id, audited_obj_id, time_stamp, time_stamp_utc,
+			// event_name, event_description, user_name,
+			// string_1,string_2,attribute_list,attribute_list_old from
+			// dm_audittrail_Mobitel_all where (audited_obj_id in (select r_object_id
+			// from dm_document(all) where i_chronicle_id in "
+			// + " (select i_chronicle_id from dm_document where r_object_id = '" +
+			// orig_r_object_id + "'))) ENABLE(RETURN_RANGE " + start + " " + end
+			// + " 'r_object_id DESC')";
+			// } else {
+			// dql = "select r_object_id, audited_obj_id, time_stamp, time_stamp_utc,
+			// event_name, event_description, user_name,
+			// string_1,string_2,attribute_list,attribute_list_old from
+			// dm_audittrail_Mobitel_all where "
+			// + " event_name = '" + eventFilter + "' and " + " (audited_obj_id in
+			// (select r_object_id from dm_document(all) where i_chronicle_id in "
+			// + " (select i_chronicle_id from dm_document where r_object_id = '" +
+			// orig_r_object_id + "'))) ENABLE(RETURN_RANGE " + start + " " + end
+			// + " 'r_object_id DESC')";
+			// }
+
 			if (eventFilter == null || eventFilter.equals("")) {
-				dql = "select r_object_id, audited_obj_id, time_stamp, time_stamp_utc, event_name, event_description, user_name, string_1,string_2,attribute_list,attribute_list_old from dm_audittrail_Mobitel_all where (audited_obj_id in (select r_object_id from dm_document(all) where i_chronicle_id in "
-						+ " (select i_chronicle_id from dm_document where r_object_id = '" + orig_r_object_id + "'))) ENABLE(RETURN_RANGE " + start + " " + end
-						+ " 'r_object_id DESC')";
+				dql = "select r_object_id, audited_obj_id, time_stamp, time_stamp_utc, event_name, event_description, user_name, string_1,string_2,attribute_list,attribute_list_old from dm_audittrail_Mobitel_all where audited_obj_id  = '"
+						+ orig_r_object_id + "' " + " ENABLE(RETURN_RANGE " + start + " " + end + " 'r_object_id DESC')";
 			} else {
-				dql = "select r_object_id, audited_obj_id, time_stamp, time_stamp_utc, event_name, event_description, user_name, string_1,string_2,attribute_list,attribute_list_old from dm_audittrail_Mobitel_all where "
-						+ " event_name = '" + eventFilter + "' and " + " (audited_obj_id in (select r_object_id from dm_document(all) where i_chronicle_id in "
-						+ " (select i_chronicle_id from dm_document where r_object_id = '" + orig_r_object_id + "'))) ENABLE(RETURN_RANGE " + start + " " + end
-						+ " 'r_object_id DESC')";
+				dql = "select r_object_id, audited_obj_id, time_stamp, time_stamp_utc, event_name, event_description, user_name, string_1,string_2,attribute_list,attribute_list_old from dm_audittrail_Mobitel_all where audited_obj_id = '"
+						+ orig_r_object_id + "' and" + " event_name = '" + eventFilter + "' ENABLE(RETURN_RANGE " + start + " " + end + " 'r_object_id DESC')";
 			}
 
 			query.setDQL(dql);

@@ -196,11 +196,8 @@ public class SearchEdit extends WindowBox {
 		Attribute aGroupUser = new Attribute();
 		aGroupUser.isRepeating = true;
 		aGroupUser.label = "Grupe in uporabniki";
-		aGroupUser.dqlValueListDefinition = 
-				"select user_name, description from dm_user where 1=1 " +
-						"union " +
-						"select group_name, description from dm_group where 1=1 " + 
-						"fixedValues(dm_world, vsi;dm_owner, lastnik; dm_group, skupina)";				
+		aGroupUser.dqlValueListDefinition = "select user_name, description from dm_user where 1=1 " + "union "
+				+ "select group_name, description from dm_group where 1=1 " + "fixedValues(dm_world, vsi;dm_owner, lastnik; dm_group, skupina)";
 		aGroupUser.setType(Attribute.types.DROPDOWN.type);
 		aGroupUser.dropDownCol = 0;
 		aGroupUser.isLimitedToValueList = true;
@@ -213,7 +210,6 @@ public class SearchEdit extends WindowBox {
 			faGroups.values.addItem(ug.getId(), ug.getParameter());
 		}
 		getContentPanel().add(faGroups);
-		
 
 		duplicateSearch = new Button("Duplicate search");
 		duplicateSearch.addClickHandler(new ClickHandler() {
@@ -223,7 +219,8 @@ public class SearchEdit extends WindowBox {
 				// TODO Auto-generated method stub
 				try {
 					adminService.duplicateParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
-							ParametrizedQueryPanel.lastParametrizedQuery.name, SearchEdit.this.name.getValue() , new AsyncCallback<String>() {
+							ParametrizedQueryPanel.lastParametrizedQuery.name, SearchEdit.this.name.getValue(), SearchEdit.this.dql.getValue(),
+							new AsyncCallback<String>() {
 								@Override
 								public void onSuccess(String result) {
 									MenuPanel.getInstance().createSearchItems();
@@ -274,9 +271,7 @@ public class SearchEdit extends WindowBox {
 		if (!MainPanel.getInstance().loginRole.toLowerCase().equals("administrator")) {
 			deleteSearch.setEnabled(false);
 		}
-		
-		
-		
+
 		getOkButton().addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {

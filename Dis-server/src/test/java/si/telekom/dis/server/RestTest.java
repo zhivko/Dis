@@ -209,33 +209,37 @@ public class RestTest extends JerseyTest {
 		
 //@formatter:off	
 		Response response;
+		
+		Entity<String> jsonImport = Entity.json(
+				"{  " +
+			  "\"profileId\": \"mob_subscriber_document\"," +
+			  "\"folderId\": \"/temp\"," +
+			  "\"stateId\": \"effective\"," +
+			  "\"attributes\": " +
+			  "[" +
+			  "  { \"name\": \"mob_classification_id\", \"values\": [ \"394\" ] }," +
+			  "  { \"name\": \"title\", \"values\": [ \"testni dokument\" ] }," +
+			  "  { \"name\": \"mob_type_id\", \"values\": [ \"142\" ] }" +
+			  "  { \"name\": \"mob_type\", \"values\": [ \"Pogodba\" ] }" +
+			  "]," +
+			  "\"rolesUsers\":" +
+			  "[" +
+			  "  { \"roleId\": \"coordinator\", \"values\": [ \"kovacevicr\", \"zivkovick\"] }," +
+			  "  { \"roleId\": \"user\", \"values\": [ \"dm_world\" ] }" +
+			  "]," +
+			  "\"content\":" +
+			  "{" +
+			  "  \"format\": \"crtext\"," +
+			  "  \"data\": \"" + documentContent + "\"" +
+			  "}" +
+				"}");		
+		
+		System.out.println(jsonImport);
+		
 		response = client.target(baseUri.toString() + "/documents/import")
 				.request(MediaType.APPLICATION_JSON)
 				.header("X-Transaction-Id", X_Transaction_Id).
-				post(Entity.json(
-			"{  " +
-		  "\"profileId\": \"epredloga\"," +
-		  "\"folderId\": \"/temp\"," +
-		  "\"stateId\": \"effective\"," +
-		  "\"attributes\": " +
-		  "[" +
-		  "  { \"name\": \"mob_classification_id\", \"values\": [ \"394\" ] }," +
-		  "  { \"name\": \"subject\", \"values\": [ \"test\" ] }," +
-		  "  { \"name\": \"mob_short_name\", \"values\": [ \"testna predloga čez REST\" ] }," +
-		  "  { \"name\": \"title\", \"values\": [ \"testna predloga čez REST\" ] }," +
-		  "  { \"name\": \"mob_template_id\", \"values\": [ \"450\" ] }" +
-		  "]," +
-		  "\"rolesUsers\":" +
-		  "[" +
-		  "  { \"roleId\": \"coordinator\", \"values\": [ \"kovacevicr\", \"zivkovick\"] }," +
-		  "  { \"roleId\": \"user\", \"values\": [ \"dm_world\" ] }" +
-		  "]," +
-		  "\"content\":" +
-		  "{" +
-		  "  \"format\": \"crtext\"," +
-		  "  \"data\": \"" + documentContent + "\"" +
-		  "}" +
-			"}"));
+				post(jsonImport);
 //@formatter:on			
 		String json = response.readEntity(String.class);
 

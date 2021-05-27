@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.HasKeyUpHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
@@ -73,6 +73,7 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 			values.setEnabled(false);
 		}
 
+		// support for DELETE
 		values.addKeyUpHandler(new KeyUpHandler() {
 
 			@Override
@@ -83,6 +84,42 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 				FormAttribute.this.valueDeleted(values.getSelectedIndex());
 			}
 		});
+		
+		// support for UP and DOWN
+		values.addKeyDownHandler(new KeyDownHandler() {
+			@Override
+			public void onKeyDown(KeyDownEvent event) {
+				// TODO Auto-generated method stub
+				if (event.getNativeKeyCode() == KeyCodes.KEY_UP) {
+					if (values.getItemCount() > 1 && values.getSelectedIndex() > 0) {
+						int selectedIndex = values.getSelectedIndex();
+						MainPanel.log("selectedIndex = " + selectedIndex);
+						String value = values.getValue(values.getSelectedIndex()-1);
+						String text = values.getItemText(values.getSelectedIndex()-1);
+						MainPanel.log("removeIndex = " + (selectedIndex -1));
+						values.removeItem(selectedIndex - 1);
+						MainPanel.log("insertAt = " + selectedIndex);
+						values.insertItem(text, value, selectedIndex);
+						event.preventDefault();
+					}
+				}
+				
+				if (event.getNativeKeyCode() == KeyCodes.KEY_DOWN) {
+					if (values.getItemCount() > 1 && values.getSelectedIndex() < values.getItemCount()) {
+						int selectedIndex = values.getSelectedIndex();
+						MainPanel.log("selectedIndex = " + selectedIndex);
+						String value = values.getValue(values.getSelectedIndex()+1);
+						String text = values.getItemText(values.getSelectedIndex()+1);
+						MainPanel.log("removeIndex = " + (selectedIndex +1));
+						values.removeItem(selectedIndex + 1);
+						MainPanel.log("insertAt = " + selectedIndex);
+						values.insertItem(text, value, selectedIndex);
+						event.preventDefault();
+					}
+				}				
+			}
+		});		
+		
 
 		GWT.log("name: " + att.dcmtAttName + " " + att.getType());
 

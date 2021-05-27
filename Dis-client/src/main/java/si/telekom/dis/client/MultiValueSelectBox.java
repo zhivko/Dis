@@ -13,6 +13,8 @@ import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -69,6 +71,7 @@ public class MultiValueSelectBox extends Composite implements HasValue<List<Stri
 		// }
 		// });
 		this.lb = lb_;
+
 		this.tb = new TextBox();
 		tb.setWidth("100%");
 		lb.setWidth("100%");
@@ -296,7 +299,7 @@ public class MultiValueSelectBox extends Composite implements HasValue<List<Stri
 						matchResult = regExp.exec(jdbcValueListDefinitionFilled);
 					}
 					loopCount++;
-					if(loopCount>100)
+					if (loopCount > 100)
 						break;
 				}
 
@@ -395,8 +398,8 @@ public class MultiValueSelectBox extends Composite implements HasValue<List<Stri
 	public ArrayList<String> getValue() {
 		ArrayList<String> ret = new ArrayList<String>();
 		for (int i = 0; i < lb.getItemCount(); i++) {
-			String value=null;
-			if(this.att.dropDownCol==0)
+			String value = null;
+			if (this.att.dropDownCol == 0)
 				value = lb.getValue(i);
 			else
 				value = lb.getItemText(i);

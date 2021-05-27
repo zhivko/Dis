@@ -41,6 +41,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,9 +53,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,9 +92,11 @@ import org.xml.sax.SAXException;
 
 import com.documentum.com.DfClientX;
 import com.documentum.com.IDfClientX;
+import com.documentum.fc.client.DfACL;
 import com.documentum.fc.client.DfClient;
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.DfVersionPolicy;
+import com.documentum.fc.client.IDfACL;
 import com.documentum.fc.client.IDfClient;
 import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfFolder;
@@ -124,9 +124,7 @@ import com.documentum.fc.common.IDfValue;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 
-import si.telekom.dis.server.jobs.MoveMobFormTemplateToEffective;
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.AdminService;
 import si.telekom.dis.shared.Attribute;
@@ -201,7 +199,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 * retentionAddUnit could be day, month or year
 	 */
 	protected static String retentionAddUnit;
-	public static HashMap<String, IDfGroup> allGroups = new HashMap<String, IDfGroup>();
+	public static HashMap<String, MyIDfGroup> allGroups = new HashMap<String, MyIDfGroup>();
 
 	static {
 
@@ -354,9 +352,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				started = true;
 				// MassClassify();
 				// checkPermForUser();
-				//set398();
+				// set398();
+				// massSet_a_effective_date();
+				// addSecurityGroupToAcls();
 
 			}
+
 		});
 		t.setName("MyStartThread");
 		t.start();
@@ -367,7 +368,24 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			public void run() {
 				IDfSession adminSession = null;
 				try {
-					Thread.sleep(1 * 60 * 60 * 1000);
+					File f = new File(configPath);
+					if (!f.exists())
+						f.mkdirs();
+					File serFile = new File((f.getAbsolutePath() + File.separator + "groups.ser"));
+					if (serFile.exists()) {
+						InputStream file = new FileInputStream(serFile.getAbsolutePath());
+						InputStream buffer = new BufferedInputStream(file);
+						ObjectInput input = new ObjectInputStream(buffer);
+						allGroups = (HashMap<String, MyIDfGroup>) input.readObject();
+						Logger.getLogger(AdminServiceImpl.class).info("Deserialized groups.");
+						input.close();
+						buffer.close();
+					}
+
+					if (allGroups.size() != 0)
+						// 1 hour
+						Thread.sleep(1 * 60 * 60 * 1000);
+
 					while (true) {
 						Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...");
 						adminSession = getAdminSession();
@@ -376,11 +394,21 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						while (coll.next()) {
 							String groupName = coll.getString("group_name");
 							IDfGroup group = adminSession.getGroup(groupName);
-							allGroups.put(groupName, group);
+							
+							MyIDfGroup myGroup = MyIDfGroup.convertFromIDFGroup(group);
+							allGroups.put(groupName, myGroup);
 						}
 						coll.close();
 
+						FileOutputStream fout = new FileOutputStream(serFile.getAbsolutePath());
+						ObjectOutputStream oos = new ObjectOutputStream(fout);
+						oos.writeObject(allGroups);
+						fout.close();
+						oos.close();
+						Logger.getLogger(AdminServiceImpl.class).info("Serialized " + serFile.getAbsolutePath());
+
 						Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...end.");
+
 						// 1 hour
 						Thread.sleep(1 * 60 * 60 * 1000);
 					}
@@ -406,6 +434,142 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 		}
 		return directoryToBeDeleted.delete();
+	}
+
+	protected static void massSet_a_effective_date() {
+		// kill $(lsof -ti tcp:9876)
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		long t1 = System.currentTimeMillis();
+		String dql1 = "select audited_obj_id,time_stamp_utc, time_stamp from dm_audittrail_Mobitel_all where event_name = 'dm_mark' and string_1 = 'effective' order by r_object_id";
+		// String dql1 = "select audited_obj_id,time_stamp_utc, time_stamp from
+		// dm_audittrail where event_name = 'dm_mark' and string_1 = 'effective'";
+
+		Connection con;
+
+		int i = 0;
+
+		try {
+			con = BarcodeHandlerImpl.getConnection();
+			Statement stmt = con.createStatement();
+
+			IDfSession userSess = getAdminSession();
+			IDfQuery q = new DfQuery(dql1);
+			IDfCollection coll = q.execute(userSess, IDfQuery.DF_EXECREAD_QUERY);
+			long t2 = System.currentTimeMillis();
+			Logger.getLogger(AdminServiceImpl.class).info("Query time: " + (t2 - t1) + " ms");
+			while (coll.next()) {
+				try {
+					IDfSysObject document = (IDfSysObject) userSess.getObject(new DfId(coll.getString("audited_obj_id")));
+					if (!document.isImmutable()) {
+						// try {
+						//
+						// if (document.getTime("a_effective_date") == DfTime.DF_NULLDATE) {
+						//
+						// String dql1 = "select audited_obj_id,time_stamp_utc from
+						// dm_audittrail_Mobitel_all where audited_obj_id ='"
+						// + coll.getString("r_object_id") + "'"
+						// + "and event_name = 'dm_mark' and string_1 = 'effective' order by
+						// time_stamp_utc desc enable(return_top 1)";
+						//
+						// IDfQuery q1 = new DfQuery(dql1);
+						// IDfCollection coll1 = q1.execute(userSess,
+						// IDfQuery.DF_EXECREAD_QUERY);
+						// if (coll1.next()) {
+						// IDfTime effectiveDate = coll1.getTime("time_stamp_utc");
+						// document.setTime("a_effective_date", effectiveDate);
+						// document.save();
+						// Logger.getLogger(AdminServiceImpl.class)
+						// .info("Done setting a_effective_date on r_object_id: " +
+						// document.getId("r_object_id").toString());
+						// }
+						// coll1.close();
+						// }
+						//
+						// } catch (Exception ex) {
+						// Logger.getLogger(AdminServiceImpl.class)
+						// .error("Error setting mob_classification_id_cont on r_object_id:
+						// "
+						// + document.getId("r_object_id").toString());
+						// }
+					} else {
+						// immutable old objects...
+						Logger.getLogger(AdminServiceImpl.class).info("r_object_id: " + document.getId("r_object_id").toString());
+						i++;
+						IDfTime dcmEffectiveDate = coll.getTime("time_stamp");
+						Date effectiveDate = dcmEffectiveDate.getDate();
+						// '2012-02-10 21:02:09.093'
+						String effectiveDateStr = sdf.format(effectiveDate);
+
+						String sql = "update dm_sysobject_r set a_effective_date = '" + effectiveDateStr + "' where r_object_id='"
+								+ document.getId("r_object_id").toString() + "'";
+
+						if (document.getTime("a_effective_date") == DfTime.DF_NULLDATE) {
+
+							stmt.execute(sql);
+							con.commit();
+
+							Logger.getLogger(AdminServiceImpl.class).info(i + " update document done with sql: " + sql + " updateCount: " + stmt.getUpdateCount());
+						} else {
+							// check a_effective_date is correct
+							Date effectiveDateFromAuditTrail = dcmEffectiveDate.getDate();
+							Date effectiveDate1 = document.getTime("a_effective_date").getDate();
+
+							if (effectiveDateFromAuditTrail.getTime() != effectiveDate1.getTime()) {
+								Logger.getLogger(AdminServiceImpl.class)
+										.warn(i + " dates are not same: " + effectiveDateFromAuditTrail.toString() + " != " + effectiveDate1.toString());
+								stmt.execute(sql);
+								con.commit();
+								Logger.getLogger(AdminServiceImpl.class)
+										.info(i + " update document done with sql: " + sql + " updateCount: " + stmt.getUpdateCount());
+							} else {
+								Logger.getLogger(AdminServiceImpl.class).warn(i + " dates are EQUAL.");
+							}
+						}
+
+					}
+				} catch (DfException ex) {
+					Logger.getLogger(AdminServiceImpl.class).info("Such document doesn't exist r_object_id: " + coll.getString("audited_obj_id"));
+				}
+
+			}
+			coll.close();
+			userSess.getSessionManager().release(userSess);
+
+			Logger.getLogger(AdminServiceImpl.class).info("Done setting a_effective_date");
+
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected static void addSecurityGroupToAcls() {
+		long t1 = System.currentTimeMillis();
+		int i = 0;
+		try {
+			IDfSession userSess = getAdminSession();
+			IDfQuery q = new DfQuery("select r_object_id from dm_acl where not (any r_accessor_name = 'varnost-dctm-dostop') order by r_object_id");
+			IDfCollection coll = q.execute(userSess, IDfQuery.DF_EXECREAD_QUERY);
+			long t2 = System.currentTimeMillis();
+			Logger.getLogger(AdminServiceImpl.class).info("Query time: " + (t2 - t1) + " ms");
+			while (coll.next()) {
+				try {
+					IDfACL acl = (IDfACL) userSess.getObject(new DfId(coll.getString("r_object_id")));
+					acl.grant("varnost-dctm-dostop", DfACL.DF_PERMIT_BROWSE, null);
+					acl.save();
+					i++;
+					if (i % 10 == 0)
+						Logger.getLogger(AdminServiceImpl.class).info("Acls updated: " + i);
+				} catch (DfException ex) {
+					Logger.getLogger(AdminServiceImpl.class).error("Such acl doesn't exist r_object_id: " + coll.getString("audited_obj_id"));
+				}
+			}
+			coll.close();
+			userSess.getSessionManager().release(userSess);
+			Logger.getLogger(AdminServiceImpl.class).info("Done addSecurityGroupToAcls");
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void readStartupParamFromServletContext(ServletContext context) {
@@ -2634,7 +2798,21 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		}
 	}
 
-	private Object[] getRegTableFields(String tableName) throws Exception {
+	public List<String> getRegTableFieldTypes(String tableName) throws ServerException {
+		try {
+			Object[] a = getRegTableFields(tableName);
+			List<String> ret = Arrays.asList(((String) a[1]).split(","));
+			ArrayList<String> ret1 = new ArrayList<String>();
+			for (String line : ret) {
+				ret1.add(line.trim());
+			}
+			return ret1;
+		} catch (Exception ex) {
+			throw new ServerException(ex.getMessage());
+		}
+	}
+
+	public Object[] getRegTableFields(String tableName) throws Exception {
 
 		ArrayList<String> fields = new ArrayList<String>();
 
@@ -2783,7 +2961,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		try {
 			dfSuperUserSession = getAdminSession();
 			query.setDQL(
-					"select object_name from dm_registered where object_name like '%T_DOC%' or object_name like 'T_DCTME_%' or object_name = 'mob_sppserviceaction' or object_name like 'T_CLASSIFICATION%'");
+					"select object_name from dm_registered where object_name like '%T_DOC%' or object_name like 'T_%' or object_name = 'mob_sppserviceaction'");
 			collection = query.execute(dfSuperUserSession, IDfQuery.DF_READ_QUERY);
 			while (collection.next()) {
 				Logger.getLogger(this.getClass()).info(collection.getString("object_name"));
@@ -3421,37 +3599,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	public synchronized static Connection getDbConnection() throws Exception {
-		// Connection connectionn = null;
-		//
-		// try {
-		// Class.forName("org.logicalcobwebs.proxool.ProxoolDriver");
-		// Class.forName("oracle.jdbc.OracleDriver");
-		// } catch (ClassNotFoundException e) {
-		// Logger.getLogger(AdminServiceImpl.class).error(e.getMessage());
-		// }
-		//
-		// String alias = "OracleDb";
-		// String driverClass = "oracle.jdbc.OracleDriver";
-		// String driverUrl =
-		// "jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS=(PROTOCOL=TCP)(HOST=dbm02.ts.telekom.si)(PORT=1521))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=select)(METHOD=basic))(SERVER=dedicated)(SERVICE_NAME=tsbeta.ts.telekom.si)))";
-		// String url = "proxool." + alias + ":" + driverClass + ":" + driverUrl;
-		//
-		//
-		// Properties info = new Properties();
-		// info.setProperty("proxool.maximum-connection-count", "5");
-		// info.setProperty("simultaneous-build-throttle", "5");
-		// info.setProperty("proxool.house-keeping-test-sql", "select * from dual");
-		// info.setProperty("user", "reports");
-		// info.setProperty("password", "ReportsPw01");
-		// info.setProperty("proxool.driver", driverClass);
-		// info.setProperty("proxool.url", url);
-		//
-		// connectionn = DriverManager.getConnection("proxool." + alias, info);
-		//
-		// Logger.getLogger(AdminServiceImpl.class).log(Level.INFO,
-		// String.format("JDBC url: %s", driverUrl));
-		// return connectionn;
-
 		String jdbcUser = "reports";
 		String jdbcPassword = "ReportsPw01";
 
@@ -3991,9 +4138,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public String duplicateParametrizedQuery(String loginName, String loginPass, String oldName, String name) throws ServerException {
+	public String duplicateParametrizedQuery(String loginName, String loginPass, String oldName, String name, String query) throws ServerException {
 		String ret = null;
 		Logger.getLogger(this.getClass()).info("Duplicate search: " + name);
+
+		if (name.equals(oldName))
+			name = oldName + " - copy";
+
 		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
 
 		try {
@@ -4007,6 +4158,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 				Element el1 = (Element) el.cloneNode(true);
 				el1.setAttribute("name", name);
+
+				el1.setTextContent(query);
 
 				el.getParentNode().appendChild(el1);
 
@@ -4034,6 +4187,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					FileUtils.copyFile(new File(configPathFileName), devConfig);
 					Logger.getLogger(this.getClass()).info("Saved search to dev config file: " + devConfig.getAbsolutePath());
 				}
+
+				ret = name;
 			}
 		} catch (Throwable ex) {
 			ByteArrayOutputStream byteAOs = new ByteArrayOutputStream();
@@ -4164,6 +4319,60 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		} catch (UnsupportedEncodingException ex) {
 			throw new RuntimeException(ex);
 		}
+	}
+
+	@Override
+	public void runDql(String loginName, String loginPassword, String dql) throws ServerException {
+		IDfSession sess = null;
+		try {
+			sess = getSession(loginName, loginPassword);
+
+			IDfQuery qry = new DfQuery();
+			qry.setDQL(dql);
+			qry.execute(sess, IDfQuery.EXEC_QUERY);
+
+		} catch (Exception ex) {
+			Logger.getLogger(this.getClass()).error(ex.getMessage());
+			WsServer.log(loginName, ex.getMessage());
+		} finally {
+			if (sess != null)
+				sess.getSessionManager().release(sess);
+		}
+
+	}
+
+	@Override
+	public void insertCSVToRegTable(String loginName, String loginPass, String regTableId, String csvValues) throws ServerException {
+		IDfSession sess = null;
+		try {
+
+			ArrayList<String> fields = (ArrayList<String>) getRegTableFields(regTableId)[0];
+
+			sess = getSession(loginName, loginPass);
+
+			sess.beginTrans();
+
+			String[] csvLines = csvValues.split("\n");
+
+			IDfQuery qry = new DfQuery();
+
+			for (String line : csvLines) {
+
+				String dql = " insert into dm_dbo." + regTableId + " (" + fields + ") values(" + line + ")";
+
+				qry.setDQL(dql);
+				qry.execute(sess, IDfQuery.EXEC_QUERY);
+			}
+
+			sess.commitTrans();
+		} catch (Exception ex) {
+			Logger.getLogger(this.getClass()).error(ex.getMessage());
+			WsServer.log(loginName, ex.getMessage());
+		} finally {
+			if (sess != null)
+				sess.getSessionManager().release(sess);
+		}
+
 	}
 
 }

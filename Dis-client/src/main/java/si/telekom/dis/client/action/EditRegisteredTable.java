@@ -1,7 +1,7 @@
 package si.telekom.dis.client.action;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 
 import com.google.gwt.cell.client.ClickableTextCell;
@@ -34,7 +34,6 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.ProvidesKey;
@@ -42,8 +41,12 @@ import com.google.gwt.view.client.Range;
 
 import si.telekom.dis.client.ActionDialogBox;
 import si.telekom.dis.client.MainPanel;
+import si.telekom.dis.client.MyDateTime;
+import si.telekom.dis.client.MyHasValue;
 import si.telekom.dis.client.MyListBox;
 import si.telekom.dis.client.MySimplePager;
+import si.telekom.dis.client.MyTextArea;
+import si.telekom.dis.client.MyTxtBox;
 import si.telekom.dis.shared.AdminService;
 import si.telekom.dis.shared.AdminServiceAsync;
 import si.telekom.dis.shared.ExplorerService;
@@ -59,7 +62,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 	List<Row> rows = new ArrayList<EditRegisteredTable.Row>();
 	String regTableId;
 
-	ArrayList<TextBox> alTb = new ArrayList<TextBox>();
+	ArrayList<MyHasValue> alTb = new ArrayList<MyHasValue>();
 
 	HorizontalPanel hpFilter = new HorizontalPanel();
 
@@ -70,6 +73,12 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 	VerticalPanel vpNewRecord;
 
 	Button btnOK;
+	Button btnInsertFromCSV;
+
+	HashMap<String, String> regTableFieldsDefinition = new HashMap<String, String>();
+
+	List<String> colNames;
+	protected String id;
 
 	public EditRegisteredTable(String regTableId) {
 		super();
@@ -82,7 +91,39 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 
 		getOkButton().addClickHandler(this);
 
+		try {
+			adminService.getRegTableFieldTypes(regTableId, new AsyncCallback<List<String>>() {
+				@Override
+				public void onSuccess(List<String> result) {
+					for (String line : result) {
+						String l1 = line.split("\\s+")[0];
+						String l2 = line.split("\\s+")[1].replaceAll("\"", "");
+						regTableFieldsDefinition.put(l1, l2);
+					}
+				}
+
+				@Override
+				public void onFailure(Throwable caught) {
+					MainPanel.log(caught.getMessage());
+				}
+			});
+		} catch (ServerException e) {
+			// TODO Auto-generated catch block
+			MainPanel.log(e.getMessage());
+		}
+
 		cellTable = new MyCellTable();
+
+//		SingleSelectionModel<Row> selectionModel = new SingleSelectionModel<Row>();
+//		selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
+//			@Override
+//			public void onSelectionChange(SelectionChangeEvent event) {
+//				Row selectedRow = selectionModel.getSelectedSet().iterator().next();
+//				MainPanel.log("id=" + selectedRow.values.get(0));
+//			}
+//		});
+//		cellTable.setSelectionModel(selectionModel);
+
 		vpNewRecord = new VerticalPanel();
 		btnOK = new Button("OK");
 		btnOK.addClickHandler(new ClickHandler() {
@@ -93,17 +134,93 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 				String sqlFields = "";
 				String sqlValues = "";
 
-				Iterator<Widget> widgets = vpNewRecord.iterator();
-				for (TextBox tb : alTb) {
-					sqlValues = "'" + tb.getText() + "',";
-					sqlFields = sqlFields + tb.getElement().getId() + ",";
+				int i = 0;
+				for (MyHasValue tb : alTb) {
+					if (!tb.getValue().equals("") && !tb.getValue().equals(null)) {
+						sqlValues = sqlValues + "'" + tb.getValue() + "',";
+						sqlFields = sqlFields + colNames.get(i) + ",";
+					}
+					i++;
 				}
-				sqlFields = sqlFields.substring(0, sqlFields.length() - 1);
-				sqlValues = sqlValues.substring(0, sqlFields.length() - 1);
-				String sqlInsert = "insert into dm_dbo." + regTableId + "(" + sqlFields + ") values(" + sqlValues + ")";// values()";
-				MainPanel.log(sqlInsert);
+				if (!sqlFields.equals("")) {
+					sqlFields = sqlFields.substring(0, sqlFields.length() - 1);
+					sqlValues = sqlValues.substring(0, sqlValues.length() - 1);
+					String sqlInsert = "insert into dm_dbo." + regTableId + "(" + sqlFields + ") values(" + sqlValues + ")";// values()";
+					MainPanel.log(sqlInsert);
+					try {
+						adminService.runDql(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, sqlInsert, new AsyncCallback<Void>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								MainPanel.log(caught.getMessage());
+							}
+
+							@Override
+							public void onSuccess(Void result) {
+								MainPanel.log("Done.");
+							}
+						});
+					} catch (ServerException e) {
+						MainPanel.log(e.getMessage());
+					}
+				}
 			}
 		});
+
+		btnInsertFromCSV = new Button();
+		btnInsertFromCSV.setText("Insert from CSV");
+		btnInsertFromCSV.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				PopupPanel pop = new PopupPanel(true, true);
+				pop.setTitle("Insert CSV to table");
+				VerticalPanel vpCsvInsert = new VerticalPanel();
+
+				MyTextArea mta = new MyTextArea("insert comma separated lines with calues in apostrophe, like \"val1\", \"val2\", \"val3\"");
+				
+				String columns = "\"id\"," + "\"classification_plan_id\"," + "\"code\"," + "\"name\"," + "\"short_name\"," + "\"retention_type_id\","
+						+ "\"retention_start_id\"," + "\"version\"," + "\"acl_name\"";
+
+				mta.setValue(columns);
+				mta.getTextBox().setHeight("300px");
+				mta.getTextBox().setWidth("800px");
+
+				Label lb = new Label("Use this action to load comma separated values to regitered table.");
+				vpCsvInsert.add(lb);
+				vpCsvInsert.add(mta);
+				Button okButton = new Button("OK");
+
+				okButton.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						try {
+							adminService.insertCSVToRegTable(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, regTableId, mta.getValue(),
+									new AsyncCallback<Void>() {
+										@Override
+										public void onFailure(Throwable caught) {
+											MainPanel.log(caught.getMessage());
+										}
+
+										@Override
+										public void onSuccess(Void result) {
+											MainPanel.log("Done.");
+										}
+									});
+						} catch (ServerException e) {
+							MainPanel.log(e.getMessage());
+						}
+
+					}
+				});
+
+				vpCsvInsert.add(okButton);
+				pop.add(vpCsvInsert);
+				pop.show();
+				
+				pop.center();
+
+			}
+		});
+
 		createEditTableCols(true);
 
 		MySimplePager pager;
@@ -133,13 +250,62 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 			public void onClick(ClickEvent event) {
 				PopupPanel pop = new PopupPanel(true, true);
 				pop.add(vpNewRecord);
+
+				int i = 0;
+				for (MyHasValue tb : alTb) {
+					if (colNames.get(i).equals("\"id\"")) {
+						// id column lets get next max(id) + 1
+						String dql = "select max(\"id\")+1 from dm_dbo." + regTableId;
+						explorerService.dqlLookup(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, dql,
+								new AsyncCallback<List<List<String>>>() {
+
+									@Override
+									public void onSuccess(List<List<String>> result) {
+										// TODO Auto-generated method stub
+										String val = result.get(0).get(0);
+										tb.setValue(val);
+									}
+
+									@Override
+									public void onFailure(Throwable caught) {
+										MainPanel.log(caught.getMessage());
+									}
+								});
+						tb.disable();
+					}
+					i++;
+				}
+
 				pop.show();
 				pop.center();
 
 			}
 		});
 
+		Button buttonDelete = new Button("Delete");
+		buttonDelete.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				String dql = "delete from dm_dbo." + regTableId + " where " + colNames.get(0) + " = " + EditRegisteredTable.this.id;
+				try {
+					adminService.runDql(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, dql, new AsyncCallback<Void>() {
+						public void onFailure(Throwable caught) {
+							MainPanel.log(caught.getMessage());
+						}
+
+						public void onSuccess(Void result) {
+							MainPanel.log("Done.");
+						}
+					});
+				} catch (ServerException e) {
+					// TODO Auto-generated catch block
+					MainPanel.log(e.getMessage());
+				}
+			}
+		});
+
 		getCommandPanel().add(buttonNew);
+		getCommandPanel().add(buttonDelete);
 
 		this.setAnimationEnabled(false);
 		instance = this;
@@ -219,6 +385,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 						@Override
 						public void onSuccess(List<String> columnNames) {
 							try {
+								colNames = columnNames;
 								adminService.getRegTableValues(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, regTableId, filters, 0, 1,
 										new AsyncCallback<List<List<String>>>() {
 											@Override
@@ -247,14 +414,25 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 
 														HorizontalPanel hp = new HorizontalPanel();
 														Label lb = new Label();
-														TextBox tb = new TextBox();
-														tb.getElement().setId(columnNames.get(j));
+
 														lb.setText(columnNames.get(j));
 														lb.setWidth("300px");
 														hp.add(lb);
-														hp.add(tb);
+														String colName = columnNames.get(j);
+														String type = regTableFieldsDefinition.get(colName);
+														if (type.contains("TIME")) {
+															MyDateTime mdt = new MyDateTime();
+															mdt.getElement().setId(columnNames.get(j));
+															alTb.add(mdt);
+															hp.add(mdt);
+														} else {
+															MyTxtBox tb = new MyTxtBox("");
+															tb.getElement().setId(columnNames.get(j));
+															alTb.add(tb);
+															hp.add(tb);
+														}
+
 														vpNewRecord.add(hp);
-														alTb.add(tb);
 
 														Header<String> columnHeader = new Header<String>(new ClickableTextCell()) {
 															@Override
@@ -326,15 +504,25 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 														col.setFieldUpdater(new FieldUpdater<Row, String>() {
 															@Override
 															public void update(int index, Row object, String value) {
-																// TODO Auto-generated method stub
-																// this.update(index, object, value);
-																updateRow(index, object, value, j);
+																String prevValue = object.values.get(j);
+																EditRegisteredTable.this.id = object.values.get(0);
+																if (!value.equals(prevValue)) {
+																	// MainPanel.log("ID: " +
+																	// EditRegisteredTable.this.id + " change");
+																	updateRow(index, object, value, j);
+																}
+																/// else
+																// MainPanel.log("ID: " +
+																/// EditRegisteredTable.this.id + " same");
 															}
 														});
 													}
 													break;
 												}
-												vpNewRecord.add(btnOK);
+												HorizontalPanel buttons = new HorizontalPanel();
+												buttons.add(btnOK);
+												buttons.add(btnInsertFromCSV);
+												vpNewRecord.add(buttons);
 
 												// int i = 0;
 												// for (String colName : columnNames) {

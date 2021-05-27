@@ -64,7 +64,7 @@ import si.telekom.dis.shared.UserSettings;
 @RemoteServiceRelativePath("login")
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
 
-	public static List<String> admins = Arrays.asList(new String[] { "zivkovick", "kovacevicr", "shvalec", "dmadmin", "sjakic", "lokart" });
+	public static List<String> admins = Arrays.asList(new String[] { "zivkovick", "kovacevicr", "shvalec", "dmadmin", "sjakic", "lokart", "kastelicb" });
 
 	/**
 	 * returns objects of following ret[0] ... loginName ret[1] ... password
@@ -116,7 +116,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			InetAddress addr = InetAddress.getByName(ip);
 			String hostName = addr.getHostName();
 
-			boolean tryDevelop = false;
+			boolean tryDevelop = true;
 			if (tryDevelop && passwordEncoded.equals("") && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 5000;
@@ -141,6 +141,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				loginName = "ttaks";
 				loginName = "zivkovick";
 				// loginName = "ikovacic";
+				loginName = "dmedos";
 
 				ret[0] = loginName;
 				adminSession = AdminServiceImpl.getInstance().getAdminSession();

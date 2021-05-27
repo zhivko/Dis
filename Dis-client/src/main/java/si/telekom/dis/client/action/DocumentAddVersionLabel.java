@@ -49,7 +49,8 @@ public class DocumentAddVersionLabel extends WindowBox {
 		versionLabel.addItem("archive");
 		versionLabel.addItem("sb1");
 		versionLabel.addItem("sb2");
-
+		versionLabel.addItem("stage");
+		
 		versionLabel.setSelectedIndex(-1);
 		
 		getContentPanel().add(customLabel);

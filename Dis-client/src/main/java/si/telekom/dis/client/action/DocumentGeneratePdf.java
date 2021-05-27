@@ -70,7 +70,7 @@ public class DocumentGeneratePdf extends WindowBox {
 
 		Attribute a = new Attribute();
 		a.setName("mob_template_id");
-		a.dqlValueListDefinition = "select mob_template_id, title, a_content_type from mob_form_template where (a_content_type='odt' or a_content_type='html') and any r_version_label = 'effective' order by title";
+		a.dqlValueListDefinition = "select mob_template_id, title, a_content_type from mob_form_template where (a_content_type='odt' or a_content_type='html' or a_content_type='crtext') and any r_version_label = 'effective' order by title";
 		a.label = "Predloga dokumenta";
 		a.setType(Attribute.types.DROPDOWN.type);
 		a.isLimitedToValueList = true;
@@ -133,6 +133,8 @@ public class DocumentGeneratePdf extends WindowBox {
 		String format = "pdf";
 		if (fa.getValue().endsWith("html"))
 			format = "html";
+		else if (fa.getValue().endsWith("html"))
+			format = "crtext";
 
 		return UriUtils.fromString(GWT.getHostPageBaseURL() + "WebUi2/eRenderServlet?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
 				+ MainPanel.getInstance().loginPass + "&typeId=" + id + "&format=" + format);

@@ -28,43 +28,63 @@ public interface ERender {
 
     /**
      * 
-     * @param hashMapKeyValue
-     * @param roles
-     * @param document
-     * @param language
-     * @param mimeType
-     * @param templateId
-     * @param barcode
+     * @param sCompanyPar
+     * @param iTypePar
+     * @param nQuantityPar
+     * @param sourceSystem
+     * @param sCapturePar
+     * @param sLocationPar
+     * @param dateTimePar
+     * @return
+     *     returns java.util.List<java.lang.String>
      */
     @WebMethod
-    @RequestWrapper(localName = "getContentForLanguage", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetContentForLanguage")
-    @ResponseWrapper(localName = "getContentForLanguageResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetContentForLanguageResponse")
-    public void getContentForLanguage(
-        @WebParam(name = "templateId", targetNamespace = "http://erender.telekom.si/")
-        int templateId,
-        @WebParam(name = "language", targetNamespace = "http://erender.telekom.si/")
-        String language,
-        @WebParam(name = "hashMapKeyValue", targetNamespace = "http://erender.telekom.si/")
-        HashMapWrapper hashMapKeyValue,
-        @WebParam(name = "mimeType", targetNamespace = "http://erender.telekom.si/")
-        String mimeType,
-        @WebParam(name = "barcode", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.INOUT)
-        Holder<String> barcode,
-        @WebParam(name = "roles", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.INOUT)
-        Holder<List<String>> roles,
-        @WebParam(name = "document", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.OUT)
-        Holder<byte[]> document);
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getBarcode", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetBarcode")
+    @ResponseWrapper(localName = "getBarcodeResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetBarcodeResponse")
+    public List<String> getBarcode(
+        @WebParam(name = "iTypePar", targetNamespace = "http://erender.telekom.si/")
+        int iTypePar,
+        @WebParam(name = "sCapturePar", targetNamespace = "http://erender.telekom.si/")
+        String sCapturePar,
+        @WebParam(name = "sCompanyPar", targetNamespace = "http://erender.telekom.si/")
+        String sCompanyPar,
+        @WebParam(name = "sLocationPar", targetNamespace = "http://erender.telekom.si/")
+        String sLocationPar,
+        @WebParam(name = "dateTimePar", targetNamespace = "http://erender.telekom.si/")
+        XMLGregorianCalendar dateTimePar,
+        @WebParam(name = "nQuantityPar", targetNamespace = "http://erender.telekom.si/")
+        int nQuantityPar,
+        @WebParam(name = "sourceSystem", targetNamespace = "http://erender.telekom.si/")
+        String sourceSystem);
 
     /**
      * 
+     * @param arg0
      * @return
-     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.Template>
+     *     returns byte[]
      */
     @WebMethod
-    @WebResult(name = "template", targetNamespace = "")
-    @RequestWrapper(localName = "getTemplates", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplates")
-    @ResponseWrapper(localName = "getTemplatesResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplatesResponse")
-    public List<Template> getTemplates();
+    @WebResult(name = "pdfContent", targetNamespace = "http://erender.telekom.si/")
+    @RequestWrapper(localName = "mergeContentOfItems", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.MergeContentOfItems")
+    @ResponseWrapper(localName = "mergeContentOfItemsResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.MergeContentOfItemsResponse")
+    public byte[] mergeContentOfItems(
+        @WebParam(name = "arg0", targetNamespace = "")
+        List<MergeItem> arg0);
+
+    /**
+     * 
+     * @param templateId
+     * @return
+     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.KeyValue>
+     */
+    @WebMethod
+    @WebResult(name = "templateField", targetNamespace = "")
+    @RequestWrapper(localName = "getTemplateFields", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFields")
+    @ResponseWrapper(localName = "getTemplateFieldsResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFieldsResponse")
+    public List<KeyValue> getTemplateFields(
+        @WebParam(name = "templateId", targetNamespace = "http://erender.telekom.si/")
+        int templateId);
 
     /**
      * 
@@ -132,20 +152,6 @@ public interface ERender {
      * 
      * @param arg0
      * @return
-     *     returns byte[]
-     */
-    @WebMethod
-    @WebResult(name = "pdfContent", targetNamespace = "http://erender.telekom.si/")
-    @RequestWrapper(localName = "mergeContentOfItems", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.MergeContentOfItems")
-    @ResponseWrapper(localName = "mergeContentOfItemsResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.MergeContentOfItemsResponse")
-    public byte[] mergeContentOfItems(
-        @WebParam(name = "arg0", targetNamespace = "")
-        List<MergeItem> arg0);
-
-    /**
-     * 
-     * @param arg0
-     * @return
      *     returns java.lang.String
      */
     @WebMethod
@@ -158,49 +164,43 @@ public interface ERender {
 
     /**
      * 
-     * @param templateId
      * @return
-     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.KeyValue>
+     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.Template>
      */
     @WebMethod
-    @WebResult(name = "templateField", targetNamespace = "")
-    @RequestWrapper(localName = "getTemplateFields", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFields")
-    @ResponseWrapper(localName = "getTemplateFieldsResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFieldsResponse")
-    public List<KeyValue> getTemplateFields(
-        @WebParam(name = "templateId", targetNamespace = "http://erender.telekom.si/")
-        int templateId);
+    @WebResult(name = "template", targetNamespace = "")
+    @RequestWrapper(localName = "getTemplates", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplates")
+    @ResponseWrapper(localName = "getTemplatesResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplatesResponse")
+    public List<Template> getTemplates();
 
     /**
      * 
-     * @param sCompanyPar
-     * @param iTypePar
-     * @param nQuantityPar
-     * @param sourceSystem
-     * @param sCapturePar
-     * @param sLocationPar
-     * @param dateTimePar
-     * @return
-     *     returns java.util.List<java.lang.String>
+     * @param hashMapKeyValue
+     * @param roles
+     * @param document
+     * @param language
+     * @param mimeType
+     * @param templateId
+     * @param barcode
      */
     @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getBarcode", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetBarcode")
-    @ResponseWrapper(localName = "getBarcodeResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetBarcodeResponse")
-    public List<String> getBarcode(
-        @WebParam(name = "iTypePar", targetNamespace = "http://erender.telekom.si/")
-        int iTypePar,
-        @WebParam(name = "sCapturePar", targetNamespace = "http://erender.telekom.si/")
-        String sCapturePar,
-        @WebParam(name = "sCompanyPar", targetNamespace = "http://erender.telekom.si/")
-        String sCompanyPar,
-        @WebParam(name = "sLocationPar", targetNamespace = "http://erender.telekom.si/")
-        String sLocationPar,
-        @WebParam(name = "dateTimePar", targetNamespace = "http://erender.telekom.si/")
-        XMLGregorianCalendar dateTimePar,
-        @WebParam(name = "nQuantityPar", targetNamespace = "http://erender.telekom.si/")
-        int nQuantityPar,
-        @WebParam(name = "sourceSystem", targetNamespace = "http://erender.telekom.si/")
-        String sourceSystem);
+    @RequestWrapper(localName = "getContentForLanguage", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetContentForLanguage")
+    @ResponseWrapper(localName = "getContentForLanguageResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetContentForLanguageResponse")
+    public void getContentForLanguage(
+        @WebParam(name = "templateId", targetNamespace = "http://erender.telekom.si/")
+        int templateId,
+        @WebParam(name = "language", targetNamespace = "http://erender.telekom.si/")
+        String language,
+        @WebParam(name = "hashMapKeyValue", targetNamespace = "http://erender.telekom.si/")
+        HashMapWrapper hashMapKeyValue,
+        @WebParam(name = "mimeType", targetNamespace = "http://erender.telekom.si/")
+        String mimeType,
+        @WebParam(name = "barcode", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.INOUT)
+        Holder<String> barcode,
+        @WebParam(name = "roles", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.INOUT)
+        Holder<List<String>> roles,
+        @WebParam(name = "document", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.OUT)
+        Holder<byte[]> document);
 
     /**
      * 
