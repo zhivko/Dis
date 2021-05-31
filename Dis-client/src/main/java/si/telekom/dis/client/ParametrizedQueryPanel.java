@@ -79,7 +79,8 @@ public class ParametrizedQueryPanel extends WindowBox {
 		for (String argument : parametrizedQuery.arguments) {
 			FormAttribute a = (FormAttribute) getContentPanel().getWidget(i);
 			if (a.att.getType().equals("datetime")) {
-				dql = dql.replaceAll(parametrizedQuery.arguments.get(i), a.getDateTime());
+				// we need to change day and month because of DATE('15.01.2021 00:00:01','MM/DD/YYYY hh:mm:ss')
+				dql = dql.replaceAll(parametrizedQuery.arguments.get(i), a.getDateTimeForQuery());
 			} else
 				dql = dql.replaceAll(parametrizedQuery.arguments.get(i), a.getValue());
 

@@ -458,6 +458,13 @@ public class FormAttribute extends Composite implements HasValueChangeHandlers<L
 		return ret;
 	}
 
+	public String getDateTimeForQuery() {
+		String ret = DateTimeFormat.getFormat("MM/dd/yyyy HH:mm:ss").format(myDateTime.getValueDate());
+		return ret;
+	}
+	
+	
+	
 	@Override
 	public void setWidth(String width) {
 		super.setWidth(width);

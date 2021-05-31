@@ -116,6 +116,7 @@ import com.documentum.fc.common.DfId;
 import com.documentum.fc.common.DfLoginInfo;
 import com.documentum.fc.common.DfTime;
 import com.documentum.fc.common.DfValue;
+import com.documentum.fc.common.IDfAttr;
 import com.documentum.fc.common.IDfId;
 import com.documentum.fc.common.IDfList;
 import com.documentum.fc.common.IDfLoginInfo;
@@ -167,6 +168,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public static String repositoryName = "Mobitel";
 	public static String configPath = "/app/render/DocMan";
 	private static String configDmPath = "/System/DocMan";
+
+	public static String docbrokerAdress;
+	public static int docbrokerPort;
 
 	public static HashMap<String, Profile> profiles;
 	public static HashMap<String, DocType> doctypes;
@@ -394,7 +398,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						while (coll.next()) {
 							String groupName = coll.getString("group_name");
 							IDfGroup group = adminSession.getGroup(groupName);
-							
+
 							MyIDfGroup myGroup = MyIDfGroup.convertFromIDFGroup(group);
 							allGroups.put(groupName, myGroup);
 						}
@@ -580,7 +584,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// classPath = classPath.replace("classes", "");
 			// String webxml = classPath + "web.xml";
 
-			Context env = (Context) new InitialContext().lookup("java:comp/env");
+			//Context env = (Context) new InitialContext().lookup("java:comp/env");
 
 			// ServletContext servletContext = WebappContext.getServletContext();
 			AdminServiceImpl.BARCODE_SQL_SERVER_DB_NAME = context.getInitParameter("barcode.database");
@@ -1211,8 +1215,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				n2 = System.currentTimeMillis();
 				Logger.getLogger(AdminService.class).info(String.format(String.format("new DfClient() took %d ms.", n2 - n1)));
 				IDfTypedObject config = client.getClientConfig();
-				String docbrokerAdress = config.getString("primary_host");
-				int docbrokerPort;
+				docbrokerAdress = config.getString("primary_host");
 				docbrokerPort = config.getInt("primary_port");
 				Logger.getLogger(AdminService.class).info(String.format(
 						"Docbroker host: " + ConsoleColors.RED_BACKGROUND_BRIGHT + "%s" + ConsoleColors.RESET + " port: %d", docbrokerAdress, docbrokerPort));
@@ -2114,11 +2117,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			loginInfo.setForceAuthentication(false);
 			sessMgr.clearIdentities();
 			sessMgr.setIdentity(AdminServiceImpl.repositoryName, loginInfo);
-			Logger.getLogger(AdminServiceImpl.class)
-					.info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\" + AdminServiceImpl.superUserName + "...");
+			Logger.getLogger(AdminServiceImpl.class).info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\"
+					+ AdminServiceImpl.superUserName + " on server: " + docbrokerAdress + "...");
 			userSession = sessMgr.getSession(AdminServiceImpl.repositoryName);
-			Logger.getLogger(AdminServiceImpl.class)
-					.info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\" + AdminServiceImpl.superUserName + " ... Done");
+			Logger.getLogger(AdminServiceImpl.class).info("Getting admin session for: " + AdminServiceImpl.superUserDomain + "\\"
+					+ AdminServiceImpl.superUserName + " on server: " + docbrokerAdress + "... Done");
 		}
 
 		return userSession;
@@ -2301,6 +2304,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					Logger.getLogger(AdminServiceImpl.class).info("Above to execute standard action: " + saKind);
 
 					if (sa.kind.equalsIgnoreCase(StandardAction.types.LINK_TO_FOLDER.type)) {
+						Logger.getLogger(AdminServiceImpl.class).info("\t" + sa.parameter);
 						String folder = evaluateFolderExpression(sa.parameter, persObject);
 						IDfId dfId = AdminServiceImpl.getOrCreateFolder(folder);
 						boolean alreadyLinked = false;
@@ -2319,6 +2323,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 							dfSysObject.save();
 						}
 					} else if (sa.kind.equalsIgnoreCase(StandardAction.types.MOVE_ALL_FOLDER_LINKS.type)) {
+						Logger.getLogger(AdminServiceImpl.class).info("\t" + sa.parameter);
 						String folder = evaluateFolderExpression(sa.parameter, persObject);
 
 						ArrayList<String> foldersToUnlinkFrom = new ArrayList<String>();
@@ -3206,11 +3211,38 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		while (m.find()) {
 			if (!ret.arguments.contains(m.group(0))) {
 				String partDql = dqlQuery.substring(0, dqlQuery.indexOf(m.group(0)) + m.group(0).length());
-				if (doctypes.get(type) == null) {
-					Logger.getLogger(this.getClass()).error("no such document type: " + type);
+
+				Map<String, DcmtAttribute> typeAttributes = null;
+
+				if (doctypes.get(type) != null)
+					typeAttributes = doctypes.get(type).attributes;
+				else {
+					IDfSession adminSession = null;
+					IDfCollection coll = null;
+					try {
+						adminSession = getAdminSession();
+						IDfQuery qry = new DfQuery("select * from " + type + " enable (return_top 1)");
+						coll = qry.execute(adminSession, IDfQuery.DF_READ_QUERY);
+						typeAttributes = new HashMap<String, DcmtAttribute>();
+						for (int i = 0; i < coll.getAttrCount(); i++) {
+							IDfAttr attr = coll.getAttr(i);
+							DcmtAttribute dcmtAttribute = new DcmtAttribute();
+							dcmtAttribute.attr_name = attr.getName();
+							dcmtAttribute.domain_type = String.valueOf(attr.getDataType());
+							typeAttributes.put(dcmtAttribute.attr_name, dcmtAttribute);
+						}
+						coll.close();
+					} catch (Exception ex) {
+						Logger.getLogger(this.getClass()).warn(ex.getMessage());
+					} finally {
+						if (coll != null)
+							if (adminSession != null)
+								adminSession.getSessionManager().release(adminSession);
+					}
 				}
-				if (doctypes.get(type) != null) {
-					for (String attName : doctypes.get(type).attributes.keySet()) {
+
+				if (typeAttributes != null) {
+					for (String attName : typeAttributes.keySet()) {
 						// try to parse label
 						String escapedGroup0 = m.group(0).replaceAll("\\%", "[%]");
 						String toCompile = ".*" + attName + " \\((.*?)\\)(.*)" + escapedGroup0;
@@ -3228,7 +3260,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 								label = m1.group(1);
 
 							// dqlQuery = dqlQuery.replaceAll("\\(" + label + "\\)", "");
-							DcmtAttribute dcmtAtt = doctypes.get(type).attributes.get(attName);
+							DcmtAttribute dcmtAtt = typeAttributes.get(attName);
 							Attribute a = new Attribute();
 							a.label = (label.equals("") ? attName : label);
 							a.dcmtAttName = dcmtAtt.attr_name;
@@ -3255,6 +3287,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 							break;
 						}
 					}
+				} else {
+					Logger.getLogger(this.getClass()).error("no such document type: " + type);
 				}
 			}
 		}

@@ -6,6 +6,37 @@ info:
   version: 1.0.1
   title: Dis API
 paths:
+  /documents/formats:
+    get:
+      tags:
+      - provisioning
+      summary: queries for documents
+      operationId: getFormats
+      description: gets documentum formats in Dis
+      security:
+      - BasicAuth: []
+      parameters:
+      - in: header
+        name: X-Transaction-Id
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: array of possible documentum formats (pdf, odt, ...)
+                items:
+                  type: string
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /documents/query:
     get:
       tags:

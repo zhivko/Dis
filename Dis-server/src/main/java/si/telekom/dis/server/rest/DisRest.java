@@ -502,4 +502,48 @@ public class DisRest extends DocumentsApiService {
 		}
 	}
 
+	@Override
+	public Response getFormats(String xTransactionId, SecurityContext securityContext) throws NotFoundException {
+		IDfSession userSession = null;
+		IDfCollection collection = null;
+
+		try {
+			User user = (User) securityContext.getUserPrincipal();
+			String loginName = user.getId();
+			String password = user.getPaswordBase64Encoded();
+
+			Logger.getLogger(this.getClass()).info("getFormats for " + loginName);
+			userSession = AdminServiceImpl.getSession(loginName, password);
+
+			IDfQuery query = new DfQuery();
+			String dql = "select * from dm_format";
+			query.setDQL(dql);
+			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
+			long milis1 = System.currentTimeMillis();
+			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
+			long milis2 = System.currentTimeMillis();
+			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql + " ... done in " + (milis2-milis1) + " ms.");
+
+			
+			ArrayList<String> al = new ArrayList<String>();
+			while (collection.next()) {
+				al.add(collection.getString("name"));
+			}
+			return Response.ok(al).build();
+		} catch (Throwable ex) {
+			return Response.status(500).entity(ex.getMessage()).build();
+		} finally {
+			if (collection != null)
+				try {
+					collection.close();
+				} catch (DfException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			if (userSession != null)
+				if (userSession.isConnected())
+					userSession.getSessionManager().release(userSession);
+		}
+	}
+
 }

@@ -1806,21 +1806,18 @@ enable (return_range 1 20 'r_object_id')
 (mob_classification_id_cont is null or mob_classification_id_cont='') and 
 (any r_version_label='draft' or any r_version_label='effective')  
 enable (return_range 1 20 'r_object_id')
-         
-            
-            
-         
-           
-            
-         
-            
-            
-         
-            
-            
          <userGroups>
                <userGroup id="dm_world" name="dm_world"/>
             </userGroups>
+            <orderBys/>
+            <filterClass/>
+         </query>
+         <query name="Varnost - dostop do dokumentov za osebo v obdobju">select audited_obj_id from dm_audittrail_Mobitel_all where 
+user_name (Uporabniško ime) = '&lt;1&gt;' and 
+time_stamp_utc (Od datuma) &gt;= DATE('&lt;2&gt;','MM/DD/YYYY hh:mm:ss') and 
+time_stamp_utc (Do datuma) &gt;= DATE('&lt;3&gt;','MM/DD/YYYY hh:mm:ss') 
+enable (return_range 1 20 'r_object_id')
+<userGroups/>
             <orderBys/>
             <filterClass/>
          </query>

@@ -238,7 +238,7 @@ public class WebUi2 implements EntryPoint {
 		passField.addKeyUpHandler(handler);
 		
 		
-		boolean devTry = true;
+		boolean devTry = false;
 		if(devTry)
 		{
 			Timer timer = new Timer()

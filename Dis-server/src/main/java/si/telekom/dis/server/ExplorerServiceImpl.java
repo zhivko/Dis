@@ -162,6 +162,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	static ExplorerServiceImpl instance;
 	static Parser parser = new AutoDetectParser();
 
+	SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+
 	public static ExplorerServiceImpl getInstance() {
 		if (instance == null) {
 			instance = new ExplorerServiceImpl();
@@ -227,8 +229,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							}
 						}
 					}
-
-					SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 //@formatter:off			
                     baOs.write(("<!DOCTYPE html>" + "<html>" + "<head>" + "<title>Page Title</title>"
@@ -802,7 +802,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				}
 
 				String roleToAdd = setRolesOfUser(userGroupNames, roleId, userSession, forUserOrGroup);
-				if (roleToAdd!=null && !rolesOfUser.contains(roleToAdd))
+				if (roleToAdd != null && !rolesOfUser.contains(roleToAdd))
 					rolesOfUser.add(roleToAdd);
 
 				hasNext = collection2.next();
@@ -823,15 +823,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			for (int i = 0; i < prof.roles.size(); i++) {
 				Role role = prof.roles.get(i);
 				for (int k = 0; k < role.defaultUserGroups.size(); k++) {
-					
+
 					UserGroup groupOrUser = role.defaultUserGroups.get(k);
 					Logger.getLogger(this.getClass().getName()).info("Role: " + role.getId() + " defaultUser: " + groupOrUser.getId());
 
-//					if(groupOrUser.getId().equals("varnost-dctm-dostop"))
-//						System.out.println();
-//					
+					// if(groupOrUser.getId().equals("varnost-dctm-dostop"))
+					// System.out.println();
+					//
 					String roleToAdd = setRolesOfUser(groupOrUser.getId(), role.getId(), userSession, forUserOrGroup);
-					if (roleToAdd!=null && !rolesOfUser.contains(roleToAdd))
+					if (roleToAdd != null && !rolesOfUser.contains(roleToAdd))
 						rolesOfUser.add(roleToAdd);
 				}
 			}
@@ -2046,8 +2046,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			String aclNameFromClassSign = findAclNameFromClassSign(persObject.getString("mob_classification_id"));
 			IDfACL objAcl = null;
 			if (aclNameFromClassSign == null || aclNameFromClassSign.equals("")) {
-				objAcl = (IDfACL) adminSess.getACL(sysObj.getACL().getDomain(), sysObj.getACL().getObjectName());
-				if (objAcl.getObjectName().startsWith("mob_") || objAcl.getObjectName().startsWith("dm_")) {// adminSess
+				if (sysObj.getACL() != null)
+					objAcl = (IDfACL) adminSess.getACL(sysObj.getACL().getDomain(), sysObj.getACL().getObjectName());
+				if (sysObj.getACL() == null || objAcl.getObjectName().startsWith("mob_") || objAcl.getObjectName().startsWith("dm_")) {// adminSess
 					objAcl = (IDfACL) adminSess.newObject("dm_acl");
 					objAcl.setObjectName("dis_acl_" + System.currentTimeMillis());
 					objAcl.setDomain("dm_dbo");
@@ -2200,7 +2201,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			if (rs.next()) {
 				acl_name = rs.getString("acl_name");
-				Logger.getLogger(this.getClass()).info("Found acl_class from T_CLASSIFICATION table. acl_name: " + acl_name);
+				Logger.getLogger(this.getClass()).info("Found acl_name from T_CLASSIFICATION table. acl_name: " + acl_name);
 			}
 		} catch (Exception ex) {
 			throw ex;
@@ -3300,13 +3301,17 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							i++;
 						}
 					} else if (values.size() == 1) {
-
 						if (!values.get(0).equals("")) {
 							if (dcmtAttribute.domain_type.equals("4")) {
-								String miliSeconds = values.get(0);
-								GregorianCalendar cal = (GregorianCalendar) GregorianCalendar.getInstance();
-								cal.setTimeInMillis(Long.valueOf(miliSeconds));
-								IDfTime time = new DfTime(cal.getTime());
+								IDfTime time = null;
+								if (values.get(0).contains(".")) {
+									time = new DfTime(sdf.parse(values.get(0)));
+								} else {
+									String miliSeconds = values.get(0);
+									GregorianCalendar cal = (GregorianCalendar) GregorianCalendar.getInstance();
+									cal.setTimeInMillis(Long.valueOf(miliSeconds));
+									time = new DfTime(cal.getTime());
+								}
 								persObject.setTime(attName, time);
 							} else {
 								if (att.getType().equals("dropdown")) {
@@ -3465,8 +3470,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			String dqlOfObjects = "";
 			if (!rObjectIdOfObjectOrFolder.startsWith("/")) {
-				dqlOfObjects = "select r_object_id from dm_document where r_object_id='" + rObjectIdOfObjectOrFolder + "'";
-				IDfPersistentObject obj = userSession.getObjectByQualification("dm_document where r_object_id='" + rObjectIdOfObjectOrFolder + "'");
+				dqlOfObjects = "select r_object_id from dm_document(all) where r_object_id='" + rObjectIdOfObjectOrFolder + "'";
+				IDfPersistentObject obj = userSession.getObjectByQualification("dm_document(all) where r_object_id='" + rObjectIdOfObjectOrFolder + "'");
 				if (obj == null)
 					throw new Exception("No such template (r_object_id='" + rObjectIdOfObjectOrFolder + "')");
 			} else {
@@ -3507,10 +3512,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						} else if (values.size() == 1) {
 							if (!values.get(0).equals("")) {
 								if (dcmtAttribute.domain_type.equals("4")) {
-									String miliSeconds = values.get(0);
-									GregorianCalendar cal = (GregorianCalendar) GregorianCalendar.getInstance();
-									cal.setTimeInMillis(Long.valueOf(miliSeconds));
-									IDfTime time = new DfTime(cal.getTime());
+									IDfTime time = null;
+									if (values.get(0).contains(".")) {
+										time = new DfTime(sdf.parse(values.get(0)));
+									} else {
+										String miliSeconds = values.get(0);
+										GregorianCalendar cal = (GregorianCalendar) GregorianCalendar.getInstance();
+										cal.setTimeInMillis(Long.valueOf(miliSeconds));
+										time = new DfTime(cal.getTime());
+									}
 									persObject.setTime(attName, time);
 								} else {
 									IDfValue val = new DfValue(values.get(0).split("\\|")[0]);
@@ -3745,7 +3755,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 
 			while (collection.next()) {
-				String r_object_id = collection.getId("r_object_id").toString();
+				String r_object_id;
+				if (collection.hasAttr("audited_obj_id"))
+					r_object_id = collection.getId("audited_obj_id").toString();
+				else
+					r_object_id = collection.getId("r_object_id").toString();
+
 				IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 				if (filter != null) {
 					Logger.getLogger(this.getClass()).info("filtering r_object_id: " + r_object_id);
