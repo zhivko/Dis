@@ -27,10 +27,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                description: array of possible documentum formats (pdf, odt, ...)
-                items:
-                  type: string
+                $ref: '#components/schemas/FormatsResponse'
         '500':
           description: internal server error
           content:
@@ -447,6 +444,17 @@ components:
             $ref: '#/components/schemas/RoleUsers'
         content:
           $ref: '#/components/schemas/DocumentContent'
+    Format:
+      type: object
+      properties:
+        name:
+          type: string
+          description: format name
+          example: pdf
+        mimeType:
+          type: string
+          description: mime type of format
+          example: application/pdf
     Attribute:
       type: object
       properties:
@@ -487,7 +495,7 @@ components:
       type: object
       required:
       - format
-      - contentBase64
+      - data
       properties:
         format:
           type: string
@@ -527,6 +535,16 @@ components:
           description: A list of users and roles
           items:
             $ref: '#/components/schemas/RoleUsers'
+    FormatsResponse:
+      type: object
+      properties:
+        formats:
+          type: array
+          description: array od formats
+          items:
+            $ref: '#/components/schemas/Format'
+      required:
+      - formats
     Error:
       type: object
       required:

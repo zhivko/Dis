@@ -516,7 +516,7 @@ public class DisRest extends DocumentsApiService {
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
 			IDfQuery query = new DfQuery();
-			String dql = "select * from dm_format";
+			String dql = "select name, mime_type from dm_format";
 			query.setDQL(dql);
 			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
 			long milis1 = System.currentTimeMillis();
@@ -525,9 +525,12 @@ public class DisRest extends DocumentsApiService {
 			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql + " ... done in " + (milis2-milis1) + " ms.");
 
 			
-			ArrayList<String> al = new ArrayList<String>();
+			ArrayList<Format> al = new ArrayList<Format>();
 			while (collection.next()) {
-				al.add(collection.getString("name"));
+				Format fmt = new Format();
+				fmt.setName(collection.getString("name"));
+				fmt.setMimeType(collection.getString("mime_type"));
+				al.add(fmt);
 			}
 			return Response.ok(al).build();
 		} catch (Throwable ex) {
