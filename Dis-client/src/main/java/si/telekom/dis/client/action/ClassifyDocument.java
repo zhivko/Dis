@@ -34,13 +34,12 @@ import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.MultiValueSelectBox;
 import si.telekom.dis.client.WindowBox;
 import si.telekom.dis.client.item.FormAttribute;
-import si.telekom.dis.shared.Attribute;
+import si.telekom.dis.shared.AttributeRoleStateWizards;
 import si.telekom.dis.shared.Document;
 import si.telekom.dis.shared.Profile;
 import si.telekom.dis.shared.ProfileAttributesAndValues;
 import si.telekom.dis.shared.Role;
 import si.telekom.dis.shared.State;
-import si.telekom.dis.shared.Tab;
 import si.telekom.dis.shared.UserGroup;
 
 public class ClassifyDocument extends WindowBox {
@@ -246,7 +245,7 @@ String fullDqlUg =
 								si.telekom.dis.shared.Attribute attUsers = new si.telekom.dis.shared.Attribute();
 								attUsers.isRepeating = true;
 								attUsers.isLimitedToValueList = true;
-//@formatter:off							
+						//@formatter:off							
 								attUsers.dqlValueListDefinition = 
 									"select user_name, description from dm_user where 1=1 " +
 									"union " +
@@ -254,7 +253,6 @@ String fullDqlUg =
 									"fixedValues(dm_world, vsi;dm_owner, lastnik; dm_group, skupina)";
 //@formatter:on							
 								MultiValueSelectBox addUG = new MultiValueSelectBox(attUsers, lb);
-
 
 								addUG.setValue(usersGroups);
 
@@ -306,8 +304,7 @@ String fullDqlUg =
 		hp.add(new Label("Izberi klasifikacijski znak: "));
 
 		si.telekom.dis.shared.Attribute att = new si.telekom.dis.shared.Attribute();
-		att.dqlValueListDefinition=
-				"SELECT tc.\"code\", tc.\"name\" FROM dbo.T_CLASSIFICATION_PLAN tcp, dbo.T_CLASSIFICATION tc WHERE tc.\"classification_plan_id\" = tcp.\"id\" AND tcp.\"name\" = 'KNTS' AND DATE(TODAY) >= valid_from AND ( DATE(TODAY) <= valid_to OR valid_to = '' ) order by tc.code enable (return_top 20)";
+		att.dqlValueListDefinition = "SELECT tc.\"code\", tc.\"name\" FROM dbo.T_CLASSIFICATION_PLAN tcp, dbo.T_CLASSIFICATION tc WHERE tc.\"classification_plan_id\" = tcp.\"id\" AND tcp.\"name\" = 'KNTS' AND DATE(TODAY) >= valid_from AND ( DATE(TODAY) <= valid_to OR valid_to = '' ) order by tc.code enable (return_top 20)";
 		att.isRepeating = false;
 
 		lbStates = new ListBox();
@@ -412,12 +409,53 @@ String fullDqlUg =
 
 	public void refreshAttributes() {
 		// TODO Auto-generated method stub
+
+		/*
+		 * TabPanel tpAtts = new TabPanel(); tpAtts.setWidth("800px");
+		 * 
+		 * ScrollPanel sp = new ScrollPanel(tpAtts); sp.setWidth("1200px");
+		 * sp.setHeight("900px"); allFaAl.clear();
+		 * 
+		 * MainPanel.log("Nalagam atribute..");
+		 * getExplorerService().getProfileAttributesAndValues(MainPanel.getInstance(
+		 * ).loginName, MainPanel.getInstance().loginPass, r_object_id, new
+		 * AsyncCallback<ProfileAttributesAndValues>() {
+		 * 
+		 * @Override public void onSuccess(ProfileAttributesAndValues result) { //
+		 * generate tabs for (Tab tab : result.profile.tabs) { Grid g = new
+		 * Grid(tab.row, tab.col); getOkButton().setEnabled(false); for (Attribute
+		 * att : result.attributes) { if (tab.getId().equals(att.tabId)) { //
+		 * logger.info(att.dcmtAttName); FormAttribute fa = new FormAttribute(att);
+		 * fa.setWidth("90%"); fa.addValueChangeHandler(new
+		 * ValueChangeHandler<List<String>>() { public void
+		 * onValueChange(com.google.gwt.event.logical.shared.ValueChangeEvent<java.
+		 * util.List<String>> event) { if (checkMandatoryAttributes())
+		 * getOkButton().setEnabled(true);
+		 * 
+		 * fillDependendAttributes(fa.att.dcmtAttName); }; }); List<String> values =
+		 * result.values.get(att.dcmtAttName); if (values != null) {
+		 * fa.setValue(values); } else {
+		 * MainPanel.log("Attribute value for attribute <strong>" + att.dcmtAttName
+		 * + "</strong> not received from server."); fa.att.isReadOnly = true; }
+		 * g.setWidget(att.row, att.col, fa); allFaAl.add(fa); //
+		 * logger.info("\tadded to row:" + att.row + " col:" + // att.col); } }
+		 * tpAtts.add(g, tab.getParameter()); } tpAtts.selectTab(0); if
+		 * (checkMandatoryAttributes()) nextB.setEnabled(true);
+		 * 
+		 * Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+		 * 
+		 * @Override public void execute() { ClassifyDocument.this.center(); } }); }
+		 * 
+		 * @Override public void onFailure(Throwable caught) {
+		 * getLogger().info(caught.getMessage()); } });
+		 * 
+		 */
+
 		TabPanel tpAtts = new TabPanel();
-		tpAtts.setWidth("800px");
+		tpAtts.setWidth("1000px");
 
 		ScrollPanel sp = new ScrollPanel(tpAtts);
-		sp.setWidth("1200px");
-		sp.setHeight("900px");
+		sp.setHeight("600px");
 		allFaAl.clear();
 
 		MainPanel.log("Nalagam atribute..");
@@ -426,54 +464,83 @@ String fullDqlUg =
 
 					@Override
 					public void onSuccess(ProfileAttributesAndValues result) {
-						// generate tabs
-						for (Tab tab : result.profile.tabs) {
-							Grid g = new Grid(tab.row, tab.col);
-							getOkButton().setEnabled(false);
-							for (Attribute att : result.attributes) {
-								if (tab.getId().equals(att.tabId)) {
-									// logger.info(att.dcmtAttName);
-									FormAttribute fa = new FormAttribute(att);
-									fa.setWidth("90%");
-									fa.addValueChangeHandler(new ValueChangeHandler<List<String>>() {
-										public void onValueChange(com.google.gwt.event.logical.shared.ValueChangeEvent<java.util.List<String>> event) {
-											if (checkMandatoryAttributes())
-												getOkButton().setEnabled(true);
 
-											fillDependendAttributes(fa.att.dcmtAttName);
-										};
-									});
-									List<String> values = result.values.get(att.dcmtAttName);
-									if (values != null) {
-										fa.setValue(values);
-									} else {
-										MainPanel.log("Attribute value for attribute <strong>" + att.dcmtAttName + "</strong> not received from server.");
-										fa.att.isReadOnly = true;
+						for (si.telekom.dis.shared.Tab tab : prof.tabs) {
+							Grid g = new Grid(tab.row, tab.col);
+							for (AttributeRoleStateWizards arsw : prof.attributeRolesStatesWizards) {
+								if (arsw.wizards.contains("classify")) {
+									for (si.telekom.dis.shared.Attribute att : arsw.attributes) {
+										if (tab.getId().equals(att.tabId)) {
+											FormAttribute fa = new FormAttribute(att);
+											g.setWidget(att.row, att.col, fa);
+											fa.setWidth("90%");
+											if (att.dcmtAttName.equals("mob_classification_id")) {
+												ArrayList<String> values = new ArrayList<String>();
+												values.add(split(classification_id, "|")[0]);
+												fa.setValue(values);
+											}
+
+											if (att.defaultValue != null) {
+												if (att.defaultValueIsDql) {
+													explorerService.getDefaultValueDql(att.defaultValue, new AsyncCallback<List<List<String>>>() {
+														@Override
+														public void onSuccess(List<List<String>> result) {
+															ArrayList<String> al = new ArrayList<String>();
+															al.add(result.get(0).get(0));
+															fa.setValue(al);
+														}
+
+														@Override
+														public void onFailure(Throwable caught) {
+															MainPanel.log(caught.getMessage());
+														}
+													});
+												} else if (att.defaultValueIsConstant) {
+													ArrayList<String> al = new ArrayList<String>();
+													al.add(att.defaultValue);
+													fa.setValue(al);
+												}
+											}
+
+											if (result.values.get(att.dcmtAttName) != null) {
+												fa.setValue(result.values.get(att.dcmtAttName));
+											}
+
+											fa.addValueChangeHandler(new ValueChangeHandler<List<String>>() {
+												public void onValueChange(com.google.gwt.event.logical.shared.ValueChangeEvent<java.util.List<String>> event) {
+													if (checkMandatoryAttributes())
+														nextB.setEnabled(true);
+
+													fillDependendAttributes(fa.att.dcmtAttName);
+												}
+
+											});
+
+											allFaAl.add(fa);
+										}
 									}
-									g.setWidget(att.row, att.col, fa);
-									allFaAl.add(fa);
-									// logger.info("\tadded to row:" + att.row + " col:" +
-									// att.col);
+									tpAtts.add(g, tab.getParameter());
+									break;
 								}
 							}
-							tpAtts.add(g, tab.getParameter());
 						}
 						tpAtts.selectTab(0);
-						if (checkMandatoryAttributes())
-							nextB.setEnabled(true);
 
 						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+
 							@Override
 							public void execute() {
 								ClassifyDocument.this.center();
 							}
+
 						});
+
 					}
 
-					@Override
 					public void onFailure(Throwable caught) {
-						getLogger().info(caught.getMessage());
-					}
+						MainPanel.log(caught.getMessage());
+					};
+
 				});
 
 		tpWizard.remove(1);

@@ -482,7 +482,7 @@ public class ImportDocument extends WindowBox {
 		for (si.telekom.dis.shared.Tab tab : prof.tabs) {
 			Grid g = new Grid(tab.row, tab.col);
 			for (AttributeRoleStateWizards arsw : prof.attributeRolesStatesWizards) {
-				if (arsw.wizards.contains("newdoc")) {
+				if (arsw.wizards.contains("import")) {
 					for (si.telekom.dis.shared.Attribute att : arsw.attributes) {
 						if (tab.getId().equals(att.tabId)) {
 							FormAttribute fa = new FormAttribute(att);

@@ -105,7 +105,6 @@ import com.documentum.fc.client.IDfClient;
 import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfDocument;
 import com.documentum.fc.client.IDfFolder;
-import com.documentum.fc.client.IDfGroup;
 import com.documentum.fc.client.IDfPermit;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfQuery;
@@ -116,6 +115,7 @@ import com.documentum.fc.client.IDfType;
 import com.documentum.fc.client.IDfTypedObject;
 import com.documentum.fc.client.IDfUser;
 import com.documentum.fc.client.IDfVirtualDocument;
+import com.documentum.fc.client.impl.session.ISession;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfId;
 import com.documentum.fc.common.DfLoginInfo;
@@ -145,6 +145,7 @@ import si.telekom.dis.shared.Document;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExtendedPermit;
 import si.telekom.dis.shared.MyParametrizedQuery;
+import si.telekom.dis.shared.Permit.permit;
 import si.telekom.dis.shared.Profile;
 import si.telekom.dis.shared.ProfileAttributesAndValues;
 import si.telekom.dis.shared.Role;
@@ -639,6 +640,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								ret.add(act);
 							}
 						}
+
 					}
 				}
 			}
@@ -651,6 +653,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// unclassified document
 			// lets get actions from "default for object type" definition
 			Profile prof1 = findProfileForObjectType(persObj);
+
+			// for unclassified document we show classify action
+			if (!isClassified && !persObj.getType().isInstanceOf("dm_folder")) {
+				Action action = new Action("document.classifyDoc", "klasificiraj", permit.WRITE);
+				ret.add(action);
+			}
+
 			if (prof1 != null) {
 				Map<String, List<String>> roleActionsInAllState = prof1.roleStateActions.get("unclassified");
 				if (roleActionsInAllState != null) {
@@ -825,11 +834,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				for (int k = 0; k < role.defaultUserGroups.size(); k++) {
 
 					UserGroup groupOrUser = role.defaultUserGroups.get(k);
-					Logger.getLogger(this.getClass().getName()).info("Role: " + role.getId() + " defaultUser: " + groupOrUser.getId());
+					// Logger.getLogger(this.getClass().getName()).info("Role: " +
+					// role.getId() + " defaultUser: " + groupOrUser.getId());
 
-					// if(groupOrUser.getId().equals("varnost-dctm-dostop"))
-					// System.out.println();
-					//
 					String roleToAdd = setRolesOfUser(groupOrUser.getId(), role.getId(), userSession, forUserOrGroup);
 					if (roleToAdd != null && !rolesOfUser.contains(roleToAdd))
 						rolesOfUser.add(roleToAdd);
@@ -2507,6 +2514,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			// Profile dfPersObj = (Profile) profileAndRolesOfUserAndState[0];
 			Profile prof = (Profile) profileAndRolesOfUserAndState[1];
+
+			if (prof == null)
+				throw new ServerException("No profile defined on object: r_object_id: " + r_object_id + " object_name: " + persObj.getString("object_name")
+						+ ". Possibly unclassified object.");
+
 			String stateId = (String) profileAndRolesOfUserAndState[3];
 			Logger.getLogger(this.getClass()).info("Promote state: " + stateId);
 
@@ -3761,18 +3773,26 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				else
 					r_object_id = collection.getId("r_object_id").toString();
 
-				IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
-				if (filter != null) {
-					Logger.getLogger(this.getClass()).info("filtering r_object_id: " + r_object_id);
-					if (filter.shouldInclude((IDfSysObject) persObj, userSession)) {
+				try {
+					IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
+					if (filter != null) {
+						Logger.getLogger(this.getClass()).info("filtering r_object_id: " + r_object_id);
+						if (filter.shouldInclude((IDfSysObject) persObj, userSession)) {
+							Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
+							// if (!ret.contains(doc))
+							ret.add(doc);
+						}
+					} else {
 						Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
 						// if (!ret.contains(doc))
 						ret.add(doc);
 					}
-				} else {
-					Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
-					// if (!ret.contains(doc))
-					ret.add(doc);
+				} catch (Exception ex) {
+					if (ex.getMessage().contains("[DM_API_E_EXIST]")) {
+						Logger.getLogger(this.getClass()).warn(ex.getMessage());
+					} else {
+						throw ex;
+					}
 				}
 
 				long milis3 = System.currentTimeMillis();
@@ -4408,6 +4428,35 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Profile prof = AdminServiceImpl.profiles.get(profileId);
 
 			IDfPersistentObject persObject = userSession.getObject(new DfId(r_object_id));
+
+			if (!persObject.getType().getName().equals(prof.objType)) {
+				// need to change object type
+				// first to dm_document than to specific object type that is defined on
+				// profile
+				long t1 = System.currentTimeMillis();
+				IDfSession adminSession = AdminServiceImpl.getAdminSession();
+
+				while (!persObject.getType().getName().toString().equals("dm_document")) {
+					IDfQuery q = new DfQuery("change " + persObject.getType().getName() + " object to " + persObject.getType().getSuperType().getName()
+							+ " where r_object_id = '" + persObject.getObjectId().getId() + "'");
+					IDfCollection coll = q.execute(adminSession, IDfQuery.DF_EXEC_QUERY);
+					coll.close();
+					persObject.fetch(null);
+				}
+				long t2 = System.currentTimeMillis();
+				Logger.getLogger(this.getClass()).info("Change to dm_document type took: " + (t2 - t1) + " ms.");
+				((ISession) adminSession).getDocbaseApi().sysObjFlushCache(false, null);
+
+				persObject.fetch(null);
+				IDfQuery q = new DfQuery("change " + persObject.getType().getName() + " object to " + prof.objType + " where r_object_id = '"
+						+ persObject.getObjectId().getId() + "'");
+				IDfCollection coll = q.execute(adminSession, IDfQuery.DF_EXEC_QUERY);
+				coll.close();
+
+				persObject.fetch(null);
+				((ISession) userSession).getDocbaseApi().sysObjFlushCache(false, null);
+			}
+
 			HashMap<String, Attribute> wizardAttributes = AdminServiceImpl.getInstance().getWizardAttributes(prof, "classify");
 			for (String attName : attributes.keySet()) {
 				Logger.getLogger(this.getClass()).info("\t\tUpdating attribute: " + attName);
@@ -4424,7 +4473,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							}
 						}
 					} else if (values.size() == 1) {
-						if (!values.get(0).equals("")) {
+						if (values.get(0) != null && !values.get(0).equals("")) {
 							if (dcmtAttribute.domain_type.equals("4")) {
 								String miliSeconds = values.get(0);
 								GregorianCalendar cal = (GregorianCalendar) GregorianCalendar.getInstance();
@@ -4452,11 +4501,24 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			 * barcode);
 			 * 
 			 */
+			persObject.save();
+
+
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 
 			setStateForObject(userSession, persObject, prof, stateId);
 			setUsersForRoles(userSession, persObject, rolesUsers);
 			persObject.fetch("dm_document");
+			
+			String queryIdChanged = "update dm_dbo.T_DOCMAN_S set r_object_id='" + persObject.getId("r_object_id").toString() + "' where r_object_id='"
+					+ r_object_id + "'"; 
+			IDfQuery queryUpdate = new DfQuery(queryIdChanged);
+			IDfCollection coll = queryUpdate.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+			coll.next();
+			int rowUpdated = coll.getInt("rows_updated");
+			Logger.getLogger(this.getClass()).info("Updated " + rowUpdated + " rows in T_DOCMAN_S table.");
+			coll.close();
+			
 			AdminServiceImpl.runStandardActions(persObject, stateId, userSession);
 			// persObject.save();
 			long milis3 = System.currentTimeMillis();
@@ -4474,7 +4536,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			String durationStr = String.format(Locale.ROOT, "%.3fs", (milis4 - milis1) / 1000.0);
 
-			Logger.getLogger(this.getClass()).info("ClassifyDocument ended for " + loginName + ". Completed in " + durationStr + " seconds.");
+			Logger.getLogger(this.getClass()).info("ClassifyDocument for r_object_id: " + r_object_id + " (" + persObject.getId("r_object_id").toString()
+					+ ") object_name: " + persObject.getString("object_name") + " ended for " + loginName + ". Completed in " + durationStr + " seconds.");
 
 		} catch (Throwable ex) {
 			StringWriter errorStringWriter = new StringWriter();

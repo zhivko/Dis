@@ -71,6 +71,7 @@ import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
 import si.telekom.dis.shared.ProfileAttributesAndValues;
 import si.telekom.dis.shared.Tab;
+import si.telekom.dis.shared.Permit.permit;
 
 public class ExplorerPanel extends Composite {
 	private static ExplorerPanel instance;

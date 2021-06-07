@@ -584,7 +584,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// classPath = classPath.replace("classes", "");
 			// String webxml = classPath + "web.xml";
 
-			//Context env = (Context) new InitialContext().lookup("java:comp/env");
+			// Context env = (Context) new InitialContext().lookup("java:comp/env");
 
 			// ServletContext servletContext = WebappContext.getServletContext();
 			AdminServiceImpl.BARCODE_SQL_SERVER_DB_NAME = context.getInitParameter("barcode.database");
@@ -2275,14 +2275,14 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			IDfSysObject dfSysObject = ((IDfSysObject) persObject);
 
 			collection = query.execute(userSess, IDfQuery.DF_READ_QUERY);
-
-			if (collection.getState() == IDfCollection.DF_NO_MORE_ROWS_STATE) {
-				Logger.getLogger("No profile found for persObject.getObjectId().getId() - trying search for barcode.");
-				collection.close();
-				query.setDQL(
-						"select profile_id, object_name, current_state_id from dm_dbo.T_DOCMAN_S where object_name='" + dfSysObject.getObjectName() + "'");
-				collection = query.execute(userSess, IDfQuery.DF_READ_QUERY);
-			}
+//			if (!collection.next()) {
+//				Logger.getLogger("No profile found for persObject.getObjectId().getId() - trying search for barcode.");
+//				collection.close();
+//				query.setDQL(
+//						"select profile_id, object_name, current_state_id from dm_dbo.T_DOCMAN_S where object_name='" + dfSysObject.getObjectName() + "'");
+//				collection = query.execute(userSess, IDfQuery.DF_READ_QUERY);
+//				collection.next();
+//			}
 			if (collection.next()) {
 				String profileId = collection.getString("profile_id");
 
@@ -2530,7 +2530,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 											IDfTime retentionDate = dfSysObject.getTimeContentAttr("retention_date", dfSysObject.getFormat().getName(), 0, null);
 											Logger.getLogger(AdminServiceImpl.class)
 													.info("dfsysobject id: " + dfSysObject.getId("r_object_id").toString() + " format: " + dfSysObject.getFormat().getName()
-															+ "dmr_content id: " + dfSysObject.getContentsId().getId() + " retention_date = "
+															+ " dmr_content id: " + dfSysObject.getContentsId().getId() + " retention_date = "
 															+ outputFormat2.format(retentionDate.getDate()));
 										}
 										dfSysObject.setTime("a_retention_date", new DfTime(d));
@@ -2593,6 +2593,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						dfSysObject.save();
 					}
 				}
+			} else {
+				throw new ServerException("Object with r_object_id: <strong>" + persObject.getObjectId().getId() + "</strong> is not classified.");
 			}
 		} catch (Exception ex) {
 			Logger.getLogger(AdminServiceImpl.class).error(saKind + ": Error executing standard actions: " + ex.getMessage());

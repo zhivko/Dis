@@ -66,6 +66,262 @@ public interface PdfGenerator {
      * @param arg1
      * @param arg0
      * @return
+     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.pdfGenerator.Format>
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "http://templates.mobitel.com/")
+    @RequestWrapper(localName = "getRenditions", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetRenditions")
+    @ResponseWrapper(localName = "getRenditionsResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetRenditionsResponse")
+    public List<Format> getRenditions(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        String arg1,
+        @WebParam(name = "arg2", targetNamespace = "")
+        String arg2,
+        @WebParam(name = "arg3", targetNamespace = "")
+        String arg3,
+        @WebParam(name = "arg4", targetNamespace = "")
+        String arg4)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param docbaseName
+     * @param password
+     * @param documentumFormat
+     * @param rObjectId
+     * @param data
+     * @param domain
+     * @param osName
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @RequestWrapper(localName = "addRendition", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.AddRendition")
+    @ResponseWrapper(localName = "addRenditionResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.AddRenditionResponse")
+    public void addRendition(
+        @WebParam(name = "rObjectId", targetNamespace = "http://templates.mobitel.com/")
+        String rObjectId,
+        @WebParam(name = "osName", targetNamespace = "http://templates.mobitel.com/")
+        String osName,
+        @WebParam(name = "domain", targetNamespace = "http://templates.mobitel.com/")
+        String domain,
+        @WebParam(name = "password", targetNamespace = "http://templates.mobitel.com/")
+        String password,
+        @WebParam(name = "docbaseName", targetNamespace = "http://templates.mobitel.com/")
+        String docbaseName,
+        @WebParam(name = "data", targetNamespace = "http://templates.mobitel.com/")
+        byte[] data,
+        @WebParam(name = "documentumFormat", targetNamespace = "http://templates.mobitel.com/")
+        String documentumFormat)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param password
+     * @param documentumFormat
+     * @param data
+     * @param domain
+     * @param objectName
+     * @param osName
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @RequestWrapper(localName = "checkin", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.Checkin")
+    @ResponseWrapper(localName = "checkinResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.CheckinResponse")
+    public void checkin(
+        @WebParam(name = "object_name", targetNamespace = "http://templates.mobitel.com/")
+        String objectName,
+        @WebParam(name = "osName", targetNamespace = "http://templates.mobitel.com/")
+        String osName,
+        @WebParam(name = "domain", targetNamespace = "http://templates.mobitel.com/")
+        String domain,
+        @WebParam(name = "password", targetNamespace = "http://templates.mobitel.com/")
+        String password,
+        @WebParam(name = "data", targetNamespace = "http://templates.mobitel.com/")
+        byte[] data,
+        @WebParam(name = "documentumFormat", targetNamespace = "http://templates.mobitel.com/")
+        String documentumFormat)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param docbaseName
+     * @param userPassword
+     * @param versionLabel
+     * @param objectName
+     * @param userLoginName
+     * @param userDomain
+     * @return
+     *     returns byte[]
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @WebResult(name = "pdfBase64Encoded", targetNamespace = "")
+    @RequestWrapper(localName = "getTemplateByObjectName", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetTemplateByObjectName")
+    @ResponseWrapper(localName = "getTemplateByObjectNameResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetTemplateByObjectNameResponse")
+    public byte[] getTemplateByObjectName(
+        @WebParam(name = "objectName", targetNamespace = "http://templates.mobitel.com/")
+        String objectName,
+        @WebParam(name = "versionLabel", targetNamespace = "http://templates.mobitel.com/")
+        String versionLabel,
+        @WebParam(name = "docbaseName", targetNamespace = "http://templates.mobitel.com/")
+        String docbaseName,
+        @WebParam(name = "userLoginName", targetNamespace = "http://templates.mobitel.com/")
+        String userLoginName,
+        @WebParam(name = "userDomain", targetNamespace = "http://templates.mobitel.com/")
+        String userDomain,
+        @WebParam(name = "userPassword", targetNamespace = "http://templates.mobitel.com/")
+        String userPassword)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param arg0
+     * @return
+     *     returns byte[]
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getPdf", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdf")
+    @ResponseWrapper(localName = "getPdfResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfResponse")
+    public byte[] getPdf(
+        @WebParam(name = "arg0", targetNamespace = "http://templates.mobitel.com/")
+        Integer arg0)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param arg0
+     * @return
+     *     returns java.util.List<byte[]>
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getPdfMultiple", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultiple")
+    @ResponseWrapper(localName = "getPdfMultipleResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleResponse")
+    public List<byte[]> getPdfMultiple(
+        @WebParam(name = "arg0", targetNamespace = "http://templates.mobitel.com/")
+        Integer arg0)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param arg0
+     * @return
+     *     returns byte[]
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getPdfNew", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfNew")
+    @ResponseWrapper(localName = "getPdfNewResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfNewResponse")
+    public byte[] getPdfNew(
+        @WebParam(name = "arg0", targetNamespace = "http://templates.mobitel.com/")
+        Integer arg0)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param arg0
+     * @return
+     *     returns java.util.List<byte[]>
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getPdfMultipleNew", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleNew")
+    @ResponseWrapper(localName = "getPdfMultipleNewResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleNewResponse")
+    public List<byte[]> getPdfMultipleNew(
+        @WebParam(name = "arg0", targetNamespace = "http://templates.mobitel.com/")
+        Integer arg0)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param id
+     * @param barcodes
+     * @return
+     *     returns java.util.List<byte[]>
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getPdfMultipleNewWithBarcodes", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleNewWithBarcodes")
+    @ResponseWrapper(localName = "getPdfMultipleNewWithBarcodesResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleNewWithBarcodesResponse")
+    public List<byte[]> getPdfMultipleNewWithBarcodes(
+        @WebParam(name = "id", targetNamespace = "http://templates.mobitel.com/")
+        Integer id,
+        @WebParam(name = "barcodes", targetNamespace = "http://templates.mobitel.com/", mode = WebParam.Mode.INOUT)
+        Holder<List<String>> barcodes)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param arg1
+     * @param arg0
+     * @return
+     *     returns byte[]
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getPdfFromOOTemplate", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfFromOOTemplate")
+    @ResponseWrapper(localName = "getPdfFromOOTemplateResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfFromOOTemplateResponse")
+    public byte[] getPdfFromOOTemplate(
+        @WebParam(name = "arg0", targetNamespace = "")
+        byte[] arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        Integer arg1)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param template
+     * @param hashMapWrapper
+     * @param stringByRef
+     * @param id
+     * @return
+     *     returns byte[]
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "http://templates.mobitel.com/")
+    @RequestWrapper(localName = "getOOPdf", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetOOPdf")
+    @ResponseWrapper(localName = "getOOPdfResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetOOPdfResponse")
+    public byte[] getOOPdf(
+        @WebParam(name = "template", targetNamespace = "http://templates.mobitel.com/")
+        Template template,
+        @WebParam(name = "id", targetNamespace = "")
+        Integer id,
+        @WebParam(name = "stringByRef", targetNamespace = "http://templates.mobitel.com/")
+        StringByRef stringByRef,
+        @WebParam(name = "hashMapWrapper", targetNamespace = "http://templates.mobitel.com/")
+        HashMapWrapper hashMapWrapper)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param arg3
+     * @param arg2
+     * @param arg4
+     * @param arg1
+     * @param arg0
+     * @return
      *     returns java.util.List<si.telekom.dis.server.jaxwsClient.pdfGenerator.Template>
      * @throws Exception_Exception
      */
@@ -296,262 +552,6 @@ public interface PdfGenerator {
         String arg3,
         @WebParam(name = "arg4", targetNamespace = "")
         String arg4)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param arg3
-     * @param arg2
-     * @param arg4
-     * @param arg1
-     * @param arg0
-     * @return
-     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.pdfGenerator.Format>
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "http://templates.mobitel.com/")
-    @RequestWrapper(localName = "getRenditions", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetRenditions")
-    @ResponseWrapper(localName = "getRenditionsResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetRenditionsResponse")
-    public List<Format> getRenditions(
-        @WebParam(name = "arg0", targetNamespace = "")
-        String arg0,
-        @WebParam(name = "arg1", targetNamespace = "")
-        String arg1,
-        @WebParam(name = "arg2", targetNamespace = "")
-        String arg2,
-        @WebParam(name = "arg3", targetNamespace = "")
-        String arg3,
-        @WebParam(name = "arg4", targetNamespace = "")
-        String arg4)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param docbaseName
-     * @param password
-     * @param documentumFormat
-     * @param rObjectId
-     * @param data
-     * @param domain
-     * @param osName
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @RequestWrapper(localName = "addRendition", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.AddRendition")
-    @ResponseWrapper(localName = "addRenditionResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.AddRenditionResponse")
-    public void addRendition(
-        @WebParam(name = "rObjectId", targetNamespace = "http://templates.mobitel.com/")
-        String rObjectId,
-        @WebParam(name = "osName", targetNamespace = "http://templates.mobitel.com/")
-        String osName,
-        @WebParam(name = "domain", targetNamespace = "http://templates.mobitel.com/")
-        String domain,
-        @WebParam(name = "password", targetNamespace = "http://templates.mobitel.com/")
-        String password,
-        @WebParam(name = "docbaseName", targetNamespace = "http://templates.mobitel.com/")
-        String docbaseName,
-        @WebParam(name = "data", targetNamespace = "http://templates.mobitel.com/")
-        byte[] data,
-        @WebParam(name = "documentumFormat", targetNamespace = "http://templates.mobitel.com/")
-        String documentumFormat)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param password
-     * @param documentumFormat
-     * @param data
-     * @param domain
-     * @param objectName
-     * @param osName
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @RequestWrapper(localName = "checkin", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.Checkin")
-    @ResponseWrapper(localName = "checkinResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.CheckinResponse")
-    public void checkin(
-        @WebParam(name = "object_name", targetNamespace = "http://templates.mobitel.com/")
-        String objectName,
-        @WebParam(name = "osName", targetNamespace = "http://templates.mobitel.com/")
-        String osName,
-        @WebParam(name = "domain", targetNamespace = "http://templates.mobitel.com/")
-        String domain,
-        @WebParam(name = "password", targetNamespace = "http://templates.mobitel.com/")
-        String password,
-        @WebParam(name = "data", targetNamespace = "http://templates.mobitel.com/")
-        byte[] data,
-        @WebParam(name = "documentumFormat", targetNamespace = "http://templates.mobitel.com/")
-        String documentumFormat)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param arg0
-     * @return
-     *     returns byte[]
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getPdf", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdf")
-    @ResponseWrapper(localName = "getPdfResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfResponse")
-    public byte[] getPdf(
-        @WebParam(name = "arg0", targetNamespace = "http://templates.mobitel.com/")
-        Integer arg0)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param arg0
-     * @return
-     *     returns java.util.List<byte[]>
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getPdfMultiple", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultiple")
-    @ResponseWrapper(localName = "getPdfMultipleResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleResponse")
-    public List<byte[]> getPdfMultiple(
-        @WebParam(name = "arg0", targetNamespace = "http://templates.mobitel.com/")
-        Integer arg0)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param arg0
-     * @return
-     *     returns byte[]
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getPdfNew", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfNew")
-    @ResponseWrapper(localName = "getPdfNewResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfNewResponse")
-    public byte[] getPdfNew(
-        @WebParam(name = "arg0", targetNamespace = "http://templates.mobitel.com/")
-        Integer arg0)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param docbaseName
-     * @param userPassword
-     * @param versionLabel
-     * @param objectName
-     * @param userLoginName
-     * @param userDomain
-     * @return
-     *     returns byte[]
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @WebResult(name = "pdfBase64Encoded", targetNamespace = "")
-    @RequestWrapper(localName = "getTemplateByObjectName", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetTemplateByObjectName")
-    @ResponseWrapper(localName = "getTemplateByObjectNameResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetTemplateByObjectNameResponse")
-    public byte[] getTemplateByObjectName(
-        @WebParam(name = "objectName", targetNamespace = "http://templates.mobitel.com/")
-        String objectName,
-        @WebParam(name = "versionLabel", targetNamespace = "http://templates.mobitel.com/")
-        String versionLabel,
-        @WebParam(name = "docbaseName", targetNamespace = "http://templates.mobitel.com/")
-        String docbaseName,
-        @WebParam(name = "userLoginName", targetNamespace = "http://templates.mobitel.com/")
-        String userLoginName,
-        @WebParam(name = "userDomain", targetNamespace = "http://templates.mobitel.com/")
-        String userDomain,
-        @WebParam(name = "userPassword", targetNamespace = "http://templates.mobitel.com/")
-        String userPassword)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param arg0
-     * @return
-     *     returns java.util.List<byte[]>
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getPdfMultipleNew", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleNew")
-    @ResponseWrapper(localName = "getPdfMultipleNewResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleNewResponse")
-    public List<byte[]> getPdfMultipleNew(
-        @WebParam(name = "arg0", targetNamespace = "http://templates.mobitel.com/")
-        Integer arg0)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param id
-     * @param barcodes
-     * @return
-     *     returns java.util.List<byte[]>
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getPdfMultipleNewWithBarcodes", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleNewWithBarcodes")
-    @ResponseWrapper(localName = "getPdfMultipleNewWithBarcodesResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfMultipleNewWithBarcodesResponse")
-    public List<byte[]> getPdfMultipleNewWithBarcodes(
-        @WebParam(name = "id", targetNamespace = "http://templates.mobitel.com/")
-        Integer id,
-        @WebParam(name = "barcodes", targetNamespace = "http://templates.mobitel.com/", mode = WebParam.Mode.INOUT)
-        Holder<List<String>> barcodes)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param arg1
-     * @param arg0
-     * @return
-     *     returns byte[]
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getPdfFromOOTemplate", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfFromOOTemplate")
-    @ResponseWrapper(localName = "getPdfFromOOTemplateResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetPdfFromOOTemplateResponse")
-    public byte[] getPdfFromOOTemplate(
-        @WebParam(name = "arg0", targetNamespace = "")
-        byte[] arg0,
-        @WebParam(name = "arg1", targetNamespace = "")
-        Integer arg1)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
-     * @param template
-     * @param hashMapWrapper
-     * @param stringByRef
-     * @param id
-     * @return
-     *     returns byte[]
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "http://templates.mobitel.com/")
-    @RequestWrapper(localName = "getOOPdf", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetOOPdf")
-    @ResponseWrapper(localName = "getOOPdfResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GetOOPdfResponse")
-    public byte[] getOOPdf(
-        @WebParam(name = "template", targetNamespace = "http://templates.mobitel.com/")
-        Template template,
-        @WebParam(name = "id", targetNamespace = "")
-        Integer id,
-        @WebParam(name = "stringByRef", targetNamespace = "http://templates.mobitel.com/")
-        StringByRef stringByRef,
-        @WebParam(name = "hashMapWrapper", targetNamespace = "http://templates.mobitel.com/")
-        HashMapWrapper hashMapWrapper)
         throws Exception_Exception
     ;
 
@@ -1292,41 +1292,6 @@ public interface PdfGenerator {
 
     /**
      * 
-     * @param accessorName
-     * @param password
-     * @param docBase
-     * @param basicPermit
-     * @param extPermit
-     * @param domain
-     * @param rObjectIds
-     * @param osName
-     * @throws Exception_Exception
-     */
-    @WebMethod
-    @RequestWrapper(localName = "grant", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.Grant")
-    @ResponseWrapper(localName = "grantResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GrantResponse")
-    public void grant(
-        @WebParam(name = "rObjectIds", targetNamespace = "http://templates.mobitel.com/")
-        List<String> rObjectIds,
-        @WebParam(name = "accessorName", targetNamespace = "http://templates.mobitel.com/")
-        String accessorName,
-        @WebParam(name = "basicPermit", targetNamespace = "http://templates.mobitel.com/")
-        int basicPermit,
-        @WebParam(name = "extPermit", targetNamespace = "http://templates.mobitel.com/")
-        String extPermit,
-        @WebParam(name = "osName", targetNamespace = "http://templates.mobitel.com/")
-        String osName,
-        @WebParam(name = "password", targetNamespace = "http://templates.mobitel.com/")
-        String password,
-        @WebParam(name = "domain", targetNamespace = "http://templates.mobitel.com/")
-        String domain,
-        @WebParam(name = "docBase", targetNamespace = "http://templates.mobitel.com/")
-        String docBase)
-        throws Exception_Exception
-    ;
-
-    /**
-     * 
      * @param arg3
      * @param arg2
      * @param arg5
@@ -1360,6 +1325,41 @@ public interface PdfGenerator {
         String arg6,
         @WebParam(name = "arg7", targetNamespace = "")
         Boolean arg7)
+        throws Exception_Exception
+    ;
+
+    /**
+     * 
+     * @param accessorName
+     * @param password
+     * @param docBase
+     * @param basicPermit
+     * @param extPermit
+     * @param domain
+     * @param rObjectIds
+     * @param osName
+     * @throws Exception_Exception
+     */
+    @WebMethod
+    @RequestWrapper(localName = "grant", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.Grant")
+    @ResponseWrapper(localName = "grantResponse", targetNamespace = "http://templates.mobitel.com/", className = "si.telekom.dis.server.jaxwsClient.pdfGenerator.GrantResponse")
+    public void grant(
+        @WebParam(name = "rObjectIds", targetNamespace = "http://templates.mobitel.com/")
+        List<String> rObjectIds,
+        @WebParam(name = "accessorName", targetNamespace = "http://templates.mobitel.com/")
+        String accessorName,
+        @WebParam(name = "basicPermit", targetNamespace = "http://templates.mobitel.com/")
+        int basicPermit,
+        @WebParam(name = "extPermit", targetNamespace = "http://templates.mobitel.com/")
+        String extPermit,
+        @WebParam(name = "osName", targetNamespace = "http://templates.mobitel.com/")
+        String osName,
+        @WebParam(name = "password", targetNamespace = "http://templates.mobitel.com/")
+        String password,
+        @WebParam(name = "domain", targetNamespace = "http://templates.mobitel.com/")
+        String domain,
+        @WebParam(name = "docBase", targetNamespace = "http://templates.mobitel.com/")
+        String docBase)
         throws Exception_Exception
     ;
 
