@@ -520,6 +520,14 @@ components:
           type: integer
           description: release nuber of docuent
           example: 0
+        state:
+          type: string
+          description: state of document
+          example: effective
+        title:
+          type: string
+          description: title of document
+          example: Predloga za pogodbo o naročniškem razmerju za stranko sppId:234234         
         attributes:
           type: array
           description: A list of attributes to be set on document

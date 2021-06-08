@@ -6,7 +6,9 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.ws.rs.client.Client;
@@ -43,14 +45,22 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import si.telekom.dis.server.rest.Document;
+import si.telekom.dis.server.rest.QueryDocumentsResponse;
 
 public class RestTest extends JerseyTest {
 	HttpServer server = null;
 
 	URI baseUri = URI.create("http://localhost:9998/");
 
+	private boolean started = false;
+
+	static InitialContext ctx = null;
+
 	@Before
 	public void setUp() throws Exception {
+		if (ctx == null) {
+			ctx = new InitialContext();
+			System.setProperty("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
 	// @formatter:off			
 		String value1 = 
@@ -66,56 +76,55 @@ public class RestTest extends JerseyTest {
 										"org.glassfish.jersey.filter.LoggingFilter";
 //@formatter:on
 
-		HashMap<String, String> initParams = new HashMap<>();
+			HashMap<String, String> initParams = new HashMap<>();
 
-		// ServerProperties.PROVIDER_PACKAGES is equal to
-		// "jersey.config.server.provider.packages"
-		initParams.put(ServerProperties.PROVIDER_PACKAGES, value1);
-		initParams.put(ServerProperties.PROVIDER_CLASSNAMES, value2);
-		initParams.put("DocumentsApi.implementation", "si.telekom.dis.server.rest.DisRest");
+			// ServerProperties.PROVIDER_PACKAGES is equal to
+			// "jersey.config.server.provider.packages"
+			initParams.put(ServerProperties.PROVIDER_PACKAGES, value1);
+			initParams.put(ServerProperties.PROVIDER_CLASSNAMES, value2);
+			initParams.put("DocumentsApi.implementation", "si.telekom.dis.server.rest.DisRest");
 
-		HashMap<String, String> contextInitParams = new HashMap<>();
+			HashMap<String, String> contextInitParams = new HashMap<>();
 
-		// Make sure to end the URI with a forward slash
-		// server = GrizzlyWebContainerFactory.create(baseUri, initParams);
+			// Make sure to end the URI with a forward slash
+			// server = GrizzlyWebContainerFactory.create(baseUri, initParams);
 
-		String path = baseUri.getPath();
-		path = String.format("/%s", UriComponent.decodePath(baseUri.getPath(), true).get(1).toString());
+			String path = baseUri.getPath();
+			path = String.format("/%s", UriComponent.decodePath(baseUri.getPath(), true).get(1).toString());
 
-		InitialContext ctx = new InitialContext();
-		System.setProperty("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
-		server = GrizzlyWebContainerFactory.create(baseUri, initParams);
-		server.getServerConfiguration().addHttpHandler(new StaticHttpHandler(new File(".").getAbsolutePath() + "/web"));
+			server = GrizzlyWebContainerFactory.create(baseUri, initParams);
+			server.getServerConfiguration().addHttpHandler(new StaticHttpHandler(new File(".").getAbsolutePath() + "/web"));
 
-		org.glassfish.grizzly.servlet.WebappContext webappContext = new org.glassfish.grizzly.servlet.WebappContext("Test Context");
+			org.glassfish.grizzly.servlet.WebappContext webappContext = new org.glassfish.grizzly.servlet.WebappContext("Test Context");
 
-		File f = new File("./target/Dis-server-1.0-SNAPSHOT/WEB-INF/web.xml");
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
-		org.w3c.dom.Document doc = builder.parse(f);
-		XPathFactory xPathfactory = XPathFactory.newInstance();
-		XPath xpath = xPathfactory.newXPath();
-		XPathExpression expr = xpath.compile("/web-app/context-param");
+			File f = new File("./target/Dis-server-1.0-SNAPSHOT/WEB-INF/web.xml");
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
+			org.w3c.dom.Document doc = builder.parse(f);
+			XPathFactory xPathfactory = XPathFactory.newInstance();
+			XPath xpath = xPathfactory.newXPath();
+			XPathExpression expr = xpath.compile("/web-app/context-param");
 
-		NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-		for (int i = 0; i < nl.getLength(); i++) {
-			Node n = nl.item(i);
-			Element el = (Element) n;
-			String paramName = el.getElementsByTagName("param-name").item(0).getTextContent();
-			String paramValue = el.getElementsByTagName("param-value").item(0).getTextContent();
-			webappContext.setInitParameter(paramName, paramValue);
+			NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+			for (int i = 0; i < nl.getLength(); i++) {
+				Node n = nl.item(i);
+				Element el = (Element) n;
+				String paramName = el.getElementsByTagName("param-name").item(0).getTextContent();
+				String paramValue = el.getElementsByTagName("param-value").item(0).getTextContent();
+				webappContext.setInitParameter(paramName, paramValue);
+			}
+
+			webappContext.addListener(si.telekom.dis.server.WebAppListener.class);
+
+			webappContext.deploy(server);
+
+			System.out.println("documentum superuser domain: " + AdminServiceImpl.getInstance().superUserDomain);
+			System.out.println("documentum superuser user: " + AdminServiceImpl.getInstance().superUserName);
+			System.out.println("documentum superuser password: " + AdminServiceImpl.getInstance().superUserPassword);
+
+			while (!AdminServiceImpl.started)
+				Thread.currentThread().sleep(500);
 		}
-
-		webappContext.addListener(si.telekom.dis.server.WebAppListener.class);
-
-		webappContext.deploy(server);
-
-		System.out.println("documentum superuser domain: " + AdminServiceImpl.getInstance().superUserDomain);
-		System.out.println("documentum superuser user: " + AdminServiceImpl.getInstance().superUserName);
-		System.out.println("documentum superuser password: " + AdminServiceImpl.getInstance().superUserPassword);
-
-		while (!AdminServiceImpl.started)
-			Thread.currentThread().sleep(500);
 	}
 
 	@Override
@@ -140,7 +149,7 @@ public class RestTest extends JerseyTest {
 		}
 	}
 
-	// @Test
+	@Test
 	public void testDocumentsQuery() {
 		// http://localhost:8080/Dis-server/api/documents/query?dql=select * from
 		// dm_cabinet
@@ -162,7 +171,11 @@ public class RestTest extends JerseyTest {
 	}
 
 	@Test
-	public void testDocumentsCreate() {
+	public void testDocumentsCreate() throws InterruptedException {
+
+		while (!AdminServiceImpl.started)
+			Thread.currentThread().sleep(500);
+
 		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
 		// HttpAuthenticationFeature feature =
 		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
@@ -196,7 +209,7 @@ public class RestTest extends JerseyTest {
 			  "  { \"roleId\": \"coordinator\", \"values\": [ \"kovacevicr\", \"zivkovick\"] }," +
 			  "  { \"roleId\": \"user\", \"values\": [ \"dm_world\" ] }" +
 			  "]," +
-			  "\"templateObjectRObjectId\":\"090001c8803f18e9\"" +
+			  "\"templateObjectRObjectId\":\"09062016111100009\"" +
 				"}";
 		System.out.println(jsonNewDocument);
 		
@@ -240,7 +253,11 @@ public class RestTest extends JerseyTest {
 	}
 
 	@Test
-	public void testDocumentsImport() {
+	public void testDocumentsImport() throws InterruptedException {
+
+		while (!AdminServiceImpl.started)
+			Thread.currentThread().sleep(500);
+
 		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
 		// HttpAuthenticationFeature feature =
 		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
@@ -335,9 +352,12 @@ public class RestTest extends JerseyTest {
 
 	}
 
-	
 	@Test
-	public void testDocumentsDemote() {
+	public void testDocumentDemotePromote() throws InterruptedException {
+
+		while (!AdminServiceImpl.started)
+			Thread.currentThread().sleep(500);
+
 		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
 		// HttpAuthenticationFeature feature =
 		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
@@ -356,16 +376,16 @@ public class RestTest extends JerseyTest {
 		Response response;
 		
 		String jsonLoad = 				"{  " +
-			  "\"profileId\": \"mob_subscriber_document\"," +
+			  "\"profileId\": \"epredloga\"," +
 			  "\"folderId\": \"/temp\"," +
 			  "\"stateId\": \"effective\"," +
 			  "\"attributes\": " +
 			  "[" +
-			  "  { \"name\": \"mob_classification_id\", \"values\": [ \"398\" ] }," +
-			  "  { \"name\": \"title\", \"values\": [ \"testni dokument\" ] }," +
-			  "  { \"name\": \"mob_type_id\", \"values\": [ \"142\" ] }," +
-			  "  { \"name\": \"mob_type\", \"values\": [ \"Pogodba\" ] }," +
-			  "  { \"name\": \"mob_issue_date\", \"values\": [ \"01.01.2021 10:00:00\" ] }" +
+			  "  { \"name\": \"mob_classification_id\", \"values\": [ \"394\" ] }," +
+			  "  { \"name\": \"title\", \"values\": [ \"testna predloga\" ] }," +
+			  "  { \"name\": \"mob_short_name\", \"values\": [ \"Kratek naziv test predloga\" ] }," +
+			  "  { \"name\": \"mob_template_id\", \"values\": [ \"444555444\" ] }," +
+			  "  { \"name\": \"mob_template_number\", \"values\": [ \"444455444\" ] }" +
 			  "]," +
 			  "\"rolesUsers\":" +
 			  "[" +
@@ -388,13 +408,13 @@ public class RestTest extends JerseyTest {
 				.header("X-Transaction-Id", X_Transaction_Id).
 				post(jsonImport);
 //@formatter:on			
+		
 		String json = response.readEntity(String.class);
-
 		ObjectMapper objectMapper = new ObjectMapper();
-		Document doc;
+		
 		try {
-			doc = objectMapper.readValue(json.getBytes(), Document.class);
-
+			Document doc = objectMapper.readValue(json.getBytes(), Document.class);
+			
 			assertEquals("Import document should return status 200", 200, response.getStatus());
 			assertNotNull("Should return document", doc);
 			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
@@ -408,15 +428,32 @@ public class RestTest extends JerseyTest {
 			String originalContent = AdminServiceImpl.base64Decode(documentContent);
 			assertNotNull("Content should contain something", response.getEntity().toString());
 			assertEquals("Content should be equal", originalContent, content);
-			
-			
-			
+
 			// *************** test demote document ******************
+			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/demote").request(MediaType.APPLICATION_JSON)
+					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
+
+			// *************** test that document is in draft state ******************
+
+			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
+			json = response.readEntity(String.class);
+			objectMapper = new ObjectMapper();
+			QueryDocumentsResponse queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
+			doc = queryDocsResp.getDocuments().get(0);
+
+			assertEquals("State should be draft", "draft", doc.getState());
 			
-			response = client.target(baseUri.toString() + "/documents/demoteDocument")
-					.request(MediaType.APPLICATION_JSON)
-					.header("X-Transaction-Id", X_Transaction_Id).
-					post(jsonImport);			
+			// *************** test promote document ******************
+			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/promote").request(MediaType.APPLICATION_JSON)
+					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
+
+			// *************** test that document is in effective state ******************
+			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
+			json = response.readEntity(String.class);
+			objectMapper = new ObjectMapper();
+			queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
+			doc = queryDocsResp.getDocuments().get(0);
+			assertEquals("State should be effective", "effective", doc.getState());
 
 			// *************** test destroy document ******************
 //@formatter:off
@@ -428,18 +465,10 @@ public class RestTest extends JerseyTest {
 
 			assertEquals("Should return status 200", 200, response.getStatus());
 
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	
 }

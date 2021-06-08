@@ -80,7 +80,7 @@ public class DisRest extends DocumentsApiService {
 			Logger.getLogger(this.getClass()).info("getDocuments for " + loginName + " for: " + dql);
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
-			if (!dql.toLowerCase().contains("ENABLE(RETURN_RANGE"))
+			if (!dql.toUpperCase().contains("ENABLE(RETURN_RANGE"))
 				dql = dql + " ENABLE(RETURN_RANGE 1 10 'r_object_id')";
 
 			IDfQuery query = new DfQuery();
@@ -89,16 +89,20 @@ public class DisRest extends DocumentsApiService {
 			WsServer.log(loginName, "Started dql query...");
 			long milis1 = System.currentTimeMillis();
 			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
+			long milis2 = System.currentTimeMillis();
+			Logger.getLogger(this.getClass()).info("\tDql query completed in " + (milis2 - milis1) + "ms");
 
 			while (collection.next()) {
 				String r_object_id = collection.getString("r_object_id");
-				IDfPersistentObject persObj = userSession.getObjectByQualification("dm_sysobject where r_object_id='" + r_object_id + "'");
+				IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 				if (persObj != null) {
 					si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().docFromSysObject((IDfSysObject) persObj, loginName, userSession);
 					Document doc1 = new Document();
 					doc1.setrObjectId(doc.r_object_id);
 					doc1.setObjectName(doc.object_name);
 					doc1.setReleaseNumber(doc.releaseNo);
+					doc1.setState(doc.state_id);
+					doc1.setTitle(doc1.getTitle());
 
 					ArrayList<Attribute> alAtts = new ArrayList<Attribute>();
 					for (int i = 0; i < persObj.getAttrCount(); i++) {
@@ -361,10 +365,10 @@ public class DisRest extends DocumentsApiService {
 
 			i++;
 		}
-		
-		if(tmpRoleUsers!=null)
+
+		if (tmpRoleUsers != null)
 			rolesUsers.add(tmpRoleUsers);
-		
+
 		doc1.setRolesUsers(rolesUsers);
 
 		return doc1;
@@ -522,9 +526,8 @@ public class DisRest extends DocumentsApiService {
 			long milis1 = System.currentTimeMillis();
 			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
 			long milis2 = System.currentTimeMillis();
-			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql + " ... done in " + (milis2-milis1) + " ms.");
+			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql + " ... done in " + (milis2 - milis1) + " ms.");
 
-			
 			ArrayList<Format> al = new ArrayList<Format>();
 			while (collection.next()) {
 				Format fmt = new Format();

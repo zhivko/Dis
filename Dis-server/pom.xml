@@ -522,13 +522,17 @@
 						</goals>
 						<configuration>
 							<argLine>-Djava.security.egd=file:/dev/./urandom</argLine>
-							<parallel>all</parallel>
+							
+							<parallel>3</parallel>
 							<threadCount>10</threadCount>
 							<useUnlimitedThreads>true</useUnlimitedThreads>
 							<perCoreThreadCount>true</perCoreThreadCount>
-							<threadCountSuites>2</threadCountSuites>
-							<threadCountClasses>2</threadCountClasses>
+							<threadCountSuites>1</threadCountSuites>
+							<threadCountClasses>3</threadCountClasses>
 							<threadCountMethods>6</threadCountMethods>
+
+<!-- 							<forkCount>3</forkCount> -->
+<!-- 							<reuseForks>true</reuseForks> -->
 
 						</configuration>
 					</execution>

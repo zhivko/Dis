@@ -2520,7 +2520,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						+ ". Possibly unclassified object.");
 
 			String stateId = (String) profileAndRolesOfUserAndState[3];
-			Logger.getLogger(this.getClass()).info("Promote state: " + stateId);
+			Logger.getLogger(this.getClass()).info("Promote from state: " + stateId);
 
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 			String nextStateId = AdminServiceImpl.getNextStateId(prof, stateInd);
@@ -2826,7 +2826,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Object[] profileAndRolesOfUserAndState = getProfileAndUserRolesAndState(persObj, loginName, userSession);
 			Profile prof = (Profile) profileAndRolesOfUserAndState[1];
 			String stateId = (String) profileAndRolesOfUserAndState[3];
-			Logger.getLogger(this.getClass()).info("Demote state: " + stateId);
+			Logger.getLogger(this.getClass()).info("Demote from state: " + stateId);
 
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 			String prevStateId = AdminServiceImpl.getPrevStateId(prof, stateInd);
@@ -3274,6 +3274,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			AdminServiceImpl.beginTransaction(userSession);
 
 			Profile prof = AdminServiceImpl.profiles.get(profileId);
+			if(prof==null)
+				throw new ServerException("No such profile: " + profileId);
 
 			IDfPersistentObject persObject = userSession.newObject(prof.objType);
 
@@ -3485,7 +3487,18 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				dqlOfObjects = "select r_object_id from dm_document(all) where r_object_id='" + rObjectIdOfObjectOrFolder + "'";
 				IDfPersistentObject obj = userSession.getObjectByQualification("dm_document(all) where r_object_id='" + rObjectIdOfObjectOrFolder + "'");
 				if (obj == null)
-					throw new Exception("No such template (r_object_id='" + rObjectIdOfObjectOrFolder + "')");
+				{
+					
+					Logger.getLogger(getClass()).warn("Try to find object with object_name: " + rObjectIdOfObjectOrFolder);
+					dqlOfObjects = "select r_object_id from dm_document where object_name='" + rObjectIdOfObjectOrFolder + "'";
+					IDfPersistentObject obj1 = userSession.getObjectByQualification("dm_document where object_name='" + rObjectIdOfObjectOrFolder + "'");
+					if (obj1 == null)
+					{
+						throw new Exception("No such template (r_object_id='" + rObjectIdOfObjectOrFolder + "') or (object_name='" + rObjectIdOfObjectOrFolder + "')");	
+					}
+					rObjectIdOfObjectOrFolder = obj1.getId("r_object_id").toString();
+					
+				}
 			} else {
 				dqlOfObjects = "select r_object_id from dm_document where folder('" + rObjectIdOfObjectOrFolder + "')";
 			}

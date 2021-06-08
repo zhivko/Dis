@@ -71,7 +71,6 @@ public final class WebAppListener implements ServletContextAttributeListener, Se
 		
 		AdminServiceImpl.readStartupParamFromServletContext(context);
 		
-		
 		try {
 			WebappContext.init(event.getServletContext());
 			SLF4JBridgeHandler.install();
