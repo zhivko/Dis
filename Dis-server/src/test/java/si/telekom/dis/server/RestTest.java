@@ -434,12 +434,15 @@ public class RestTest extends JerseyTest {
 					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
 
 			// *************** test that document is in draft state ******************
-
-			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
 			json = response.readEntity(String.class);
 			objectMapper = new ObjectMapper();
-			QueryDocumentsResponse queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
-			doc = queryDocsResp.getDocuments().get(0);
+			doc = objectMapper.readValue(json.getBytes(), Document.class);
+
+//			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
+//			json = response.readEntity(String.class);
+//			objectMapper = new ObjectMapper();
+//			QueryDocumentsResponse queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
+//			doc = queryDocsResp.getDocuments().get(0);
 
 			assertEquals("State should be draft", "draft", doc.getState());
 			
@@ -448,11 +451,16 @@ public class RestTest extends JerseyTest {
 					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
 
 			// *************** test that document is in effective state ******************
-			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
+//			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
+//			json = response.readEntity(String.class);
+//			objectMapper = new ObjectMapper();
+//			queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
+//			doc = queryDocsResp.getDocuments().get(0);
+
 			json = response.readEntity(String.class);
 			objectMapper = new ObjectMapper();
-			queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
-			doc = queryDocsResp.getDocuments().get(0);
+			doc = objectMapper.readValue(json.getBytes(), Document.class);
+
 			assertEquals("State should be effective", "effective", doc.getState());
 
 			// *************** test destroy document ******************

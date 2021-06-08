@@ -73,7 +73,8 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 	VerticalPanel vpNewRecord;
 
 	Button btnOK;
-	Button btnInsertFromCSV;
+	Button btnInsertFromTSV;
+	Button buttonDelete;
 
 	HashMap<String, String> regTableFieldsDefinition = new HashMap<String, String>();
 
@@ -166,16 +167,16 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 			}
 		});
 
-		btnInsertFromCSV = new Button();
-		btnInsertFromCSV.setText("Insert from CSV");
-		btnInsertFromCSV.addClickHandler(new ClickHandler() {
+		btnInsertFromTSV = new Button();
+		btnInsertFromTSV.setText("Insert from CSV");
+		btnInsertFromTSV.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				PopupPanel pop = new PopupPanel(true, true);
 				pop.setTitle("Insert CSV to table");
 				VerticalPanel vpCsvInsert = new VerticalPanel();
 
-				MyTextArea mta = new MyTextArea("insert comma separated lines with calues in apostrophe, like \"val1\", \"val2\", \"val3\"");
+				MyTextArea mta = new MyTextArea("insert TAB separated lines with calues in apostrophe, like \"val1\"\t\"val2\"\t\"val3\"...");
 				
 				String columns = "\"id\"," + "\"classification_plan_id\"," + "\"code\"," + "\"name\"," + "\"short_name\"," + "\"retention_type_id\","
 						+ "\"retention_start_id\"," + "\"version\"," + "\"acl_name\"";
@@ -184,7 +185,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 				mta.getTextBox().setHeight("300px");
 				mta.getTextBox().setWidth("800px");
 
-				Label lb = new Label("Use this action to load comma separated values to regitered table.");
+				Label lb = new Label("Use this action to load TAB separated values to registered table.");
 				vpCsvInsert.add(lb);
 				vpCsvInsert.add(mta);
 				Button okButton = new Button("OK");
@@ -193,7 +194,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 					@Override
 					public void onClick(ClickEvent event) {
 						try {
-							adminService.insertCSVToRegTable(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, regTableId, mta.getValue(),
+							adminService.insertTSVToRegTable(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, regTableId, mta.getValue(),
 									new AsyncCallback<Void>() {
 										@Override
 										public void onFailure(Throwable caught) {
@@ -213,7 +214,16 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 				});
 
 				vpCsvInsert.add(okButton);
+				Button closeButton = new Button("Close");
+				closeButton.addClickHandler(new ClickHandler() {
+					
+					@Override
+					public void onClick(ClickEvent event) {
+						pop.hide(true);
+					}
+				});
 				pop.add(vpCsvInsert);
+				pop.add(closeButton);
 				pop.show();
 				
 				pop.center();
@@ -282,7 +292,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 			}
 		});
 
-		Button buttonDelete = new Button("Delete");
+		buttonDelete = new Button("Delete");
 		buttonDelete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -521,7 +531,7 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 												}
 												HorizontalPanel buttons = new HorizontalPanel();
 												buttons.add(btnOK);
-												buttons.add(btnInsertFromCSV);
+												buttons.add(btnInsertFromTSV);
 												vpNewRecord.add(buttons);
 
 												// int i = 0;

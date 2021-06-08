@@ -41,7 +41,7 @@ public interface AdminService extends RemoteService {
 
 	void updateRegTableRow(String loginName, String loginPass, String regTableId, String value, int columnIndex, String pkValue) throws ServerException;
 	
-	void insertCSVToRegTable(String loginName, String loginPass, String regTableId, String csvValues) throws ServerException;
+	void insertTSVToRegTable(String loginName, String loginPass, String regTableId, String csvValues) throws ServerException;
 
 	List<MyParametrizedQuery> getSearchQueries(String loginName, String dctmUserName, String loginPass) throws ServerException;
 

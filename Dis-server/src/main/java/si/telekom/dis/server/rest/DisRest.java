@@ -332,6 +332,8 @@ public class DisRest extends DocumentsApiService {
 		doc1.setrObjectId(doc.r_object_id);
 		doc1.setObjectName(doc.object_name);
 		doc1.setReleaseNumber(doc.releaseNo);
+		doc1.setTitle(doc.title);
+		doc1.setState(doc.state_id);
 
 		ArrayList<Attribute> listAttributes = new ArrayList<Attribute>();
 		for (String attName : doc.attributes.keySet()) {

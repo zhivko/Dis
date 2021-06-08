@@ -1,6 +1,3 @@
-mvn package -P test -Dgwt.skipCompilation=true
-if [[ "$?" -ne 0 ]] ; then
-
 	# lsof -ti tcp:9876 | xargs kill
 
 	ssh -i ~/.ssh/id_rsa zivkovick@erender-test.ts.telekom.si 'chmod a+w /app/render/DocMan/*'
@@ -55,4 +52,3 @@ if [[ "$?" -ne 0 ]] ; then
 	scp -i ~/.ssh/id_rsa ./Dis-server/target/Dis-server-1.0-SNAPSHOT.war zivkovick@erender-test.ts.telekom.si:/app/render/apache-tomcat-8.5.45/webapps/Dis-dev.war
 
 	mvn package -P prod -DskipTests -Dgwt.skipCompilation=true
-fi

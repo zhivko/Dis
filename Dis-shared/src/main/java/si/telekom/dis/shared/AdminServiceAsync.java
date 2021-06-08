@@ -73,6 +73,6 @@ public interface AdminServiceAsync {
 	
 	void runDql(String loginName, String loginPassword, String dql, AsyncCallback<Void> callback) throws ServerException;
 	
-	void insertCSVToRegTable(String loginName, String loginPass, String regTableId, String csvValues, AsyncCallback<Void> callback) throws ServerException;
+	void insertTSVToRegTable(String loginName, String loginPass, String regTableId, String csvValues, AsyncCallback<Void> callback) throws ServerException;
 
 }

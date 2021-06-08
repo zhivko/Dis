@@ -56,8 +56,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -2275,14 +2273,17 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			IDfSysObject dfSysObject = ((IDfSysObject) persObject);
 
 			collection = query.execute(userSess, IDfQuery.DF_READ_QUERY);
-//			if (!collection.next()) {
-//				Logger.getLogger("No profile found for persObject.getObjectId().getId() - trying search for barcode.");
-//				collection.close();
-//				query.setDQL(
-//						"select profile_id, object_name, current_state_id from dm_dbo.T_DOCMAN_S where object_name='" + dfSysObject.getObjectName() + "'");
-//				collection = query.execute(userSess, IDfQuery.DF_READ_QUERY);
-//				collection.next();
-//			}
+			// if (!collection.next()) {
+			// Logger.getLogger("No profile found for persObject.getObjectId().getId()
+			// - trying search for barcode.");
+			// collection.close();
+			// query.setDQL(
+			// "select profile_id, object_name, current_state_id from
+			// dm_dbo.T_DOCMAN_S where object_name='" + dfSysObject.getObjectName() +
+			// "'");
+			// collection = query.execute(userSess, IDfQuery.DF_READ_QUERY);
+			// collection.next();
+			// }
 			if (collection.next()) {
 				String profileId = collection.getString("profile_id");
 
@@ -4378,11 +4379,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public void insertCSVToRegTable(String loginName, String loginPass, String regTableId, String csvValues) throws ServerException {
+	public void insertTSVToRegTable(String loginName, String loginPass, String regTableId, String csvValues) throws ServerException {
 		IDfSession sess = null;
 		try {
 
 			ArrayList<String> fields = (ArrayList<String>) getRegTableFields(regTableId)[0];
+			String fields_str_def = (String) getRegTableFields(regTableId)[1];
+			String[] fieldTypes = fields_str_def.split(",");
 
 			sess = getSession(loginName, loginPass);
 
@@ -4391,17 +4394,96 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			String[] csvLines = csvValues.split("\n");
 
 			IDfQuery qry = new DfQuery();
-
+			int j = 0;
+			int recordsImported = 0;
 			for (String line : csvLines) {
+				// assume first column contains primary key value ...
+				String[] values = line.split("\t", -1);
+				if (values.length != fields.size())
+					throw new ServerException("Different column count in line: " + j + " - in table: " + fields.size() + " in csv values: " + values.length);
 
-				String dql = " insert into dm_dbo." + regTableId + " (" + fields + ") values(" + line + ")";
+				String existsDql = "select * from dm_dbo." + regTableId + " where " + fields.get(0) + "=" + values[0];
+				qry.setDQL(existsDql);
+				IDfCollection coll = qry.execute(sess, IDfQuery.DF_READ_QUERY);
+				if (coll.next()) {
+					// record exists
+					String setUpdatePart = "";
+					int i = 0;
+					for (String field : fields) {
+						if (i > 0 && !values[i].equals("")) {
+							if (fieldTypes[i].contains("INT"))
+								setUpdatePart = setUpdatePart + " " + field + "=" + values[i] + ",";
+							else if (fieldTypes[i].contains("STRING"))
+								setUpdatePart = setUpdatePart + " " + field + "='" + values[i] + "',";
+							else if (fieldTypes[i].contains("TIME"))
+								setUpdatePart = setUpdatePart + " " + field + "='" + values[i] + "',";
+							else
+								throw new ServerException("Unknown field");
+						}
+						i++;
+					}
+					setUpdatePart = setUpdatePart.substring(0, setUpdatePart.length() - 1);
 
-				qry.setDQL(dql);
-				qry.execute(sess, IDfQuery.EXEC_QUERY);
+					String dql = "update dm_dbo." + regTableId + " set " + setUpdatePart + " where " + fields.get(0) + "=" + values[0];
+					qry.setDQL(dql);
+					IDfCollection coll2 = qry.execute(sess, IDfQuery.EXEC_QUERY);
+					coll2.close();
+					recordsImported++;
+				} else {
+					// record does not exist
+					String fils = "";
+					String vals = "";
+					int i = 0;
+					for (String field : fields) {
+						fils = fils + field + ", ";
+						if (fieldTypes[i].contains("INT"))
+							vals = vals + values[i] + ", ";
+						else if (fieldTypes[i].contains("STRING"))
+							vals = vals + "'" + values[i] + "', ";
+						else if (fieldTypes[i].contains("TIME"))
+							vals = vals + "'" + values[i] + "', ";
+						else
+							throw new ServerException("Unknown field: " + fieldTypes[i]);
+						i++;
+					}
+					fils = fils.substring(0, fils.length() - 2);
+					vals = vals.substring(0, vals.length() - 2);
+
+					String dql = "insert into dm_dbo." + regTableId + " (" + fils + ") values(" + vals + ")";
+					qry.setDQL(dql);
+					IDfCollection coll2 = qry.execute(sess, IDfQuery.EXEC_QUERY);
+					coll2.close();
+					recordsImported++;
+				}
+				coll.close();
+
+				if(recordsImported % 10 ==0)
+					WsServer.log(loginName, "Imported: " + recordsImported + " records.");
+				
+				j++;
 			}
 
+			String msg = "Imported: " + recordsImported + " records.";
+			WsServer.log(loginName, msg);
+			Logger.getLogger(this.getClass()).info(msg);
+			
+			msg = "Comiting records to docbase...";
+			WsServer.log(loginName, msg);
+			Logger.getLogger(this.getClass()).info(msg);
 			sess.commitTrans();
+			msg = "Comiting records to docbase...done.";
+			WsServer.log(loginName, msg);
+			Logger.getLogger(this.getClass()).info(msg);
+			
 		} catch (Exception ex) {
+			try {
+				Logger.getLogger(this.getClass()).info("Aborting transaction...");
+				sess.abortTrans();
+				Logger.getLogger(this.getClass()).info("Aborting transaction...done.");
+			} catch (DfException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			Logger.getLogger(this.getClass()).error(ex.getMessage());
 			WsServer.log(loginName, ex.getMessage());
 		} finally {
