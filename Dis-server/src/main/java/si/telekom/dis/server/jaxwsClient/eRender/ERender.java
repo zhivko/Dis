@@ -28,59 +28,6 @@ public interface ERender {
 
     /**
      * 
-     * @param winwordContent
-     * @return
-     *     returns byte[]
-     */
-    @WebMethod
-    @WebResult(name = "pdfContent", targetNamespace = "")
-    @RequestWrapper(localName = "winwordToPdf", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.WinwordToPdf")
-    @ResponseWrapper(localName = "winwordToPdfResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.WinwordToPdfResponse")
-    public byte[] winwordToPdf(
-        @WebParam(name = "winwordContent", targetNamespace = "http://erender.telekom.si/")
-        byte[] winwordContent);
-
-    /**
-     * 
-     * @param pdfContent
-     * @param barcodes
-     */
-    @WebMethod
-    @RequestWrapper(localName = "mergeContent", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.MergeContent")
-    @ResponseWrapper(localName = "mergeContentResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.MergeContentResponse")
-    public void mergeContent(
-        @WebParam(name = "barcodes", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.INOUT)
-        Holder<List<String>> barcodes,
-        @WebParam(name = "pdfContent", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.OUT)
-        Holder<byte[]> pdfContent);
-
-    /**
-     * 
-     * @return
-     *     returns java.lang.String
-     */
-    @WebMethod
-    @WebResult(name = "jobId", targetNamespace = "http://erender.telekom.si/")
-    @RequestWrapper(localName = "getJobId", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetJobId")
-    @ResponseWrapper(localName = "getJobIdResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetJobIdResponse")
-    public String getJobId();
-
-    /**
-     * 
-     * @param arg0
-     * @return
-     *     returns java.lang.String
-     */
-    @WebMethod
-    @WebResult(name = "jobId", targetNamespace = "http://erender.telekom.si/")
-    @RequestWrapper(localName = "getTemplateExtension", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateExtension")
-    @ResponseWrapper(localName = "getTemplateExtensionResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateExtensionResponse")
-    public String getTemplateExtension(
-        @WebParam(name = "arg0", targetNamespace = "")
-        String arg0);
-
-    /**
-     * 
      * @param sCompanyPar
      * @param iTypePar
      * @param nQuantityPar
@@ -127,6 +74,45 @@ public interface ERender {
 
     /**
      * 
+     * @param winwordContent
+     * @return
+     *     returns byte[]
+     */
+    @WebMethod
+    @WebResult(name = "pdfContent", targetNamespace = "")
+    @RequestWrapper(localName = "winwordToPdf", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.WinwordToPdf")
+    @ResponseWrapper(localName = "winwordToPdfResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.WinwordToPdfResponse")
+    public byte[] winwordToPdf(
+        @WebParam(name = "winwordContent", targetNamespace = "http://erender.telekom.si/")
+        byte[] winwordContent);
+
+    /**
+     * 
+     * @param pdfContent
+     * @param barcodes
+     */
+    @WebMethod
+    @RequestWrapper(localName = "mergeContent", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.MergeContent")
+    @ResponseWrapper(localName = "mergeContentResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.MergeContentResponse")
+    public void mergeContent(
+        @WebParam(name = "barcodes", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.INOUT)
+        Holder<List<String>> barcodes,
+        @WebParam(name = "pdfContent", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.OUT)
+        Holder<byte[]> pdfContent);
+
+    /**
+     * 
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod
+    @WebResult(name = "jobId", targetNamespace = "http://erender.telekom.si/")
+    @RequestWrapper(localName = "getJobId", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetJobId")
+    @ResponseWrapper(localName = "getJobIdResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetJobIdResponse")
+    public String getJobId();
+
+    /**
+     * 
      * @param pdfContent
      * @param watermark
      * @param fontSize
@@ -147,6 +133,20 @@ public interface ERender {
         int fontSize,
         @WebParam(name = "opacity", targetNamespace = "http://erender.telekom.si/")
         float opacity);
+
+    /**
+     * 
+     * @param arg0
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod
+    @WebResult(name = "jobId", targetNamespace = "http://erender.telekom.si/")
+    @RequestWrapper(localName = "getTemplateExtension", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateExtension")
+    @ResponseWrapper(localName = "getTemplateExtensionResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateExtensionResponse")
+    public String getTemplateExtension(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0);
 
     /**
      * 

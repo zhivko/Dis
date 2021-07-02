@@ -29,14 +29,14 @@ public class ObjectFactory {
     private final static QName _Inetids_QNAME = new QName("http://erender.telekom.com", "inetids");
     private final static QName _Password_QNAME = new QName("http://templates.mobitel.com", "password");
     private final static QName _OsName_QNAME = new QName("http://templates.mobitel.com", "osName");
-    private final static QName _GetPdfResponseReturn_QNAME = new QName("", "return");
-    private final static QName _CheckinMinorAndSetVersionData_QNAME = new QName("http://templates.mobitel.com/", "data");
-    private final static QName _GetOOPdfResponseReturn_QNAME = new QName("http://templates.mobitel.com/", "return");
+    private final static QName _CheckinMinorData_QNAME = new QName("http://templates.mobitel.com/", "data");
+    private final static QName _ConcatTwoPdfsResponseReturn_QNAME = new QName("", "return");
     private final static QName _GetOpenOfficePdfResponseResult_QNAME = new QName("http://templates.mobitel.com/", "result");
     private final static QName _GetPdfFromOOTemplateArg0_QNAME = new QName("", "arg0");
-    private final static QName _GetTemplateByObjectNameResponsePdfBase64Encoded_QNAME = new QName("", "pdfBase64Encoded");
-    private final static QName _CreateDctmObjectContent_QNAME = new QName("http://templates.mobitel.com/", "content");
+    private final static QName _SetContentContent_QNAME = new QName("http://templates.mobitel.com/", "content");
+    private final static QName _GetOOPdfResponseReturn_QNAME = new QName("http://templates.mobitel.com/", "return");
     private final static QName _ConcatTwoPdfsArg1_QNAME = new QName("", "arg1");
+    private final static QName _GetTemplateByObjectNameResponsePdfBase64Encoded_QNAME = new QName("", "pdfBase64Encoded");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: si.telekom.dis.server.jaxwsClient.pdfGenerator
@@ -1102,36 +1102,36 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetPdfResponse.class)
-    public JAXBElement<byte[]> createGetPdfResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetPdfResponseReturn_QNAME, byte[].class, GetPdfResponse.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = CheckinMinorAndSetVersion.class)
-    public JAXBElement<byte[]> createCheckinMinorAndSetVersionData(byte[] value) {
-        return new JAXBElement<byte[]>(_CheckinMinorAndSetVersionData_QNAME, byte[].class, CheckinMinorAndSetVersion.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
     @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = CheckinMinor.class)
     public JAXBElement<byte[]> createCheckinMinorData(byte[] value) {
-        return new JAXBElement<byte[]>(_CheckinMinorAndSetVersionData_QNAME, byte[].class, CheckinMinor.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_CheckinMinorData_QNAME, byte[].class, CheckinMinor.class, ((byte[]) value));
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "return", scope = GetOOPdfResponse.class)
-    public JAXBElement<byte[]> createGetOOPdfResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetOOPdfResponseReturn_QNAME, byte[].class, GetOOPdfResponse.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "", name = "return", scope = ConcatTwoPdfsResponse.class)
+    public JAXBElement<byte[]> createConcatTwoPdfsResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_ConcatTwoPdfsResponseReturn_QNAME, byte[].class, ConcatTwoPdfsResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "", name = "return", scope = GetPdfResponse.class)
+    public JAXBElement<byte[]> createGetPdfResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_ConcatTwoPdfsResponseReturn_QNAME, byte[].class, GetPdfResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = CheckinTemplate.class)
+    public JAXBElement<byte[]> createCheckinTemplateData(byte[] value) {
+        return new JAXBElement<byte[]>(_CheckinMinorData_QNAME, byte[].class, CheckinTemplate.class, ((byte[]) value));
     }
 
     /**
@@ -1147,6 +1147,69 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
+    @XmlElementDecl(namespace = "", name = "return", scope = GetPdfNewFromKeyValuesResponse.class)
+    public JAXBElement<byte[]> createGetPdfNewFromKeyValuesResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_ConcatTwoPdfsResponseReturn_QNAME, byte[].class, GetPdfNewFromKeyValuesResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "result", scope = GetContentResponse.class)
+    public JAXBElement<byte[]> createGetContentResponseResult(byte[] value) {
+        return new JAXBElement<byte[]>(_GetOpenOfficePdfResponseResult_QNAME, byte[].class, GetContentResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = Checkin.class)
+    public JAXBElement<byte[]> createCheckinData(byte[] value) {
+        return new JAXBElement<byte[]>(_CheckinMinorData_QNAME, byte[].class, Checkin.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "", name = "return", scope = GetPdfFromOOTemplateResponse.class)
+    public JAXBElement<byte[]> createGetPdfFromOOTemplateResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_ConcatTwoPdfsResponseReturn_QNAME, byte[].class, GetPdfFromOOTemplateResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "", name = "return", scope = GetPdfNewResponse.class)
+    public JAXBElement<byte[]> createGetPdfNewResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_ConcatTwoPdfsResponseReturn_QNAME, byte[].class, GetPdfNewResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "", name = "return", scope = GetOpenOfficePdfForHashMapResponse.class)
+    public JAXBElement<byte[]> createGetOpenOfficePdfForHashMapResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_ConcatTwoPdfsResponseReturn_QNAME, byte[].class, GetOpenOfficePdfForHashMapResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = AddRendition.class)
+    public JAXBElement<byte[]> createAddRenditionData(byte[] value) {
+        return new JAXBElement<byte[]>(_CheckinMinorData_QNAME, byte[].class, AddRendition.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
     @XmlElementDecl(namespace = "", name = "arg0", scope = GetPdfFromOOTemplate.class)
     public JAXBElement<byte[]> createGetPdfFromOOTemplateArg0(byte[] value) {
         return new JAXBElement<byte[]>(_GetPdfFromOOTemplateArg0_QNAME, byte[].class, GetPdfFromOOTemplate.class, ((byte[]) value));
@@ -1156,36 +1219,9 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = ConcatTwoPdfsResponse.class)
-    public JAXBElement<byte[]> createConcatTwoPdfsResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetPdfResponseReturn_QNAME, byte[].class, ConcatTwoPdfsResponse.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "", name = "pdfBase64Encoded", scope = GetTemplateByObjectNameResponse.class)
-    public JAXBElement<byte[]> createGetTemplateByObjectNameResponsePdfBase64Encoded(byte[] value) {
-        return new JAXBElement<byte[]>(_GetTemplateByObjectNameResponsePdfBase64Encoded_QNAME, byte[].class, GetTemplateByObjectNameResponse.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetOpenOfficePdfForHashMapResponse.class)
-    public JAXBElement<byte[]> createGetOpenOfficePdfForHashMapResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetPdfResponseReturn_QNAME, byte[].class, GetOpenOfficePdfForHashMapResponse.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "content", scope = CreateDctmObject.class)
-    public JAXBElement<byte[]> createCreateDctmObjectContent(byte[] value) {
-        return new JAXBElement<byte[]>(_CreateDctmObjectContent_QNAME, byte[].class, CreateDctmObject.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = CheckinMinorAndSetVersion.class)
+    public JAXBElement<byte[]> createCheckinMinorAndSetVersionData(byte[] value) {
+        return new JAXBElement<byte[]>(_CheckinMinorData_QNAME, byte[].class, CheckinMinorAndSetVersion.class, ((byte[]) value));
     }
 
     /**
@@ -1194,25 +1230,16 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "content", scope = SetContent.class)
     public JAXBElement<byte[]> createSetContentContent(byte[] value) {
-        return new JAXBElement<byte[]>(_CreateDctmObjectContent_QNAME, byte[].class, SetContent.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_SetContentContent_QNAME, byte[].class, SetContent.class, ((byte[]) value));
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetPdfNewFromKeyValuesResponse.class)
-    public JAXBElement<byte[]> createGetPdfNewFromKeyValuesResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetPdfResponseReturn_QNAME, byte[].class, GetPdfNewFromKeyValuesResponse.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetPdfNewResponse.class)
-    public JAXBElement<byte[]> createGetPdfNewResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetPdfResponseReturn_QNAME, byte[].class, GetPdfNewResponse.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "return", scope = GetOOPdfResponse.class)
+    public JAXBElement<byte[]> createGetOOPdfResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_GetOOPdfResponseReturn_QNAME, byte[].class, GetOOPdfResponse.class, ((byte[]) value));
     }
 
     /**
@@ -1237,18 +1264,9 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = CheckinTemplate.class)
-    public JAXBElement<byte[]> createCheckinTemplateData(byte[] value) {
-        return new JAXBElement<byte[]>(_CheckinMinorAndSetVersionData_QNAME, byte[].class, CheckinTemplate.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = AddRendition.class)
-    public JAXBElement<byte[]> createAddRenditionData(byte[] value) {
-        return new JAXBElement<byte[]>(_CheckinMinorAndSetVersionData_QNAME, byte[].class, AddRendition.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "content", scope = CreateDctmObject.class)
+    public JAXBElement<byte[]> createCreateDctmObjectContent(byte[] value) {
+        return new JAXBElement<byte[]>(_SetContentContent_QNAME, byte[].class, CreateDctmObject.class, ((byte[]) value));
     }
 
     /**
@@ -1257,34 +1275,16 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = CheckinTemplateByTemplateId.class)
     public JAXBElement<byte[]> createCheckinTemplateByTemplateIdData(byte[] value) {
-        return new JAXBElement<byte[]>(_CheckinMinorAndSetVersionData_QNAME, byte[].class, CheckinTemplateByTemplateId.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_CheckinMinorData_QNAME, byte[].class, CheckinTemplateByTemplateId.class, ((byte[]) value));
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetPdfFromOOTemplateResponse.class)
-    public JAXBElement<byte[]> createGetPdfFromOOTemplateResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetPdfResponseReturn_QNAME, byte[].class, GetPdfFromOOTemplateResponse.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "data", scope = Checkin.class)
-    public JAXBElement<byte[]> createCheckinData(byte[] value) {
-        return new JAXBElement<byte[]>(_CheckinMinorAndSetVersionData_QNAME, byte[].class, Checkin.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://templates.mobitel.com/", name = "result", scope = GetContentResponse.class)
-    public JAXBElement<byte[]> createGetContentResponseResult(byte[] value) {
-        return new JAXBElement<byte[]>(_GetOpenOfficePdfResponseResult_QNAME, byte[].class, GetContentResponse.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "", name = "pdfBase64Encoded", scope = GetTemplateByObjectNameResponse.class)
+    public JAXBElement<byte[]> createGetTemplateByObjectNameResponsePdfBase64Encoded(byte[] value) {
+        return new JAXBElement<byte[]>(_GetTemplateByObjectNameResponsePdfBase64Encoded_QNAME, byte[].class, GetTemplateByObjectNameResponse.class, ((byte[]) value));
     }
 
 }

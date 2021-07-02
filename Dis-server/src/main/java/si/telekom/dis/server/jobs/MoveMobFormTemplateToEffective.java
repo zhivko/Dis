@@ -46,7 +46,7 @@ public class MoveMobFormTemplateToEffective implements Runnable {
 			String dql = "select r_object_id from mob_form_template where not mob_valid_from is nulldate and " +
 									 "DATEDIFF(day,mob_valid_from, date(today)) > 0 and " +
 									 "any r_version_label in ('draft') and " +
-									 "r_object_id not in (select r_object_id where any r_version_label in ('effective'))" + 
+									 "r_object_id not in (select r_object_id from mob_form_template where any r_version_label in ('effective'))" + 
 									 "group by r_object_id enable (return_range 1 30 'r_object_id')";
 //@formatter:on
 			Logger.getLogger(this.getClass()).info("Dql: " + dql);

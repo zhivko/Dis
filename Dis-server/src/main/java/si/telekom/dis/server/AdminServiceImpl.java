@@ -143,6 +143,7 @@ import si.telekom.dis.shared.Tab;
 import si.telekom.dis.shared.Template;
 import si.telekom.dis.shared.TemplateFolder;
 import si.telekom.dis.shared.UserGroup;
+import si.telekom.dis.shared.UserSettings;
 
 /**
  * The server-side implementation of the RPC service.
@@ -2255,13 +2256,15 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 * @param targetStateNo
 	 *          ... target state
 	 */
-	public static void runStandardActions(IDfPersistentObject persObject, String stateId, IDfSession userSess) throws Exception {
+	public static void runStandardActions(IDfPersistentObject persObject, String stateId, IDfSession userSession) throws Exception {
 		String msg = "Runing standard actions for: " + persObject.getId("r_object_id").toString() + " to stateId: " + stateId;
-		WsServer.log(userSess.getLoginInfo().getUser(), msg);
+		WsServer.log(userSession.getLoginInfo().getUser(), msg);
 		Logger.getLogger(AdminServiceImpl.class).info(msg);
 		IDfCollection collection = null;
 		IDfCollection collClassification = null;
 		IDfCollection collNow = null;
+
+		String original_r_object_id = persObject.getId("r_object_id").toString();
 
 		String saKind = "";
 		try {
@@ -2272,7 +2275,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			IDfSysObject dfSysObject = ((IDfSysObject) persObject);
 
-			collection = query.execute(userSess, IDfQuery.DF_READ_QUERY);
+			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
 			// if (!collection.next()) {
 			// Logger.getLogger("No profile found for persObject.getObjectId().getId()
 			// - trying search for barcode.");
@@ -2310,7 +2313,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						IDfId dfId = AdminServiceImpl.getOrCreateFolder(folder);
 						boolean alreadyLinked = false;
 						for (int k = 0; k < dfSysObject.getFolderIdCount(); k++) {
-							IDfFolder dfFold = (IDfFolder) userSess.getObject(dfSysObject.getFolderId(k));
+							IDfFolder dfFold = (IDfFolder) userSession.getObject(dfSysObject.getFolderId(k));
 							if (dfFold.getId("r_object_id").equals(dfId)) {
 								alreadyLinked = true;
 								Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " already linked to folder: " + folder);
@@ -2329,7 +2332,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 						ArrayList<String> foldersToUnlinkFrom = new ArrayList<String>();
 						for (int i = 0; i < dfSysObject.getFolderIdCount(); i++) {
-							IDfFolder dfFold = (IDfFolder) userSess.getObject(dfSysObject.getFolderId(i));
+							IDfFolder dfFold = (IDfFolder) userSession.getObject(dfSysObject.getFolderId(i));
 							String folderPath = dfFold.getAllRepeatingStrings("r_folder_path", "/");
 							if (!folderPath.equalsIgnoreCase(folder))
 								foldersToUnlinkFrom.add(folderPath);
@@ -2338,7 +2341,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						IDfId dfId = AdminServiceImpl.getOrCreateFolder(folder);
 						boolean alreadyLinked = false;
 						for (int k = 0; k < dfSysObject.getFolderIdCount(); k++) {
-							IDfFolder dfFold = (IDfFolder) userSess.getObject(dfSysObject.getFolderId(k));
+							IDfFolder dfFold = (IDfFolder) userSession.getObject(dfSysObject.getFolderId(k));
 							if (dfFold.getId("r_object_id").equals(dfId)) {
 								alreadyLinked = true;
 								Logger.getLogger(AdminServiceImpl.class).info(sa.kind + " already linked in folder: " + folder);
@@ -2360,7 +2363,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 					} else if (sa.kind.equalsIgnoreCase(StandardAction.types.UNLINK_FROM_FOLDER.type)) {
 						for (int i = 0; i < dfSysObject.getFolderIdCount(); i++) {
-							IDfFolder dfFold = (IDfFolder) userSess.getObject(dfSysObject.getFolderId(i));
+							IDfFolder dfFold = (IDfFolder) userSession.getObject(dfSysObject.getFolderId(i));
 							String folderPath = dfFold.getAllRepeatingStrings("i_folder_path", "/");
 							dfSysObject.unlink(folderPath);
 						}
@@ -2430,7 +2433,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 						String dqlNow = "SELECT Date(Today) as date_today , DATETOSTRING_LOCAL(Date(Today),'dd.MM.yyyy HH:mm:ss') as date_ddmmyyyy FROM dm_docbase_config";
 						IDfQuery queryNow = new DfQuery(dqlNow);
-						collNow = queryNow.execute(userSess, DfQuery.DF_READ_QUERY);
+						collNow = queryNow.execute(userSession, DfQuery.DF_READ_QUERY);
 						if (collNow.next()) {
 							// calculate retention in years
 							Date archivalDate = collNow.getTime("date_today").getDate();
@@ -2475,7 +2478,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 							Logger.getLogger(AdminServiceImpl.class).info("ClassSignDql:\n" + dqlClass);
 
 							IDfQuery queryClassification = new DfQuery(dqlClass);
-							collClassification = queryClassification.execute(userSess, DfQuery.DF_READ_QUERY);
+							collClassification = queryClassification.execute(userSession, DfQuery.DF_READ_QUERY);
 							if (collClassification.next()) {
 								String retentionName = collClassification.getString("rt_name");
 								int retentionCalcMonth = collClassification.getInt("rt_month");
@@ -2504,7 +2507,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 										IDfCollection coll = dfSysObject.getRenditions("full_format");
 										while (coll.next()) {
-											IDfFormat myformat = userSess.getFormat(coll.getString("full_format"));
+											IDfFormat myformat = userSession.getFormat(coll.getString("full_format"));
 											// String args = myformat.getName() +
 											// ",0,,'description=\"mydocument\",title=\"test
 											// document\",retention_date=DATE(" + dateStr + ")'";
@@ -2594,6 +2597,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						dfSysObject.save();
 					}
 				}
+
+				AdminServiceImpl.actualizeServiceData(persObject, original_r_object_id, userSession);
+
 			} else {
 				throw new ServerException("Object with r_object_id: <strong>" + persObject.getObjectId().getId() + "</strong> is not classified.");
 			}
@@ -4457,16 +4463,16 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				}
 				coll.close();
 
-				if(recordsImported % 10 ==0)
+				if (recordsImported % 10 == 0)
 					WsServer.log(loginName, "Imported: " + recordsImported + " records.");
-				
+
 				j++;
 			}
 
 			String msg = "Imported: " + recordsImported + " records.";
 			WsServer.log(loginName, msg);
 			Logger.getLogger(this.getClass()).info(msg);
-			
+
 			msg = "Comiting records to docbase...";
 			WsServer.log(loginName, msg);
 			Logger.getLogger(this.getClass()).info(msg);
@@ -4474,7 +4480,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			msg = "Comiting records to docbase...done.";
 			WsServer.log(loginName, msg);
 			Logger.getLogger(this.getClass()).info(msg);
-			
+
 		} catch (Exception ex) {
 			try {
 				Logger.getLogger(this.getClass()).info("Aborting transaction...");
@@ -4491,6 +4497,35 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				sess.getSessionManager().release(sess);
 		}
 
+	}
+
+	public static void actualizeServiceData(IDfPersistentObject persObject, String old_r_object_id, IDfSession userSession) throws DfException {
+		// need to insert to T_DOCMAN_S, and T_DOCMAN_R if r_object_id has
+		// changed
+		
+		if (!old_r_object_id.equals(persObject.getId("r_object_id").getId())) {
+			String queryIdChanged = "update dm_dbo.T_DOCMAN_S set r_object_id='" + persObject.getId("r_object_id").toString() + "' where r_object_id='"
+					+ old_r_object_id + "'";
+			IDfQuery queryUpdate = new DfQuery(queryIdChanged);
+			IDfCollection coll = queryUpdate.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+			coll.next();
+			int rowUpdated = coll.getInt("rows_updated");
+			Logger.getLogger(AdminServiceImpl.class).info("Updated " + rowUpdated + " rows in T_DOCMAN_S table.");
+
+			queryIdChanged = "update dm_dbo.T_DOCMAN_R set r_object_id='" + persObject.getId("r_object_id").toString() + "' where r_object_id='"
+					+ old_r_object_id + "'";
+			queryUpdate = new DfQuery(queryIdChanged);
+			coll = queryUpdate.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+			coll.next();
+			rowUpdated = coll.getInt("rows_updated");
+
+			Logger.getLogger(AdminServiceImpl.class).info("Updated " + rowUpdated + " rows in T_DOCMAN_R table.");
+			coll.close();
+		}
+		else
+		{
+			Logger.getLogger(AdminServiceImpl.class).info("No need to actualize docman_s and docman_r data.");
+		}
 	}
 
 }

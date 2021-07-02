@@ -2631,63 +2631,62 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			ArrayList<String> rolesOfUser = (ArrayList<String>) profileAndRolesOfUserAndState[2];
 			String currentStateId = (String) profileAndRolesOfUserAndState[3];
 
-			if (currentStateId.equals(stateId))
-				throw new Exception("Object already in state: " + currentStateId);
+			if (!currentStateId.equals(stateId)) {
 
-			boolean shouldSupersede;
-			if (stateId.equals("effective") && !currentStateId.equals("archive")) {
-				shouldSupersede = true;
-			} else {
-				shouldSupersede = false;
-			}
+				boolean shouldSupersede;
+				if (stateId.equals("effective") && !currentStateId.equals("archive")) {
+					shouldSupersede = true;
+				} else {
+					shouldSupersede = false;
+				}
 
-			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
+				int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 
-			// check all needed attributes are set
-			String mandatoryAttNamesNotSet = "";
-			boolean allMandatoryFilled = true;
-			IDfSysObject dfDocument = (IDfSysObject) persObj;
-			for (Role rol : prof.roles) {
-				AttributeRoleStateWizards arsw = AdminServiceImpl.getAttributesForStateAndRole(prof, stateId, rol.getId());
-				if (arsw != null) {
-					for (Attribute att : arsw.attributes) {
-						if (att.isMandatory) {
-							if (dfDocument.getValue(att.dcmtAttName).asString().contentEquals("")) {
-								WsServer.log(userSession.getLoginInfo().getUser(), att.dcmtAttName + " is not set.");
-								allMandatoryFilled = false;
-								if (!mandatoryAttNamesNotSet.contains(att.dcmtAttName)) {
-									mandatoryAttNamesNotSet = mandatoryAttNamesNotSet + att.dcmtAttName + ",";
+				// check all needed attributes are set
+				String mandatoryAttNamesNotSet = "";
+				boolean allMandatoryFilled = true;
+				IDfSysObject dfDocument = (IDfSysObject) persObj;
+				for (Role rol : prof.roles) {
+					AttributeRoleStateWizards arsw = AdminServiceImpl.getAttributesForStateAndRole(prof, stateId, rol.getId());
+					if (arsw != null) {
+						for (Attribute att : arsw.attributes) {
+							if (att.isMandatory) {
+								if (dfDocument.getValue(att.dcmtAttName).asString().contentEquals("")) {
+									WsServer.log(userSession.getLoginInfo().getUser(), att.dcmtAttName + " is not set.");
+									allMandatoryFilled = false;
+									if (!mandatoryAttNamesNotSet.contains(att.dcmtAttName)) {
+										mandatoryAttNamesNotSet = mandatoryAttNamesNotSet + att.dcmtAttName + ",";
+									}
 								}
 							}
 						}
 					}
 				}
+				if (mandatoryAttNamesNotSet.length() > 0) {
+					mandatoryAttNamesNotSet = mandatoryAttNamesNotSet.substring(0, mandatoryAttNamesNotSet.length() - 1);
+				}
+
+				if (!allMandatoryFilled) {
+					String object_name = persObj.getString("object_name");
+					String relNo = persObj.hasAttr("mob_releaseno") ? persObj.getString("mob_releaseno") : "";
+					throw new ServerException("Obvezni atributi za r_object_id: " + persObj.getId("r_object_id").toString() + " object_name: " + object_name
+							+ " mob_release_no: " + relNo + " (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
+				}
+
+				query.setDQL(
+						"update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
+				collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+
+				AdminServiceImpl.runStandardActions(persObj, prof.states.get(stateNo).getId(), userSession);
+
+				if (shouldSupersede) {
+					supersede(persObj, userSession);
+				}
+
+				if (startedTransaction) {
+					userSession.commitTrans();
+				}
 			}
-			if (mandatoryAttNamesNotSet.length() > 0) {
-				mandatoryAttNamesNotSet = mandatoryAttNamesNotSet.substring(0, mandatoryAttNamesNotSet.length() - 1);
-			}
-
-			if (!allMandatoryFilled) {
-				String object_name = persObj.getString("object_name");
-				String relNo = persObj.hasAttr("mob_releaseno") ? persObj.getString("mob_releaseno") : "";
-				throw new ServerException("Obvezni atributi za r_object_id: " + persObj.getId("r_object_id").toString() + " object_name: " + object_name
-						+ " mob_release_no: " + relNo + " (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
-			}
-
-			query
-					.setDQL("update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
-			collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
-
-			AdminServiceImpl.runStandardActions(persObj, prof.states.get(stateNo).getId(), userSession);
-
-			if (shouldSupersede) {
-				supersede(persObj, userSession);
-			}
-
-			if (startedTransaction) {
-				userSession.commitTrans();
-			}
-
 		} catch (Throwable ex) {
 			// ex.printStackTrace();
 
@@ -3274,7 +3273,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			AdminServiceImpl.beginTransaction(userSession);
 
 			Profile prof = AdminServiceImpl.profiles.get(profileId);
-			if(prof==null)
+			if (prof == null)
 				throw new ServerException("No such profile: " + profileId);
 
 			IDfPersistentObject persObject = userSession.newObject(prof.objType);
@@ -3486,18 +3485,17 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			if (!rObjectIdOfObjectOrFolder.startsWith("/")) {
 				dqlOfObjects = "select r_object_id from dm_document(all) where r_object_id='" + rObjectIdOfObjectOrFolder + "'";
 				IDfPersistentObject obj = userSession.getObjectByQualification("dm_document(all) where r_object_id='" + rObjectIdOfObjectOrFolder + "'");
-				if (obj == null)
-				{
-					
+				if (obj == null) {
+
 					Logger.getLogger(getClass()).warn("Try to find object with object_name: " + rObjectIdOfObjectOrFolder);
 					dqlOfObjects = "select r_object_id from dm_document where object_name='" + rObjectIdOfObjectOrFolder + "'";
 					IDfPersistentObject obj1 = userSession.getObjectByQualification("dm_document where object_name='" + rObjectIdOfObjectOrFolder + "'");
-					if (obj1 == null)
-					{
-						throw new Exception("No such template (r_object_id='" + rObjectIdOfObjectOrFolder + "') or (object_name='" + rObjectIdOfObjectOrFolder + "')");	
+					if (obj1 == null) {
+						throw new Exception(
+								"No such template (r_object_id='" + rObjectIdOfObjectOrFolder + "') or (object_name='" + rObjectIdOfObjectOrFolder + "')");
 					}
 					rObjectIdOfObjectOrFolder = obj1.getId("r_object_id").toString();
-					
+
 				}
 			} else {
 				dqlOfObjects = "select r_object_id from dm_document where folder('" + rObjectIdOfObjectOrFolder + "')";
@@ -4516,22 +4514,13 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			 */
 			persObject.save();
 
-
 			int stateInd = AdminServiceImpl.getStateIndex(prof, stateId);
 
 			setStateForObject(userSession, persObject, prof, stateId);
 			setUsersForRoles(userSession, persObject, rolesUsers);
 			persObject.fetch("dm_document");
-			
-			String queryIdChanged = "update dm_dbo.T_DOCMAN_S set r_object_id='" + persObject.getId("r_object_id").toString() + "' where r_object_id='"
-					+ r_object_id + "'"; 
-			IDfQuery queryUpdate = new DfQuery(queryIdChanged);
-			IDfCollection coll = queryUpdate.execute(userSession, IDfQuery.DF_EXEC_QUERY);
-			coll.next();
-			int rowUpdated = coll.getInt("rows_updated");
-			Logger.getLogger(this.getClass()).info("Updated " + rowUpdated + " rows in T_DOCMAN_S table.");
-			coll.close();
-			
+
+			AdminServiceImpl.actualizeServiceData(persObject, r_object_id, userSession);
 			AdminServiceImpl.runStandardActions(persObject, stateId, userSession);
 			// persObject.save();
 			long milis3 = System.currentTimeMillis();

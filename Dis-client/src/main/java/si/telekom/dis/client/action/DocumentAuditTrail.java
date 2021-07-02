@@ -391,7 +391,9 @@ public class DocumentAuditTrail extends WindowBox {
 
 		public void setEventFilter(String filter) {
 			this.eventFilter = filter;
+			DocumentAuditTrail.instance.cellTable.setRowCount(0);
 			onRangeChanged(DocumentAuditTrail.instance.cellTable);
+
 //			allRows.clear();
 //			DocumentAuditTrail.instance.cellTable.redraw();
 		}

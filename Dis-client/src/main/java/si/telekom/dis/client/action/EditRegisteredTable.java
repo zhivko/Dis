@@ -496,6 +496,8 @@ public class EditRegisteredTable extends ActionDialogBox implements ClickHandler
 																			filters = filter;
 																		else
 																			filters = filters + " and " + filter;
+
+																		cellTable.setRowCount(0);
 																		dataProvider.onRangeChanged(cellTable);
 																		cellTable.redraw();
 

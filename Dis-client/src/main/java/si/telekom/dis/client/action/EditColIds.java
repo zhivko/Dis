@@ -124,6 +124,7 @@ public class EditColIds extends WindowBox implements ClickHandler {
 								rows.add(pos, new Row(Arrays.asList(rs)));
 
 								dataProvider.updateRowData(pager.getPageStart(), rows);
+								//cellTable.setRowCount(0);
 							}
 						});
 
@@ -147,8 +148,7 @@ public class EditColIds extends WindowBox implements ClickHandler {
 														MainPanel.log("delete of coll_id " + col_id + " done.");
 														selectionModel.clear();
 														cellTable.setVisibleRangeAndClearData(cellTable.getVisibleRange(), true);
-
-														// refreshTable();
+														cellTable.setRowCount(0);
 													}
 												});
 									} catch (ServerException ex1) {
