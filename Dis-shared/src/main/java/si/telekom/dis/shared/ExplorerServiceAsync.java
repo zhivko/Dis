@@ -10,7 +10,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * The async counterpart of <code>LoginService</code>.
  */
 public interface ExplorerServiceAsync {
-	void getObjects(String folder, boolean  current, String loginName, String password, int start, int length, AsyncCallback<List<Document>> asyncCallback) throws IllegalArgumentException;
+	void getObjects(String folder, boolean  current, String loginName, String password, int start, int length, AsyncCallback<DocumentsResult> asyncCallback) throws IllegalArgumentException;
 	void getActionsForObject(String loginName, String password, String r_object_id, AsyncCallback<List<Action>> callback) throws IllegalArgumentException;
 	void getRenditions(String loginName, String password, String r_object_id, AsyncCallback<List<String>> callback) throws IllegalArgumentException;
 	void getProfileAttributesAndValues(String loginName, String password, String r_object_id, AsyncCallback<ProfileAttributesAndValues> callback) throws IllegalArgumentException;
@@ -44,7 +44,7 @@ public interface ExplorerServiceAsync {
 	void newDocument(String loginName, String password, String profileId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, String templateObjectNameOrFolder, AsyncCallback<Document> callback) throws IllegalArgumentException;
 	void importDocument(String loginName, String password, String objectId, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] base64Content, String format, AsyncCallback<Document> callback) throws IllegalArgumentException;
 	
-	void runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length, AsyncCallback<List<Document>> asyncCallback);
+	void runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length, AsyncCallback<DocumentsResult> asyncCallback);
 	
 	void showPdfTags(String loginName, String loginPassword, String r_object_id, AsyncCallback<List<List<String>>> asyncCallback);
 	

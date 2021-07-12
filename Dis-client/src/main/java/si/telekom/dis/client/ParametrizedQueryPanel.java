@@ -84,7 +84,6 @@ public class ParametrizedQueryPanel extends WindowBox {
 			} else
 				dql = dql.replaceAll(parametrizedQuery.arguments.get(i), a.getValue());
 
-			dql = dql.replaceAll(parametrizedQuery.labels.get(i), "");
 			i++;
 		}
 		return dql;
@@ -184,8 +183,7 @@ public class ParametrizedQueryPanel extends WindowBox {
 		if (!serializedPrevious.equals(serializedNow)) {
 			getContentPanel().clear();
 			int i = 0;
-			for (String partOfDql : parametrizedQuery.dqlParts) {
-				Attribute a = parametrizedQuery.formAttributes.get(i);
+			for (Attribute a : parametrizedQuery.formAttributes) {
 				FormAttribute fa = new FormAttribute(a);
 				fa.addKeyUpHandler(new KeyUpHandler() {
 

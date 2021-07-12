@@ -23,6 +23,7 @@ import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.TreeViewModel;
 
 import si.telekom.dis.shared.Document;
+import si.telekom.dis.shared.DocumentsResult;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
 
@@ -36,7 +37,8 @@ public class CustomTreeModel implements TreeViewModel {
 	// ListDataProvider<Document>();
 	Cell<Document> cell;
 	DefaultNodeInfo dni;
-
+	
+	
 	DivElement contentContainer;
 	/**
 	 * This selection model is shared across all leaf nodes. A selection model can
@@ -83,6 +85,7 @@ public class CustomTreeModel implements TreeViewModel {
 			Document doc = (Document) value;
 			final MyAsyncDataProvider dataProvider = getDataProvider(doc.r_object_id, doc.i_chronicle_id);
 			cell = new CustomDocumentCell(selectionModel, explorerOrSearch);
+
 			dni = new DefaultNodeInfo<Document>(dataProvider, cell);
 			return dni;
 		}
@@ -208,25 +211,27 @@ public class CustomTreeModel implements TreeViewModel {
 
 		if (r_object_id != null && !r_object_id.equals("")) {
 			explorerService.getObjects(r_object_id, true, MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, 1, 1,
-					new AsyncCallback<List<Document>>() {
+					new AsyncCallback<DocumentsResult>() {
 						@Override
-						public void onSuccess(List<Document> result) {
+						public void onSuccess(DocumentsResult result) {
 							// TODO Auto-generated method stub
 							// pd.hideit();
-							GWT.log("retrieved " + result.size() + " documents.");
+							GWT.log("retrieved " + result.documents.size() + " documents.");
 							
-							MyAsyncDataProvider myAsyncDataProvider = getDataProviderThatHandlesDoc(result.get(0).r_object_id, result.get(0).i_chronicle_id);
+							MyAsyncDataProvider myAsyncDataProvider = getDataProviderThatHandlesDoc(result.documents.get(0).r_object_id, result.documents.get(0).i_chronicle_id);
 
+							myAsyncDataProvider.lastItemFromQuery = result.lastItemFromQuery;
+							
 							int i = 0;
 							for (Document document : myAsyncDataProvider.documents) {
 								String r_object_id1 = document.r_object_id;
 								String chronicleId = document.i_chronicle_id;
-								String resultRobject_Id = result.get(0).r_object_id;
-								String resultChronicleId = result.get(0).i_chronicle_id;
+								String resultRobject_Id = result.documents.get(0).r_object_id;
+								String resultChronicleId = result.documents.get(0).i_chronicle_id;
 
-								if (document.r_object_id.equals(result.get(0).r_object_id) || document.i_chronicle_id.equals(result.get(0).i_chronicle_id)) {
+								if (document.r_object_id.equals(result.documents.get(0).r_object_id) || document.i_chronicle_id.equals(result.documents.get(0).i_chronicle_id)) {
 									int ind = myAsyncDataProvider.documents.indexOf(document);
-									myAsyncDataProvider.documents.set(ind, result.get(0));
+									myAsyncDataProvider.documents.set(ind, result.documents.get(0));
 
 									final int j = i;
 
@@ -234,11 +239,11 @@ public class CustomTreeModel implements TreeViewModel {
 										@Override
 										public void execute() {
 											List<Document> al = new ArrayList<Document>();
-											al.add(result.get(0));
+											al.add(result.documents.get(0));
 											myAsyncDataProvider.updateRowData(j, al);
 
-											if (explorerOrSearch.i_chronicle_id.equals(result.get(0).i_chronicle_id)) {
-												explorerOrSearch.selectDocument(result.get(0));
+											if (explorerOrSearch.i_chronicle_id.equals(result.documents.get(0).i_chronicle_id)) {
+												explorerOrSearch.selectDocument(result.documents.get(0));
 											}
 										}
 									});
@@ -264,11 +269,13 @@ public class CustomTreeModel implements TreeViewModel {
 		public ArrayList<Document> documents;
 		String r_object_id;
 		String i_chronicle_id;
+		public int lastItemFromQuery;
 
 		public MyAsyncDataProvider(String r_object_id_, String i_chronicle_id_) {
 			this.r_object_id = r_object_id_;
 			this.i_chronicle_id = i_chronicle_id_;
 			this.documents = new ArrayList<Document>();
+			lastItemFromQuery=0;
 		}
 
 		@Override
@@ -289,15 +296,17 @@ public class CustomTreeModel implements TreeViewModel {
 			MainPanel.getInstance().getElement().getStyle().setCursor(Cursor.WAIT);
 
 			if (!startFolder.toLowerCase().trim().startsWith("select")) {
-				explorerService.getObjects(whatId, true, MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, documents.size(), length,
-						new AsyncCallback<List<Document>>() {
+				explorerService.getObjects(whatId, true, MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, lastItemFromQuery, length,
+						new AsyncCallback<DocumentsResult>() {
 							@Override
-							public void onSuccess(List<Document> result) {
+							public void onSuccess(DocumentsResult result) {
 								MainPanel.getInstance().getElement().getStyle().setCursor(oldCursor);
-								MainPanel.log("documents size: " + documents.size() + " received: " + result.size());
+								MainPanel.log("documents size: " + documents.size() + " received: " + result.documents.size());
+								lastItemFromQuery = result.lastItemFromQuery;
+								
 								if (documents.size() == 0) {
-									documents.addAll(0, result);
-									if (result.size() > 0) {
+									documents.addAll(0, result.documents);
+									if (result.documents.size() > 0) {
 										Scheduler.get().scheduleDeferred(new Command() {
 											@Override
 											public void execute() {
@@ -306,13 +315,14 @@ public class CustomTreeModel implements TreeViewModel {
 										});
 									}
 								} else
-									documents.addAll(documents.size(), result);
+									documents.addAll(documents.size(), result.documents);
+								
 								updateRowData(0, documents);
 
 								Scheduler.get().scheduleDeferred(new Command() {
 									@Override
 									public void execute() {
-										if (result.size() == CustomTreeModel.this.length) {
+										if (!result.done) {
 											makeShowMoreVisible(whatId, ExplorerPanel.getExplorerInstance().cellTree);
 										} else
 											makeShowMoreInVisible(whatId, ExplorerPanel.getExplorerInstance().cellTree);
@@ -329,21 +339,22 @@ public class CustomTreeModel implements TreeViewModel {
 			} else {
 				// search query
 				explorerService.runSearchQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, startFolder,
-						ParametrizedQueryPanel.lastParametrizedQuery, documents.size(), length, new AsyncCallback<List<Document>>() {
+						ParametrizedQueryPanel.lastParametrizedQuery, lastItemFromQuery, length, new AsyncCallback<DocumentsResult>() {
 							@Override
-							public void onSuccess(List<Document> result) {
+							public void onSuccess(DocumentsResult result) {
 								MainPanel.getInstance().getElement().getStyle().setCursor(oldCursor);
+								lastItemFromQuery = result.lastItemFromQuery;
 
 								if (documents.size() == 0) {
-									documents.addAll(0, result);
-									if (result.size() == 0) {
+									documents.addAll(0, result.documents);
+									if (result.documents.size() == 0) {
 										MenuPanel.activeExplorerInstance.fpProperties.clear();
 										MenuPanel.activeExplorerInstance.hpActions.clear();
 									}
 									if (documents.size() > 0)
 										MenuPanel.activeExplorerInstance.selectDocument(documents.get(0));
 								} else {
-									documents.addAll(documents.size(), result);
+									documents.addAll(documents.size(), result.documents);
 								}
 
 								updateRowData(0, documents);
@@ -351,10 +362,10 @@ public class CustomTreeModel implements TreeViewModel {
 								Scheduler.get().scheduleDeferred(new Command() {
 									@Override
 									public void execute() {
-										int resultSize = result.size();
+										int resultSize = result.documents.size();
 										int ctmLength = CustomTreeModel.this.length;
 
-										if (result.size() == CustomTreeModel.this.length) {
+										if (!result.done) {
 											makeShowMoreVisible(whatId, SearchPanel.getSearchPanelInstance().cellTree);
 										} else
 											makeShowMoreInVisible(whatId, SearchPanel.getSearchPanelInstance().cellTree);

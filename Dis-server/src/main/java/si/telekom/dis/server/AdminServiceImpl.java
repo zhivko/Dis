@@ -143,7 +143,6 @@ import si.telekom.dis.shared.Tab;
 import si.telekom.dis.shared.Template;
 import si.telekom.dis.shared.TemplateFolder;
 import si.telekom.dis.shared.UserGroup;
-import si.telekom.dis.shared.UserSettings;
 
 /**
  * The server-side implementation of the RPC service.
@@ -3151,7 +3150,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 				if (userShouldGetSearch || LoginServiceImpl.admins.contains(loginName)) { // userShouldGetSearch
 					WsServer.log(loginName, new String(el.getAttribute("name").getBytes(), "UTF-8"));
-					MyParametrizedQuery query = getParametrizedQuery(el, xpathFac, lazy);
+					MyParametrizedQuery query = getParametrizedQuery(el, xpathFac, lazy, loginName);
 					queries.add(query);
 					Logger.getLogger(this.getClass()).info("\tyes.");
 
@@ -3173,11 +3172,41 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return queries;
 	}
 
-	private MyParametrizedQuery getParametrizedQuery(Element el, XPathFactory xpathFac, boolean lazy)
-			throws XPathExpressionException, UnsupportedEncodingException {
+	private MyParametrizedQuery getParametrizedQuery(Element el, XPathFactory xpathFac, boolean lazy, String loginName)
+			throws XPathExpressionException, UnsupportedEncodingException, ServerException {
+
 		String dqlQuery = getFirstLevelTextContent((Node) el);
+
+//		if (dqlQuery.trim().toLowerCase().contains("mob_sender_code")) {
+//			System.out.println();
+//		}
+		
+
+		if (el.getAttribute("name").trim().toLowerCase().contains("mob_sender_code")) {
+			System.out.println();
+		}
+
+		
+		
+
 		String type = getObjecTypeFromDql(dqlQuery);
 		MyParametrizedQuery ret = new MyParametrizedQuery(new String(el.getAttribute("name").getBytes(), "UTF-8"), dqlQuery);
+
+		Pattern p1 = Pattern.compile("SELECT(.*)FROM(.*)WHERE(.*?)ENABLE(.*)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+		Matcher m1 = p1.matcher(dqlQuery);
+
+		if (!m1.find()) {
+			String msg = "ParametrizedQuery with name: "+el.getAttribute("name")+" dql not formed correctly: " + dqlQuery;
+			WsServer.log(loginName, msg);
+			Logger.getLogger(this.getClass()).warn(msg);
+			return ret;
+		}
+
+		String dqlQuerySelect = m1.group(1);
+		String dqlQueryFrom = m1.group(2);
+		String dqlQueryConditions = "";
+		if (m1.group(3) != null)
+			dqlQueryConditions = m1.group(3);
 
 		Logger.getLogger(AdminServiceImpl.class).info("lazy queryName: " + el.getAttribute("name"));
 
@@ -3214,95 +3243,83 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		if (filterBy != null)
 			ret.filterClass = filterBy.getTextContent();
 
-		String patternToCompile = "[<][0-9].*?[>]";
-		Pattern p = Pattern.compile(patternToCompile, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-		Matcher m = p.matcher(dqlQuery);
-		while (m.find()) {
-			if (!ret.arguments.contains(m.group(0))) {
-				String partDql = dqlQuery.substring(0, dqlQuery.indexOf(m.group(0)) + m.group(0).length());
+		expr3 = xpath.compile(".//parameterLabels/label");
+		NodeList labels = (NodeList) expr3.evaluate(el, XPathConstants.NODESET);
+		for (int k = 0; k < labels.getLength(); k++) {
+			Element elLabel = (Element) labels.item(k);
+			String label = elLabel.getTextContent();
+			ret.labels.add(label);
+		}
 
-				Map<String, DcmtAttribute> typeAttributes = null;
-
-				if (doctypes.get(type) != null)
-					typeAttributes = doctypes.get(type).attributes;
-				else {
-					IDfSession adminSession = null;
-					IDfCollection coll = null;
-					try {
-						adminSession = getAdminSession();
-						IDfQuery qry = new DfQuery("select * from " + type + " enable (return_top 1)");
-						coll = qry.execute(adminSession, IDfQuery.DF_READ_QUERY);
-						typeAttributes = new HashMap<String, DcmtAttribute>();
-						for (int i = 0; i < coll.getAttrCount(); i++) {
-							IDfAttr attr = coll.getAttr(i);
-							DcmtAttribute dcmtAttribute = new DcmtAttribute();
-							dcmtAttribute.attr_name = attr.getName();
-							dcmtAttribute.domain_type = String.valueOf(attr.getDataType());
-							typeAttributes.put(dcmtAttribute.attr_name, dcmtAttribute);
-						}
-						coll.close();
-					} catch (Exception ex) {
-						Logger.getLogger(this.getClass()).warn(ex.getMessage());
-					} finally {
-						if (coll != null)
-							if (adminSession != null)
-								adminSession.getSessionManager().release(adminSession);
-					}
+		Map<String, DcmtAttribute> typeAttributes = null;
+		if (doctypes.get(type) != null)
+			typeAttributes = doctypes.get(type).attributes;
+		else {
+			IDfSession adminSession = null;
+			IDfCollection coll = null;
+			try {
+				adminSession = getAdminSession();
+				IDfQuery qry = new DfQuery("select * from " + type + " enable (return_top 1)");
+				coll = qry.execute(adminSession, IDfQuery.DF_READ_QUERY);
+				typeAttributes = new HashMap<String, DcmtAttribute>();
+				for (int i = 0; i < coll.getAttrCount(); i++) {
+					IDfAttr attr = coll.getAttr(i);
+					DcmtAttribute dcmtAttribute = new DcmtAttribute();
+					dcmtAttribute.attr_name = attr.getName();
+					dcmtAttribute.domain_type = String.valueOf(attr.getDataType());
+					typeAttributes.put(dcmtAttribute.attr_name, dcmtAttribute);
 				}
-
-				if (typeAttributes != null) {
-					for (String attName : typeAttributes.keySet()) {
-						// try to parse label
-						String escapedGroup0 = m.group(0).replaceAll("\\%", "[%]");
-						String toCompile = ".*" + attName + " \\((.*?)\\)(.*)" + escapedGroup0;
-
-						// Logger.getLogger(this.getClass()).info("trying: " + toCompile);
-
-						Pattern p1 = Pattern.compile(toCompile, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-						Matcher m1 = p1.matcher(dqlQuery);
-
-						if (m1.find()) {
-							int poz1 = partDql.lastIndexOf(attName);
-							String partOfDql = partDql.substring(poz1);
-							String label = "";
-							if (m1.group(1) != null)
-								label = m1.group(1);
-
-							// dqlQuery = dqlQuery.replaceAll("\\(" + label + "\\)", "");
-							DcmtAttribute dcmtAtt = typeAttributes.get(attName);
-							Attribute a = new Attribute();
-							a.label = (label.equals("") ? attName : label);
-							a.dcmtAttName = dcmtAtt.attr_name;
-							if (dcmtAtt.domain_type.equals("0")) {
-								a.setType("checkBox");
-							} else if (dcmtAtt.domain_type.equals("1")) {
-								a.setType("textbox");
-							} else if (dcmtAtt.domain_type.equals("2")) {
-								a.setType("textbox");
-							} else if (dcmtAtt.domain_type.equals("3")) {
-								a.setType("textbox");
-							} else if (dcmtAtt.domain_type.equals("4")) {
-								a.setType("datetime");
-							}
-							ret.formAttributes.add(a);
-							ret.dqlParts.add(partOfDql);
-							ret.labels.add("\\(" + label + "\\)");
-							ret.arguments.add(m.group(0));
-
-							Logger.getLogger(this.getClass()).info("PartDql: " + partDql);
-							Logger.getLogger(this.getClass()).info("\tAtt: " + a.dcmtAttName + " (" + a.label + ")");
-
-							dqlQuery = dqlQuery.replace(partDql, "");
-							break;
-						}
-					}
-				} else {
-					Logger.getLogger(this.getClass()).error("no such document type: " + type);
-				}
+				coll.close();
+			} catch (Exception ex) {
+				Logger.getLogger(this.getClass()).warn(ex.getMessage());
+			} finally {
+				if (coll != null)
+					if (adminSession != null)
+						adminSession.getSessionManager().release(adminSession);
 			}
+		}
+		if (typeAttributes != null) {
+
+			Pattern p2 = Pattern.compile("(?:UPPER\\(|LOWER\\()*(\\w+)?(?:\\)*?)(?=[ ]*([<>=]|LIKE|IN)).*?([<]\\d*[>]+)",
+					Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			Matcher m2 = p2.matcher(dqlQueryConditions);
+			int i = 0;
+			while (m2.find()) {
+				String foundStr = m2.group(0);
+
+				String attName = m2.group(1);
+				String label = "";
+				if (i < ret.labels.size())
+					label = ret.labels.get(i);
+
+				DcmtAttribute dcmtAtt = typeAttributes.get(attName);
+				if (dcmtAtt == null)
+					return ret;
+				
+				Attribute a = new Attribute();
+				a.label = (label.equals("") ? attName : label);
+				a.dcmtAttName = dcmtAtt.attr_name;
+				if (dcmtAtt.domain_type.equals("0")) {
+					a.setType("checkBox");
+				} else if (dcmtAtt.domain_type.equals("1")) {
+					a.setType("textbox");
+				} else if (dcmtAtt.domain_type.equals("2")) {
+					a.setType("textbox");
+				} else if (dcmtAtt.domain_type.equals("3")) {
+					a.setType("textbox");
+				} else if (dcmtAtt.domain_type.equals("4")) {
+					a.setType("datetime");
+				}
+				ret.formAttributes.add(a);
+				ret.arguments.add(m2.group(3));
+				i++;
+			}
+		} else {
+			throw new ServerException("no type specfication for: " + type);
 		}
 
 		return ret;
+
 	}
 
 	public Document getDocConfig() throws Throwable {
@@ -3395,7 +3412,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
-			List<String> orderBys, List<String> orderBydirections, String filterClass) throws ServerException {
+			List<String> orderBys, List<String> orderBydirections, String filterClass, List<String> parameterLabels) throws ServerException {
 
 		Logger.getLogger(this.getClass()).info("Saving search: " + oldName);
 		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
@@ -3459,6 +3476,21 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					el.appendChild(elFilterClass);
 					Logger.getLogger(this.getClass()).info("User " + loginName + " saving search " + oldName + " filterClass.");
 
+					Element elParameterLabels = (Element) el.getElementsByTagName("parameterLabels").item(0);
+					if (elParameterLabels == null) {
+						elParameterLabels = getDocConfig().createElement("parameterLabels");
+						el.appendChild(elParameterLabels);
+					}
+					while (elParameterLabels.hasChildNodes()) {
+						elParameterLabels.removeChild(elParameterLabels.getFirstChild());
+					}
+
+					for (String label : parameterLabels) {
+						Element elLabel = getDocConfig().createElement("label");
+						elLabel.setTextContent(label);
+						elParameterLabels.appendChild(elLabel);
+					}
+
 					Transformer tr = TransformerFactory.newInstance().newTransformer();
 					tr.setOutputProperty(OutputKeys.INDENT, "yes");
 					tr.setOutputProperty(OutputKeys.METHOD, "xml");
@@ -3518,7 +3550,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				Element el = (Element) nl.item(i);
 
 				if (el.getAttribute("name").equals(name)) {
-					ret = getParametrizedQuery(el, xpathFac, false);
+					ret = getParametrizedQuery(el, xpathFac, false, loginName);
 				}
 
 			}
@@ -4248,7 +4280,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public String deleteParametrizedQuery(String loginName, String loginPass, String name) throws ServerException {
 		String ret = null;
-		Logger.getLogger(this.getClass()).info("Duplicate search: " + name);
+		Logger.getLogger(this.getClass()).info("Delete search: " + name);
 		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
 
 		try {
@@ -4260,7 +4292,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			Element el = (Element) expr.evaluate(getDocConfig(), XPathConstants.NODE);
 			if (el != null) {
 
-				docConfig.removeChild(el);
+				el.getParentNode().removeChild(el);
 
 				Transformer tr = TransformerFactory.newInstance().newTransformer();
 				tr.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -4502,7 +4534,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public static void actualizeServiceData(IDfPersistentObject persObject, String old_r_object_id, IDfSession userSession) throws DfException {
 		// need to insert to T_DOCMAN_S, and T_DOCMAN_R if r_object_id has
 		// changed
-		
+
 		if (!old_r_object_id.equals(persObject.getId("r_object_id").getId())) {
 			String queryIdChanged = "update dm_dbo.T_DOCMAN_S set r_object_id='" + persObject.getId("r_object_id").toString() + "' where r_object_id='"
 					+ old_r_object_id + "'";
@@ -4521,11 +4553,81 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			Logger.getLogger(AdminServiceImpl.class).info("Updated " + rowUpdated + " rows in T_DOCMAN_R table.");
 			coll.close();
-		}
-		else
-		{
+		} else {
 			Logger.getLogger(AdminServiceImpl.class).info("No need to actualize docman_s and docman_r data.");
 		}
 	}
 
+	@Override
+	public void updateParameterLabelForParametrizedQuery(String loginName, String loginPass, String name, List<String> parameterLabels)
+			throws ServerException {
+		Logger.getLogger(this.getClass()).info("Updating parameter for search: " + name);
+		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
+
+		try {
+			XPathFactory xpathFac = XPathFactory.newInstance();
+			XPath xpath = xpathFac.newXPath();
+			// xpath.setNamespaceContext();
+
+			// XPathExpression expr = xpath.compile("/config/docbase[@name='" +
+			// AdminServiceImpl. docBase + "']/queries/query");
+			XPathExpression expr = xpath.compile("/config/docbase[1]/queries/query[@name='" + name + "']");
+			// NodeList nl = (NodeList) expr.evaluate( new InputSource(new
+			// StringReader(getDocConfig().toString())),
+			// XPathConstants.NODESET);
+			NodeList nl = (NodeList) expr.evaluate(getDocConfig(), XPathConstants.NODESET);
+			for (int i = 0; i < nl.getLength(); i++) {
+				Element el = (Element) nl.item(i);
+				if (el != null) {
+					Logger.getLogger(this.getClass()).info("User " + loginName + " saving parameters for search: " + name);
+					Element elParameters = (Element) el.getElementsByTagName("parameterLabels").item(0);
+					if (elParameters == null) {
+						elParameters = getDocConfig().createElement("parameterLabels");
+						el.appendChild(elParameters);
+					}
+					while (elParameters.hasChildNodes()) {
+						elParameters.removeChild(elParameters.getFirstChild());
+					}
+
+					for (String label : parameterLabels) {
+						Element elLabel = getDocConfig().createElement("label");
+						elLabel.setTextContent(label);
+						elParameters.appendChild(elLabel);
+					}
+
+					Transformer tr = TransformerFactory.newInstance().newTransformer();
+					tr.setOutputProperty(OutputKeys.INDENT, "yes");
+					tr.setOutputProperty(OutputKeys.METHOD, "xml");
+					tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+					// tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
+					tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+					// send DOM to file
+					tr.transform(new DOMSource(docConfig), new StreamResult(new FileOutputStream(configPathFileName)));
+					Logger.getLogger(this.getClass())
+							.info("User " + loginName + " saved search parameter labels for search with name:" + name + " to " + configPathFileName);
+
+					// check if it is localhost save it to development environment
+					final String ip = getThreadLocalRequest().getRemoteHost();
+					InetAddress addr = InetAddress.getByName(ip);
+					String hostName = addr.getHostName();
+					if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
+						File devConfig;
+						if (SystemUtils.IS_OS_LINUX) {
+							devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
+						} else {
+							devConfig = new File("c:\\git\\Dis\\Dis-server\\src\\main\\resources\\config.xml");
+						}
+						FileUtils.copyFile(new File(configPathFileName), devConfig);
+						Logger.getLogger(this.getClass()).info("Saved search to dev config file: " + devConfig.getAbsolutePath());
+					}
+
+				}
+			}
+		} catch (Throwable ex) {
+			Logger.getLogger(this.getClass()).error(ex.getMessage());
+			WsServer.log(loginName, ex.getMessage());
+		} finally {
+		}
+	}
 }

@@ -1,22 +1,34 @@
 package si.telekom.dis.client.action;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.BorderStyle;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -44,6 +56,7 @@ public class SearchEdit extends WindowBox {
 	MyTextArea dql;
 	MyTxtBox name;
 	MyTxtBox filterClass;
+	public DataGrid<ParameterLabel> datagrid;
 
 	String oldName;
 
@@ -79,7 +92,6 @@ public class SearchEdit extends WindowBox {
 		getContentPanel().add(name);
 		dql = new MyTextArea("Parametrized dql");
 		dql.setValue(this.pqp.parametrizedQuery.dql);
-		dql.setTextAreaHeight("300px");
 		dql.setTextAreaWidth("700px");
 		hp.add(dql);
 		if (MainPanel.getInstance().loginRole.toLowerCase().equals("administrator")) {
@@ -89,6 +101,76 @@ public class SearchEdit extends WindowBox {
 			dql.setIsEditable(false);
 			name.setIsEditable(false);
 		}
+		dql.setTextAreaHeight("350px");
+		datagrid = new DataGrid<ParameterLabel>(10);
+		datagrid.setVisibleRange(0, 10);
+
+		// userId Column
+		Column<ParameterLabel, String> parameter = new Column<ParameterLabel, String>(new TextInputCell()) {
+			public String getValue(ParameterLabel object) {
+				return object.parameter;
+			}
+		};
+
+		Column<ParameterLabel, String> label = new Column<ParameterLabel, String>(new TextInputCell()) {
+			public String getValue(ParameterLabel object) {
+				return object.label;
+			}
+		};
+
+		label.setFieldUpdater(new FieldUpdater<SearchEdit.ParameterLabel, String>() {
+			@Override
+			public void update(int index, ParameterLabel object, String value) {
+				List<String> pars = new ArrayList<String>();
+				object.label = value;
+				Iterator<ParameterLabel> it = SearchEdit.this.datagrid.getVisibleItems().listIterator();
+				while (it.hasNext()) {
+					ParameterLabel parLab = it.next();
+					pars.add(parLab.label);
+				}
+
+				try {
+					adminService.updateParameterLabelForParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
+							name.getTextBox().getValue(), pars, new AsyncCallback<Void>() {
+								@Override
+								public void onSuccess(Void result) {
+									MainPanel.log("Done updating label for parameter: " + object.parameter + " label: " + object.label);
+								}
+
+								@Override
+								public void onFailure(Throwable caught) {
+									MainPanel.log(caught.getMessage());
+								}
+							});
+				} catch (ServerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+
+		datagrid.addColumn(parameter, "Parameter");
+		datagrid.addColumn(label, "Label");
+		datagrid.setColumnWidth(parameter, "100px");
+		datagrid.setColumnWidth(label, "200px");
+		datagrid.setHeight("200px");
+		datagrid.getElement().getStyle().setBorderStyle(BorderStyle.SOLID);
+		datagrid.getElement().getStyle().setBorderWidth(0.5, Unit.PX);
+		datagrid.getElement().getStyle().setBorderColor("#000000");
+
+		ArrayList<ParameterLabel> al = new ArrayList<ParameterLabel>();
+		for (int i = 0; i < this.pqp.parametrizedQuery.labels.size(); i++) {
+			al.add(new ParameterLabel("<" + i + ">", this.pqp.parametrizedQuery.labels.get(i)));
+		}
+		datagrid.setRowData(0, al);
+		datagrid.setVisibleRange(0, al.size());
+
+		dql.getTextBox().addKeyUpHandler(new KeyUpHandler() {
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				parseDqlAndGetLabels();
+			}
+		});
 
 		filterClass = new MyTxtBox("Filter class name");
 		filterClass.setValue(this.pqp.parametrizedQuery.filterClass);
@@ -108,7 +190,6 @@ public class SearchEdit extends WindowBox {
 			}
 		};
 		faSortAtts.addValueChangeHandler(new ValueChangeHandler<List<String>>() {
-
 			@Override
 			public void onValueChange(ValueChangeEvent<List<String>> event) {
 				// TODO Auto-generated method stub
@@ -120,7 +201,6 @@ public class SearchEdit extends WindowBox {
 				orderByDirections = getVauesOfListBox(lbSortOrder);
 			}
 		});
-
 		faSortAtts.setValue(pqp.parametrizedQuery.orderBys);
 		hp.add(faSortAtts);
 		faSortAtts.setHeight("100%");
@@ -161,11 +241,18 @@ public class SearchEdit extends WindowBox {
 			lbSortOrder.addItem(sortDirection);
 		}
 
+		getContentPanel().add(datagrid);
+		getContentPanel().add(new Label("Parameter labels"));
+		SimplePanel sp1 = new SimplePanel();
+		sp1.setHeight("2em");
+		getContentPanel().add(sp1);
+
 		VerticalPanel vp2 = new VerticalPanel();
 		SimplePanel sp = new SimplePanel();
 		sp.setHeight("2em");
 		vp2.add(sp);
 		vp2.add(lbSortOrder);
+
 		hp.add(vp2);
 
 		try {
@@ -213,7 +300,6 @@ public class SearchEdit extends WindowBox {
 
 		duplicateSearch = new Button("Duplicate search");
 		duplicateSearch.addClickHandler(new ClickHandler() {
-
 			@Override
 			public void onClick(ClickEvent event) {
 				// TODO Auto-generated method stub
@@ -276,9 +362,18 @@ public class SearchEdit extends WindowBox {
 			@Override
 			public void onClick(ClickEvent event) {
 				try {
+
+					List<String> pars = new ArrayList<String>();
+					Iterator<ParameterLabel> it = SearchEdit.this.datagrid.getVisibleItems().listIterator();
+					while (it.hasNext()) {
+						ParameterLabel parLab = it.next();
+						pars.add(parLab.label);
+						MainPanel.log("added: " + parLab.label);
+					}
+
 					adminService.editParametrizedQuery(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, oldName,
 							name.getTextBox().getValue(), dql.getTextBox().getValue(), faGroups.getValues(true), faSortAtts.getValues(true), orderByDirections,
-							filterClass.getValue(), new AsyncCallback<Void>() {
+							filterClass.getValue(), pars, new AsyncCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 									MainPanel.log("Saved search: <strong>" + name.getValue() + "</strong>");
@@ -323,6 +418,35 @@ public class SearchEdit extends WindowBox {
 
 	}
 
+	private void parseDqlAndGetLabels() {
+		// Compile and use regular expression
+		ArrayList<String> pars = new ArrayList<String>();
+		Iterator<ParameterLabel> it = SearchEdit.this.datagrid.getVisibleItems().listIterator();
+		while (it.hasNext()) {
+			ParameterLabel parLab = it.next();
+			pars.add(parLab.label);
+		}
+
+		
+		RegExp regExp = RegExp.compile("(?:UPPER\\(|LOWER\\()*(\\w+)?(?:\\)*?)(?=[ ]*([<>=]|LIKE)).*?([<]\\d*[>]+)", "gi");
+		String input = dql.getTextBox().getText();
+		if (input != null) {
+			ArrayList<ParameterLabel> al = new ArrayList<ParameterLabel>();
+			MatchResult matcher = regExp.exec(input);
+			int i=0;
+			while (matcher != null) {
+				if(i<pars.size())
+					al.add(new ParameterLabel(matcher.getGroup(3), pars.get(i)));
+				else
+					al.add(new ParameterLabel(matcher.getGroup(3), matcher.getGroup(1)));
+				matcher = regExp.exec(input);
+				i++;
+			}
+			datagrid.setRowData(0, al);
+			datagrid.setVisibleRange(0, al.size());
+		}
+	}
+
 	private ArrayList<String> getVauesOfListBox(ListBox lb) {
 		ArrayList<String> ret = new ArrayList<String>();
 		for (int i = 0; i < lb.getItemCount(); i++) {
@@ -330,4 +454,15 @@ public class SearchEdit extends WindowBox {
 		}
 		return ret;
 	}
+
+	private class ParameterLabel {
+		public String parameter;
+		public String label;
+
+		public ParameterLabel(String par, String lab) {
+			this.parameter = par;
+			this.label = lab;
+		}
+	}
+
 }

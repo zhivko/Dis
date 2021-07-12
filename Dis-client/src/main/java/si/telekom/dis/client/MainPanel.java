@@ -23,6 +23,7 @@ import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -35,8 +36,11 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.WebSocket;
+import si.telekom.dis.client.action.SearchEdit;
 import si.telekom.dis.shared.AdminService;
 import si.telekom.dis.shared.AdminServiceAsync;
+import si.telekom.dis.shared.MyParametrizedQuery;
+import si.telekom.dis.shared.ServerException;
 import si.telekom.dis.shared.UserSettings;
 
 public class MainPanel extends Composite {
@@ -256,6 +260,28 @@ public class MainPanel extends Composite {
 		 * 
 		 * @Override public void execute() { np.this.center(); } });
 		 */
+		
+		/*
+		try {
+			adminService.getParametrizedQueryByName(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass,
+					"Varnost - dostop do dokumentov za osebo v obdobju", new AsyncCallback<MyParametrizedQuery>() {
+						@Override
+						public void onSuccess(MyParametrizedQuery result) {
+							ParametrizedQueryPanel pan = new ParametrizedQueryPanel(result);
+							SearchEdit se = new SearchEdit(pan);
+							se.show();
+						}
+
+						public void onFailure(Throwable caught) {
+							MainPanel.log(caught.getMessage());
+						};
+					});
+		} catch (ServerException e) {
+			// TODO Auto-generated catch block
+			MainPanel.log(e.getMessage());
+		}		
+		*/
+		
 		initWidget(splitLayoutPanel);
 
 	}

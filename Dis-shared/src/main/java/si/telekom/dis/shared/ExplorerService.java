@@ -12,7 +12,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 	 */
 	@RemoteServiceRelativePath("explorer")
 	public interface ExplorerService extends RemoteService {
-		List<Document> getObjects(String folder, boolean current, String loginName, String password, int start, int length) throws ServerException;
+		DocumentsResult getObjects(String folder, boolean current, String loginName, String password, int start, int length) throws ServerException;
 		List<Action> getActionsForObject(String loginName, String password, String r_object_id) throws ServerException;
 		List<String> getRenditions(String loginName, String password, String r_object_id) throws ServerException;
 		ProfileAttributesAndValues getProfileAttributesAndValues(String loginName, String password, String r_object_id) throws ServerException;
@@ -46,7 +46,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		Document importDocument(String loginName, String password, String objectId, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers, byte[] contentBase64, String format) throws ServerException;
 		Document classifyDocument(String loginName, String password, String r_object_id, String profileId, String stateId, Map<String,List<String>> attributes, Map<String,List<String>> rolesUsers) throws ServerException;
 		
-		List<Document> runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length) throws ServerException;
+		DocumentsResult runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length) throws ServerException;
 		List<List<String>> showPdfTags(String loginName, String loginPassword, String r_object_id) throws ServerException;
 		
 		Void updateBusinessNotification(String loginName, String password, String r_object_id) throws ServerException;

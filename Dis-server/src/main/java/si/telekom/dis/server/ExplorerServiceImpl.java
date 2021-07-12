@@ -142,6 +142,7 @@ import si.telekom.dis.shared.AttributeValue;
 import si.telekom.dis.shared.DcmtAttribute;
 import si.telekom.dis.shared.DocType;
 import si.telekom.dis.shared.Document;
+import si.telekom.dis.shared.DocumentsResult;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExtendedPermit;
 import si.telekom.dis.shared.MyParametrizedQuery;
@@ -317,13 +318,15 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	}
 
 	@Override
-	public List<Document> getObjects(String source_r_object_id, boolean current, String loginName, String password, int start, int length)
+	public DocumentsResult getObjects(String source_r_object_id, boolean current, String loginName, String password, int start, int length)
 			throws ServerException {
-		ArrayList<Document> ret = new ArrayList<Document>();
-		IDfQuery query = new DfQuery();
 
-		int rangeStart = start + 1;
-		int rangeEnd = start + length;
+		DocumentsResult ret1 = new DocumentsResult();
+		ret1.lastItemFromQuery = start;
+
+		ArrayList<Document> ret = new ArrayList<Document>();
+		ArrayList<String> retRObjectIds = new ArrayList<String>();
+		IDfQuery query = new DfQuery();
 
 		IDfSession userSession = null;
 		IDfCollection collection = null;
@@ -331,81 +334,118 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Logger.getLogger(this.getClass()).info("getObjects for " + loginName + " for: " + source_r_object_id);
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
-			String dql;
-			if (source_r_object_id == null || source_r_object_id.equals("")) {
-				dql = "select r_object_id from dm_cabinet where is_private=0 ENABLE(RETURN_RANGE " + rangeStart + " " + rangeEnd + " 'object_name')"; // is_private=0
-			} else if (source_r_object_id.startsWith("/")) {
-				dql = "select r_object_id from dm_sysobject where folder('" + source_r_object_id + "') ENABLE(RETURN_RANGE " + rangeStart + " " + rangeEnd
-						+ " 'r_object_id DESC')";
-			} else {
-				IDfFolder fold = (IDfFolder) userSession.getObjectByQualification("dm_folder where r_object_id='" + source_r_object_id + "'");
-				if (fold != null) {
-					String path = "";
-					for (int i = 0; i < fold.getFolderPathCount(); i++) {
-						path = path + fold.getFolderPath(i).toString();
-					}
-					dql = "select r_object_id from dm_sysobject where folder('" + path + "') ENABLE(RETURN_RANGE " + rangeStart + " " + rangeEnd
+			boolean done = false;
+
+			int loop = 0;
+			while (!done) {
+				int rangeStart = start + 1;
+				int rangeEnd = start + length;
+
+				String dql;
+				if (source_r_object_id == null || source_r_object_id.equals("")) {
+					dql = "select r_object_id from dm_cabinet where is_private=0 ENABLE(RETURN_RANGE " + rangeStart + " " + rangeEnd + " 'object_name')"; // is_private=0
+				} else if (source_r_object_id.startsWith("/")) {
+					dql = "select r_object_id from dm_sysobject where folder('" + source_r_object_id + "') ENABLE(RETURN_RANGE " + rangeStart + " " + rangeEnd
 							+ " 'r_object_id DESC')";
 				} else {
-					dql = "dm_document(all) where r_object_id = '" + source_r_object_id + "'";
-					IDfPersistentObject persObj = userSession.getObjectByQualification(dql);
-					if (persObj != null) {
-						ArrayList<Document> al = new ArrayList<Document>();
-						al.add(docFromSysObject((IDfSysObject) persObj, loginName, userSession));
-						return al;
+					IDfFolder fold = (IDfFolder) userSession.getObjectByQualification("dm_folder where r_object_id='" + source_r_object_id + "'");
+					if (fold != null) {
+						String path = "";
+						for (int i = 0; i < fold.getFolderPathCount(); i++) {
+							path = path + fold.getFolderPath(i).toString();
+						}
+						dql = "select r_object_id from dm_sysobject where folder('" + path + "') ENABLE(RETURN_RANGE " + rangeStart + " " + rangeEnd
+								+ " 'r_object_id DESC')";
 					} else {
-						dql = "dm_document where i_chronicle_id in (select i_chronicle_id from dm_document(all) where r_object_id = '" + source_r_object_id
-								+ "')";
-						persObj = userSession.getObjectByQualification(dql);
+						dql = "dm_document(all) where r_object_id = '" + source_r_object_id + "'";
+						IDfPersistentObject persObj = userSession.getObjectByQualification(dql);
 						if (persObj != null) {
 							ArrayList<Document> al = new ArrayList<Document>();
 							al.add(docFromSysObject((IDfSysObject) persObj, loginName, userSession));
-							return al;
+							ret1.documents = al;
+							ret1.lastItemFromQuery++;
+							return ret1;
 						} else {
-							dql = "select r_object_id from dm_sysobject where object_name='" + source_r_object_id + "'";
+							dql = "dm_document where i_chronicle_id in (select i_chronicle_id from dm_document(all) where r_object_id = '" + source_r_object_id
+									+ "')";
+							persObj = userSession.getObjectByQualification(dql);
+							if (persObj != null) {
+								ArrayList<Document> al = new ArrayList<Document>();
+								al.add(docFromSysObject((IDfSysObject) persObj, loginName, userSession));
+								ret1.documents = al;
+								ret1.lastItemFromQuery++;
+								return ret1;
+							} else {
+								dql = "select r_object_id from dm_sysobject where object_name='" + source_r_object_id + "'";
+							}
 						}
 					}
 				}
-			}
 
-			query.setDQL(dql);
-			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
-			WsServer.log(loginName, "Started dql query...");
-			long milis1 = System.currentTimeMillis();
-			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
-			WsServer.log(loginName, "Started dql query...Done.");
-			long milis2 = System.currentTimeMillis();
-			float duration1sec = (int) ((milis2 - milis1) / 1000);
-			String durationStr1 = String.format(Locale.ROOT, "%.2f", duration1sec);
-			Logger.getLogger(this.getClass()).info("\tEnded in: " + durationStr1 + "s");
-			int prevLogOutputDuration = 0;
-			while (collection.next()) {
-				String r_object_id = collection.getId("r_object_id").toString();
-				IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
+				query.setDQL(dql);
+				Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
+				WsServer.log(loginName, "Started dql query...");
+				long milis1 = System.currentTimeMillis();
+				collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
+				WsServer.log(loginName, "Started dql query...Done.");
+				long milis2 = System.currentTimeMillis();
+				float duration1sec = (int) ((milis2 - milis1) / 1000);
+				String durationStr1 = String.format(Locale.ROOT, "%.2f", duration1sec);
+				Logger.getLogger(this.getClass()).info("\tEnded in: " + durationStr1 + "s");
+				int prevLogOutputDuration = 0;
+				int addedToResultCount = 0;
+				while (collection.next()) {
+					String r_object_id = collection.getId("r_object_id").toString();
 
-				Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
+					if (!retRObjectIds.contains(r_object_id)) {
+						IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
+						Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
+						ret.add(doc);
+						retRObjectIds.add(r_object_id);
+						addedToResultCount++;
 
-				// if (!ret.contains(doc))
-				ret.add(doc);
+						if (ret.size() == length) {
+							ret1.documents = ret;
+							ret1.done = false;
+							ret1.lastItemFromQuery++;
+							return ret1;
+						}
+					}
+
+					long milis3 = System.currentTimeMillis();
+					int duration = (int) ((milis3 - milis2) / 1000);
+					if (duration % 1 == 0 && prevLogOutputDuration != duration) {
+						String message = "still parsing, currently: " + ret.size() + "/" + length + " working for: " + duration + "s";
+						Logger.getLogger(this.getClass()).info("\t" + message);
+						WsServer.log(loginName, message);
+						prevLogOutputDuration = duration;
+					}
+
+					ret1.lastItemFromQuery++;
+
+				}
+				collection.close();
+
+				if (addedToResultCount == 0) {
+					done = true;
+				} else {
+					done = false;
+					start = start + length;
+				}
 
 				long milis3 = System.currentTimeMillis();
-				int duration = (int) ((milis3 - milis2) / 1000);
-				if (duration % 1 == 0 && prevLogOutputDuration != duration) {
-					String message = "still parsing, currently: " + ret.size() + "/" + length + " working for: " + duration + "s";
-					Logger.getLogger(this.getClass()).info("\t" + message);
-					WsServer.log(loginName, message);
-					prevLogOutputDuration = duration;
-				}
+
+				String durationStr2 = String.format(Locale.ROOT, "%.2f", (milis3 - milis2) / 1000.0);
+				float duration = Float.valueOf(durationStr2).floatValue();
+
+				String msg = "Returned: " + ret.size() + " objects, working for: " + duration + "s";
+				Logger.getLogger(this.getClass()).info(msg);
+				WsServer.log(loginName, "returned: " + ret.size() + " rows, ended in: " + durationStr2 + "s");
+
+				loop++;
 			}
-			long milis3 = System.currentTimeMillis();
-
-			String durationStr2 = String.format(Locale.ROOT, "%.2f", (milis3 - milis2) / 1000.0);
-			float duration = Float.valueOf(durationStr2).floatValue();
-
-			String msg = "Returned: " + ret.size() + " objects, working for: " + duration + "s";
-			Logger.getLogger(this.getClass()).info(msg);
-			WsServer.log(loginName, "returned: " + ret.size() + " rows, ended in: " + durationStr2 + "s");
-			WsServer.log(loginName, dql);
+			ret1.documents = ret;
+			ret1.done = done;
 		} catch (Throwable ex) {
 			// ex.printStackTrace();
 			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
@@ -428,7 +468,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				ex.printStackTrace();
 			}
 		}
-		return ret;
+		return ret1;
 	}
 
 	public Document docFromSysObject(IDfPersistentObject persObj, String loginName, IDfSession userSession) throws Throwable {
@@ -3683,17 +3723,17 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	}
 
 	@Override
-	public List<Document> runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length)
+	public DocumentsResult runSearchQuery(String loginName, String password, String dql, MyParametrizedQuery pQuery, int start, int length)
 			throws ServerException {
 		dql = dql.replaceAll("\n", "");
 		Logger.getLogger(this.getClass()).info("runSearchQuery for " + loginName + " for: " + dql);
 
+		DocumentsResult ret1 = new DocumentsResult();
+		ret1.lastItemFromQuery = start;
+
 		ArrayList<Document> ret = new ArrayList<Document>();
 		ArrayList<String> alRObjectIds = new ArrayList<String>();
 		IDfQuery query = new DfQuery();
-
-		int rangeStart = start + 1;
-		int rangeEnd = start + length;
 
 		// remove lines starting with #
 		String[] lines = dql.split("\n");
@@ -3711,119 +3751,180 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			// try to get profile from local path - if it doesnt exist load it from
 			// documentum
-			String regExpr = ".*(RETURN_RANGE [0-9]+ [0-9]+\\s*('.*')?)";
-
-			Pattern p = Pattern.compile(regExpr, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);// .
-			// represents
-			// single
-			// character
-			Matcher m = p.matcher(dql);
-			if (!m.find()) {
-				throw new ServerException(
-						"Dql must contain \"ENABLE (RETURN_RANGE 1 20 '[[att] [desc], ...]')\" hint, to limit load on Documentum content server.");
-			}
-
-			if (m.group(2) != null) {
-				dql = dql.replaceAll(m.group(1), "RETURN_RANGE " + rangeStart + " " + rangeEnd + " " + m.group(2));
-				// lets modify order by from MyParametrizedQuery definition
-				String orderByStr = "'";
-				int i = 0;
-				for (String oby : pQuery.orderBys) {
-					if (pQuery.orderByDirections.get(i).contentEquals("D")) {
-						orderByStr = orderByStr + oby + " desc, ";
-					} else {
-						orderByStr = orderByStr + oby + ", ";
-					}
-					i++;
-				}
-				if (orderByStr.length() > 1) {
-					orderByStr = orderByStr.substring(0, orderByStr.length() - 2) + "'";
-					dql = dql.replaceAll(m.group(2).replaceAll("'", "\\'"), orderByStr);
-				}
-			} else {
-				dql = dql.replaceAll(m.group(1), "RETURN_RANGE " + rangeStart + " " + rangeEnd);
-			}
-
-			Logger.getLogger(this.getClass()).info("dql: " + dql);
-
-			if (loginName == null) {
-				throw new Exception("LoginName should not be null");
-			}
-			if (password == null) {
-				throw new Exception("Password should not be null");
-			}
-
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
-			query.setDQL(dql);
-			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
-			long milis1 = System.currentTimeMillis();
-			WsServer.log(loginName, dql);
-			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
-			long milis2 = System.currentTimeMillis();
-			String msg = "Ended query in: " + (int) ((milis2 - milis1) / 1000) + "s";
-			Logger.getLogger(this.getClass()).info("\t" + msg);
-			WsServer.log(loginName, msg);
-			int prevLogOutputDuration = 0;
+			boolean done = false;
 			int resultCount = 0;
+			long milis1 = System.currentTimeMillis();
 
-			IIncludeInReport filter = null;
-			if (pQuery.filterClass != null && !pQuery.filterClass.equals("")) {
-				// si.telekom.dis.server.reports.FilterSapObjects
-				Logger.getLogger(this.getClass()).info("filtering by filter class: '" + pQuery.filterClass + "'");
+			while (!done) {
+				int rangeStart = start + 1;
+				int rangeEnd = start + length;
 
-				final Class<?> aClass = WebappContext.servletContext.getClassLoader().loadClass(pQuery.filterClass);
-				final Constructor<IIncludeInReport> constr = (Constructor<IIncludeInReport>) aClass.getConstructor();
-				filter = constr.newInstance();
-			}
+				String regExpr = ".*(RETURN_RANGE [0-9]+ [0-9]+\\s*('.*')?)";
 
-			while (collection.next()) {
-				String r_object_id;
-				if (collection.hasAttr("audited_obj_id"))
-					r_object_id = collection.getId("audited_obj_id").toString();
-				else
-					r_object_id = collection.getId("r_object_id").toString();
+				Pattern p = Pattern.compile(regExpr, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);// .
+				// represents
+				// single
+				// character
+				Matcher m = p.matcher(dql);
+				if (!m.find()) {
+					throw new ServerException(
+							"Dql must contain \"ENABLE (RETURN_RANGE 1 20 '[[att] [desc], ...]')\" hint, to limit load on Documentum content server.");
+				}
 
-				try {
-					IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
+				if (m.group(2) != null) {
+					dql = dql.replaceAll(m.group(1), "RETURN_RANGE " + rangeStart + " " + rangeEnd + " " + m.group(2));
+					// lets modify order by from MyParametrizedQuery definition
+					String orderByStr = "'";
+					int i = 0;
+					for (String oby : pQuery.orderBys) {
+						if (pQuery.orderByDirections.get(i).contentEquals("D")) {
+							orderByStr = orderByStr + oby + " desc, ";
+						} else {
+							orderByStr = orderByStr + oby + ", ";
+						}
+						i++;
+					}
+					if (orderByStr.length() > 1) {
+						orderByStr = orderByStr.substring(0, orderByStr.length() - 2) + "'";
+						dql = dql.replaceAll(m.group(2).replaceAll("'", "\\'"), orderByStr);
+					}
+				} else {
+					dql = dql.replaceAll(m.group(1), "RETURN_RANGE " + rangeStart + " " + rangeEnd);
+				}
+
+				Logger.getLogger(this.getClass()).info("dql: " + dql);
+
+				if (loginName == null) {
+					throw new Exception("LoginName should not be null");
+				}
+				if (password == null) {
+					throw new Exception("Password should not be null");
+				}
+
+				query.setDQL(dql);
+				Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
+				WsServer.log(loginName, dql);
+				collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
+				long milis2 = System.currentTimeMillis();
+				String msg = "Ended query in: " + (int) ((milis2 - milis1) / 1000) + "s";
+				Logger.getLogger(this.getClass()).info("\t" + msg);
+				WsServer.log(loginName, msg);
+				int prevLogOutputDuration = 0;
+				int addedToResultCount = 0;
+
+				IIncludeInReport filter = null;
+				if (pQuery.filterClass != null && !pQuery.filterClass.equals("")) {
+					// si.telekom.dis.server.reports.FilterSapObjects
+					Logger.getLogger(this.getClass()).info("filtering by filter class: '" + pQuery.filterClass + "'");
+
+					final Class<?> aClass = WebappContext.servletContext.getClassLoader().loadClass(pQuery.filterClass);
+					final Constructor<IIncludeInReport> constr = (Constructor<IIncludeInReport>) aClass.getConstructor();
+					filter = constr.newInstance();
+				}
+
+				addedToResultCount = 0;
+				while (collection.next()) {
+					String r_object_id;
+					if (collection.hasAttr("audited_obj_id"))
+						r_object_id = collection.getId("audited_obj_id").toString();
+					else
+						r_object_id = collection.getId("r_object_id").toString();
+
 					if (filter != null) {
 						Logger.getLogger(this.getClass()).info("filtering r_object_id: " + r_object_id);
-						if (filter.shouldInclude((IDfSysObject) persObj, userSession)) {
-							Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
-							// if (!ret.contains(doc))
-							ret.add(doc);
+						try {
+
+							IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
+							if (filter.shouldInclude((IDfSysObject) persObj, userSession)) {
+								if (!alRObjectIds.contains(r_object_id)) {
+									if (persObj.getType().isSubTypeOf("dm_document")) {
+										Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
+										ret.add(doc);
+										alRObjectIds.add(r_object_id);
+										addedToResultCount++;
+
+										if (ret.size() == length) {
+											ret1.documents = ret;
+											ret1.done = false;
+											ret1.lastItemFromQuery++;
+											return ret1;
+										}
+
+									}
+								}
+							}
+						} catch (Exception ex) {
+							if (ex.getMessage().contains("DM_SYSOBJECT_E_CANT_FETCH_INVALID_ID"))
+								Logger.getLogger(this.getClass()).warn(ex.getMessage());
 						}
+
 					} else {
-						Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
-						// if (!ret.contains(doc))
-						ret.add(doc);
+						if (!alRObjectIds.contains(r_object_id)) {
+							try {
+								IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
+								// IDfPersistentObject persObj =
+								// userSession.getObjectByQualification("dm_document(all) where
+								// r_object_id='" + r_object_id + "'");
+								if (persObj.getType().isSubTypeOf("dm_document")) {
+									Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
+									ret.add(doc);
+									alRObjectIds.add(r_object_id);
+									addedToResultCount++;
+									if (ret.size() == length) {
+										ret1.documents = ret;
+										ret1.done = false;
+										ret1.lastItemFromQuery++;
+										return ret1;
+									}
+								} else {
+									Logger.getLogger(this.getClass()).warn("Only adding document to result of search and not: " + persObj.getType().getName());
+								}
+							} catch (Exception ex) {
+								if (ex.getMessage().contains("DM_SYSOBJECT_E_CANT_FETCH_INVALID_ID"))
+									Logger.getLogger(this.getClass()).warn(ex.getMessage());
+							}
+						}
 					}
-				} catch (Exception ex) {
-					if (ex.getMessage().contains("[DM_API_E_EXIST]")) {
-						Logger.getLogger(this.getClass()).warn(ex.getMessage());
-					} else {
-						throw ex;
+
+					ret1.lastItemFromQuery++;
+
+					long milis3 = System.currentTimeMillis();
+					int duration = (int) ((milis3 - milis2) / 1000);
+					if (duration % 1 == 0 && prevLogOutputDuration != duration) {
+						String message = "still parsing, currently: " + ret.size() + "/" + length + " working for: " + duration + "s";
+						Logger.getLogger(this.getClass()).info("\t" + message);
+						WsServer.log(loginName, message);
+						prevLogOutputDuration = duration;
 					}
+				}
+				collection.close();
+
+				if (addedToResultCount == 0) {
+					done = true;
+				}
+				// else if (ret1.lastItemFromQuery < start + length) {
+				// done = true;
+				// }
+				else {
+					done = false;
+					start = start + length;
 				}
 
-				long milis3 = System.currentTimeMillis();
-				int duration = (int) ((milis3 - milis2) / 1000);
-				if (duration % 1 == 0 && prevLogOutputDuration != duration) {
-					String message = "still parsing, currently: " + ret.size() + "/" + length + " working for: " + duration + "s";
-					Logger.getLogger(this.getClass()).info("\t" + message);
-					WsServer.log(loginName, message);
-					prevLogOutputDuration = duration;
-				}
-				resultCount++;
 			}
+			ret1.documents = ret;
+			ret1.done = done;
+
 			long milis3 = System.currentTimeMillis();
 
-			String durationStr = String.format(Locale.ROOT, "%.2f", (milis3 - milis2) / 1000.0);
+			String durationStr = String.format(Locale.ROOT, "%.2f", (milis3 - milis1) / 1000.0);
 			float duration = Float.valueOf(durationStr).floatValue();
 
 			String msg2 = "Returned: " + ret.size() + " objects, result count: " + resultCount + " working for: " + duration + "s";
 			Logger.getLogger(this.getClass()).info(msg2);
 			WsServer.log(loginName, msg2);
+
 		} catch (Throwable ex) {
 			// ex.printStackTrace();
 			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
@@ -3847,7 +3948,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				ex.printStackTrace();
 			}
 		}
-		return ret;
+		return ret1;
 	}
 
 	public void showCurrentDocumentumPermits(String loginName, IDfPersistentObject persObject) throws DfException {

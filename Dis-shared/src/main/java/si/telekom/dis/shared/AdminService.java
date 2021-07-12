@@ -50,7 +50,7 @@ public interface AdminService extends RemoteService {
 	MyParametrizedQuery getParametrizedQueryByName(String loginName, String loginPass, String name) throws ServerException;
 
 	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
-			List<String> orderBy, List<String> orderBydirections, String filterClass) throws ServerException;
+			List<String> orderBy, List<String> orderBydirections, String filterClass, List<String> labels) throws ServerException;
 
 	String duplicateParametrizedQuery(String loginName, String loginPass, String oldName, String name, String query) throws ServerException;
 
@@ -70,5 +70,8 @@ public interface AdminService extends RemoteService {
 	List<String> getRegTableFieldTypes(String tableName) throws ServerException;
 	
 	void runDql(String loginName, String loginPassword, String dql) throws ServerException;
+	
+	void updateParameterLabelForParametrizedQuery(String loginName, String loginPass, String name, List<String> parameterLabels) throws ServerException;
+
 
 }

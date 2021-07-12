@@ -52,7 +52,7 @@ public interface AdminServiceAsync {
 			throws ServerException;
 
 	void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
-			List<String> orderBy, List<String> orderByDirections, String filterClass, AsyncCallback<Void> callback) throws ServerException;
+			List<String> orderBy, List<String> orderByDirections, String filterClass, List<String> labels, AsyncCallback<Void> callback) throws ServerException;
 
 	void duplicateParametrizedQuery(String loginName, String loginPass, String oldName, String name, String query, AsyncCallback<String> asyncCallback) throws ServerException;
 
@@ -74,5 +74,7 @@ public interface AdminServiceAsync {
 	void runDql(String loginName, String loginPassword, String dql, AsyncCallback<Void> callback) throws ServerException;
 	
 	void insertTSVToRegTable(String loginName, String loginPass, String regTableId, String csvValues, AsyncCallback<Void> callback) throws ServerException;
+	
+	void updateParameterLabelForParametrizedQuery(String loginName, String loginPass, String name, List<String> parameterLabels, AsyncCallback<Void> asyncCallback) throws ServerException;
 
 }

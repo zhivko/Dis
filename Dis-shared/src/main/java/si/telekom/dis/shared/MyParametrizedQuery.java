@@ -7,7 +7,6 @@ public class MyParametrizedQuery implements java.io.Serializable, com.google.gwt
 	public String name;
 	public String dql;
 	public List<Attribute> formAttributes;
-	public List<String> dqlParts;
 	public List<String> labels;
 	public List<String> arguments;
 	public List<UserGroup> usersGroups;
@@ -18,7 +17,6 @@ public class MyParametrizedQuery implements java.io.Serializable, com.google.gwt
 
 	public MyParametrizedQuery() {
 		formAttributes = new ArrayList<Attribute>();
-		dqlParts = new ArrayList<String>();
 		labels = new ArrayList<String>();
 		arguments = new ArrayList<String>();
 		usersGroups = new ArrayList<UserGroup>();

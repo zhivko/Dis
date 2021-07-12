@@ -532,9 +532,9 @@ public class ExplorerPanel extends Composite {
 			MyAsyncDataProvider adp = model.getDataProviderThatHandlesDoc(selectedDocument.r_object_id, selectedDocument.i_chronicle_id);
 			if (adp != null) {
 				for (Document doc : adp.documents) {
-					if (doc.r_object_id == selectedDocument.r_object_id || doc.i_chronicle_id == selectedDocument.i_chronicle_id) {
+					//if (doc.r_object_id == selectedDocument.r_object_id || doc.i_chronicle_id == selectedDocument.i_chronicle_id) {
 						doc.isHighlighted = false;
-					}
+					//}
 				}
 				adp.updateRowData(0, adp.documents);
 			}
@@ -546,15 +546,17 @@ public class ExplorerPanel extends Composite {
 				for (CustomTreeModel.MyAsyncDataProvider adp : model.allDataProviders) {
 					if (adp.documents != null) {
 						for (Document doc : adp.documents) {
-							if (doc.r_object_id == toBeSelected.r_object_id || doc.i_chronicle_id == toBeSelected.i_chronicle_id) {
+							//if (doc.r_object_id == toBeSelected.r_object_id || doc.i_chronicle_id == toBeSelected.i_chronicle_id) {
+							if (doc.r_object_id == toBeSelected.r_object_id) {
 								doc.isHighlighted = true;
+								break;
 							}
 						}
 						adp.updateRowData(0, adp.documents);
 					}
 				}
 				setRObjectId(toBeSelected);
-				showActionsAndProperties(r_object_id);
+				showActionsAndProperties(toBeSelected.r_object_id);
 			}
 		} else {
 

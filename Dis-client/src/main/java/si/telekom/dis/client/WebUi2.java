@@ -30,8 +30,13 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import si.telekom.dis.client.action.SearchEdit;
+import si.telekom.dis.shared.AdminService;
+import si.telekom.dis.shared.AdminServiceAsync;
 import si.telekom.dis.shared.LoginService;
 import si.telekom.dis.shared.LoginServiceAsync;
+import si.telekom.dis.shared.MyParametrizedQuery;
+import si.telekom.dis.shared.ServerException;
 import si.telekom.dis.shared.UserSettings;
 
 /**
@@ -81,6 +86,7 @@ public class WebUi2 implements EntryPoint {
 					RootPanel.get("mainPanel").clear();
 					RootLayoutPanel rp = RootLayoutPanel.get();
 					rp.add(mp);
+					
 				};
 			});
 
