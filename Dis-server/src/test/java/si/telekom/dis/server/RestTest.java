@@ -749,10 +749,10 @@ public class RestTest extends JerseyTest {
 
 			// *************** test destroy document ******************
 //@formatter:off
-//			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
-//					.request(MediaType.APPLICATION_JSON)
-//					.header("X-Transaction-Id", X_Transaction_Id)
-//					.post(Entity.text(""));
+			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
+					.request(MediaType.APPLICATION_JSON)
+					.header("X-Transaction-Id", X_Transaction_Id)
+					.post(Entity.text(""));
 //@formatter:on			
 
 			assertEquals("Should return status 200", 200, response.getStatus());
