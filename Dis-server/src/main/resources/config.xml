@@ -136,7 +136,7 @@
       </objectTypes>
       <queries>
          <query name="Dokument po r_object_id">select r_object_id from dm_document 
-where r_object_id (Documentum id r_object_id) ='&lt;1&gt;'
+where r_object_id ='&lt;1&gt;'
 ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
 
 				
@@ -145,7 +145,11 @@ ENABLE (RETURN_RANGE 1 10 'r_modify_date desc')
          
             
             
-        <userGroups>
+        
+            
+            
+            
+         <userGroups>
                <userGroup id="" name=""/>
             </userGroups>
             <orderBys/>
