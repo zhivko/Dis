@@ -105,7 +105,7 @@ public class EditColIds extends WindowBox implements ClickHandler {
 
 							@Override
 							public void onSelectionChange(SelectionChangeEvent arg0) {
-								//MainPanel.log(selectionModel.getSelectedObject().values.get(0));
+								// MainPanel.log(selectionModel.getSelectedObject().values.get(0));
 							}
 						});
 
@@ -124,7 +124,7 @@ public class EditColIds extends WindowBox implements ClickHandler {
 								rows.add(pos, new Row(Arrays.asList(rs)));
 
 								dataProvider.updateRowData(pager.getPageStart(), rows);
-								//cellTable.setRowCount(0);
+								// cellTable.setRowCount(0);
 							}
 						});
 
@@ -303,32 +303,31 @@ public class EditColIds extends WindowBox implements ClickHandler {
 			final Range range = display.getVisibleRange();
 
 			try {
-				adminService.getColIdsForTemplate(templateId, range.getStart(),
-						range.getLength(), new AsyncCallback<List<List<String>>>() {
-							@Override
-							public void onSuccess(List<List<String>> lines) {
-								MainPanel.log("Branje vrstic tabele: " + templateId + " ok. Vrstic: " + lines.size());
-								MainPanel.log("values read OK.");
+				adminService.getColIdsForTemplate(templateId, range.getStart(), range.getLength(), new AsyncCallback<List<List<String>>>() {
+					@Override
+					public void onSuccess(List<List<String>> lines) {
+						MainPanel.log("Branje vrstic tabele: " + templateId + " ok. Vrstic: " + lines.size());
+						MainPanel.log("values read OK.");
 
-								ArrayList<Row> rows = new ArrayList<Row>();
-								for (List<String> list : lines) {
-									Row row = new Row(list);
-									rows.add(row);
-								}
-								updateRowData(range.getStart(), rows);
-								Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-									@Override
-									public void execute() {
-										EditColIds.instance.center();
-									}
-								});
-							}
-
+						ArrayList<Row> rows = new ArrayList<Row>();
+						for (List<String> list : lines) {
+							Row row = new Row(list);
+							rows.add(row);
+						}
+						updateRowData(range.getStart(), rows);
+						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 							@Override
-							public void onFailure(Throwable caught) {
-								MainPanel.log("Error: " + caught.getMessage());
+							public void execute() {
+								EditColIds.instance.center();
 							}
 						});
+					}
+
+					@Override
+					public void onFailure(Throwable caught) {
+						MainPanel.log("Error: " + caught.getMessage());
+					}
+				});
 			} catch (ServerException e) {
 				// TODO Auto-generated catch block
 				MainPanel.log(e.getMessage());
@@ -358,9 +357,11 @@ public class EditColIds extends WindowBox implements ClickHandler {
 							MainPanel.log("Update ok.");
 						}
 					});
+
+		object.values.set(colNo, value);
 	}
 
-	public Column<Row, String> addColumn(final int colNo, String fieldName) {
+	public Column<Row, String> addColumn(final int colNo, final String fieldName) {
 		EditTextCell tic = new EditTextCell() {
 			@Override
 			public void render(Context context, String value, SafeHtmlBuilder sb) {

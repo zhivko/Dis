@@ -2071,7 +2071,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return null;
 	}
 
-	void setUsersForRoles(IDfSession userSession, IDfPersistentObject persObject, Map<String, List<String>> roleUserGroups) throws Throwable {
+	public void setUsersForRoles(IDfSession userSession, IDfPersistentObject persObject, Map<String, List<String>> roleUserGroups) throws Throwable {
 
 		// persObject.save();
 		// IDfSession adminSession = AdminServiceImpl.getAdminSession();
@@ -2716,6 +2716,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				query.setDQL(
 						"update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
 				collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+				if (collection.next()) {
+					int rowsUpdated = collection.getInt("rows_updated");
+					Logger.getLogger(this.getClass())
+							.info("updated " + rowsUpdated + " records - state on r_object_id: " + r_object_id + " to: " + prof.states.get(stateNo).getId());
+				}
 
 				AdminServiceImpl.runStandardActions(persObj, prof.states.get(stateNo).getId(), userSession);
 
@@ -3706,7 +3711,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return doc;
 	}
 
-	void setStateForObject(IDfSession userSession, IDfPersistentObject persObject, Profile prof, String stateId) throws Throwable {
+	public void setStateForObject(IDfSession userSession, IDfPersistentObject persObject, Profile prof, String stateId) throws Throwable {
 		WsServer.log(userSession.getLoginInfo().getUser(), "Setting setStateForObject...");
 
 		persObject.fetch("dm_document");

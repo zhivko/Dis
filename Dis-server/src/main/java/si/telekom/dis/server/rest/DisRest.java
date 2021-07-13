@@ -40,7 +40,10 @@ import si.telekom.dis.server.rest.api.DocumentsApiService;
 import si.telekom.dis.server.rest.api.NotFoundException;
 import si.telekom.dis.server.restCommon.User;
 import si.telekom.dis.shared.AttributeValue;
+import si.telekom.dis.shared.Profile;
 import si.telekom.dis.shared.ServerException;
+import si.telekom.dis.shared.State;
+import si.telekom.dis.shared.UserGroup;
 
 // https://erender-test.ts.telekom.si:8445/Dis/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
 // http://localhost:8080/Dis-server/rest/disRest/dqlLookup?loginName=zivkovick&passwordEncrypted=RG9pdG1hbjc4OTAxMg==&dql=select%20*%20from%20dm_cabinet
@@ -392,7 +395,36 @@ public class DisRest extends DocumentsApiService {
 
 			IDfSysObject sysObj = (IDfSysObject) userSession.getObjectByQualification("dm_sysobject(all) where r_object_id='" + rObjectId + "'");
 
-			if (sysObj != null) {
+			Object[] profileAndRolesOfUserAndState = ExplorerServiceImpl.getInstance().getProfileAndUserRolesAndState(sysObj, loginName, userSession);
+			Profile prof = (Profile) profileAndRolesOfUserAndState[1];
+
+			if (prof != null) {
+				HashMap<String, List<String>> roleUserGroups = (HashMap<String, List<String>>) (profileAndRolesOfUserAndState[4]);
+				if (roleUserGroups.keySet().size() == 0) {
+					// in case of noclassified documents - lets pick
+					// default users in profile for every role
+					for (int i = 0; i < prof.roles.size(); i++) {
+						for (int k = 0; k < prof.roles.get(i).defaultUserGroups.size(); k++) {
+							UserGroup ug = prof.roles.get(i).defaultUserGroups.get(k);
+							if (!roleUserGroups.containsKey(prof.roles.get(i).getId()))
+								roleUserGroups.put(prof.roles.get(i).getId(), new ArrayList<String>());
+
+							roleUserGroups.get(prof.roles.get(i).getId()).add(ug.getId());
+						}
+					}
+
+				}
+
+				IDfPersistentObject persObject = sysObj;
+				String statId = (String) profileAndRolesOfUserAndState[3];
+				if (statId == null) {
+					for (State state : prof.states) {
+						if (!state.getParameter().equals("unclassified")) {
+							statId = state.getId();
+							break;
+						}
+					}
+				}
 
 				if (!sysObj.isCheckedOut())
 					sysObj.checkout();
@@ -446,6 +478,10 @@ public class DisRest extends DocumentsApiService {
 				}
 				IDfSysObject newSysObject = (IDfSysObject) userSession.getObject(dfnewid);
 
+				// needs to version DOCMAN_S and DOCMAN_R
+				ExplorerServiceImpl.getInstance().setStateForObject(userSession, newSysObject, prof, statId);
+				ExplorerServiceImpl.getInstance().setUsersForRoles(userSession, newSysObject, roleUserGroups);
+
 				List<AttributeValue> lAv = new ArrayList<AttributeValue>();
 				for (Attribute att : updateDocumentRequest.getAttributes()) {
 					AttributeValue av = new AttributeValue();
@@ -458,8 +494,7 @@ public class DisRest extends DocumentsApiService {
 				si.telekom.dis.shared.Document doc = ExplorerServiceImpl.getInstance().docFromSysObject(newSysObject, loginName, userSession);
 				Document doc1 = getRestDocFromSharedDoc(doc);
 				return Response.ok(doc1).build();
-			} else {
-				return Response.status(404).entity("Such document doesn't exist.").build();
+
 			}
 		} catch (Throwable ex) {
 			return Response.status(500).entity(ex.getMessage()).build();
@@ -475,7 +510,7 @@ public class DisRest extends DocumentsApiService {
 				if (userSession.isConnected())
 					userSession.getSessionManager().release(userSession);
 		}
-
+		return Response.status(404).entity("Document not classified - no profile assigned.").build();
 	}
 
 	@Override

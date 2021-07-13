@@ -3,13 +3,16 @@ package si.telekom.dis.server;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Scanner;
 
 import javax.naming.InitialContext;
 import javax.ws.rs.client.Client;
@@ -44,11 +47,13 @@ import org.w3c.dom.NodeList;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import si.telekom.dis.server.rest.Attribute;
 import si.telekom.dis.server.rest.Document;
 import si.telekom.dis.server.rest.DocumentContent;
 import si.telekom.dis.server.rest.UpdateDocumentRequest;
+import si.telekom.dis.server.rest.UpdateDocumentRequest.VersionEnum;
 
 public class RestTest extends JerseyTest {
 	HttpServer server = null;
@@ -411,13 +416,13 @@ public class RestTest extends JerseyTest {
 				.header("X-Transaction-Id", X_Transaction_Id).
 				post(jsonImport);
 //@formatter:on			
-		
+
 		String json = response.readEntity(String.class);
 		ObjectMapper objectMapper = new ObjectMapper();
-		
+
 		try {
 			Document doc = objectMapper.readValue(json.getBytes(), Document.class);
-			
+
 			assertEquals("Import document should return status 200", 200, response.getStatus());
 			assertNotNull("Should return document", doc);
 			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
@@ -441,24 +446,31 @@ public class RestTest extends JerseyTest {
 			objectMapper = new ObjectMapper();
 			doc = objectMapper.readValue(json.getBytes(), Document.class);
 
-//			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
-//			json = response.readEntity(String.class);
-//			objectMapper = new ObjectMapper();
-//			QueryDocumentsResponse queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
-//			doc = queryDocsResp.getDocuments().get(0);
+			// response = client.target(baseUri.toString() +
+			// "/documents/query").queryParam("dql", "select * from dm_document where
+			// r_object_id='"+doc.getrObjectId()+"'").request().get();
+			// json = response.readEntity(String.class);
+			// objectMapper = new ObjectMapper();
+			// QueryDocumentsResponse queryDocsResp =
+			// objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
+			// doc = queryDocsResp.getDocuments().get(0);
 
 			assertEquals("State should be draft", "draft", doc.getState());
-			
+
 			// *************** test promote document ******************
 			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/promote").request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
 
-			// *************** test that document is in effective state ******************
-//			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
-//			json = response.readEntity(String.class);
-//			objectMapper = new ObjectMapper();
-//			queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
-//			doc = queryDocsResp.getDocuments().get(0);
+			// *************** test that document is in effective state
+			// ******************
+			// response = client.target(baseUri.toString() +
+			// "/documents/query").queryParam("dql", "select * from dm_document where
+			// r_object_id='"+doc.getrObjectId()+"'").request().get();
+			// json = response.readEntity(String.class);
+			// objectMapper = new ObjectMapper();
+			// queryDocsResp = objectMapper.readValue(json.getBytes(),
+			// QueryDocumentsResponse.class);
+			// doc = queryDocsResp.getDocuments().get(0);
 
 			json = response.readEntity(String.class);
 			objectMapper = new ObjectMapper();
@@ -482,26 +494,27 @@ public class RestTest extends JerseyTest {
 
 	}
 
-//	@Test
-//	public void testDocumentsImport() throws InterruptedException {
-//
-//		while (!AdminServiceImpl.started)
-//			Thread.currentThread().sleep(500);
-//
-//		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
-//		// HttpAuthenticationFeature feature =
-//		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
-//
-//		final Client client = ClientBuilder.newClient();
-//		client.register(feature);
-//
-//		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
-//		client.property(ClientProperties.READ_TIMEOUT, 10000000);
-//
-//		String X_Transaction_Id = String.valueOf(System.currentTimeMillis());
-//
-//		String documentContent = "dGVzdA==";
-//
+	// @Test
+	// public void testDocumentsImport() throws InterruptedException {
+	//
+	// while (!AdminServiceImpl.started)
+	// Thread.currentThread().sleep(500);
+	//
+	// HttpAuthenticationFeature feature =
+	// HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
+	// // HttpAuthenticationFeature feature =
+	// // HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
+	//
+	// final Client client = ClientBuilder.newClient();
+	// client.register(feature);
+	//
+	// client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
+	// client.property(ClientProperties.READ_TIMEOUT, 10000000);
+	//
+	// String X_Transaction_Id = String.valueOf(System.currentTimeMillis());
+	//
+	// String documentContent = "dGVzdA==";
+	//
 ////@formatter:off	
 //		Response response;
 //		
@@ -539,51 +552,55 @@ public class RestTest extends JerseyTest {
 //				.header("X-Transaction-Id", X_Transaction_Id).
 //				post(jsonImport);
 ////@formatter:on			
-//		String json = response.readEntity(String.class);
-//
-//		ObjectMapper objectMapper = new ObjectMapper();
-//		Document doc;
-//		try {
-//			doc = objectMapper.readValue(json.getBytes(), Document.class);
-//
-//			assertEquals("Import document should return status 200", 200, response.getStatus());
-//			assertNotNull("Should return document", doc);
-//			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
-//
-//			// *************** test read content of document ******************
-//			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/content").request().get();
-//			assertEquals("Should return status 200", 200, response.getStatus());
-//
-//			String base64EncodedString = response.readEntity(String.class);
-//			String content = AdminServiceImpl.base64Decode(base64EncodedString);
-//			String originalContent = AdminServiceImpl.base64Decode(documentContent);
-//			assertNotNull("Content should contain something", response.getEntity().toString());
-//			assertEquals("Content should be equal", originalContent, content);
-//
-//			// *************** test destroy document ******************
+	// String json = response.readEntity(String.class);
+	//
+	// ObjectMapper objectMapper = new ObjectMapper();
+	// Document doc;
+	// try {
+	// doc = objectMapper.readValue(json.getBytes(), Document.class);
+	//
+	// assertEquals("Import document should return status 200", 200,
+	// response.getStatus());
+	// assertNotNull("Should return document", doc);
+	// assertNotNull("Should return r_object_id for document",
+	// doc.getrObjectId());
+	//
+	// // *************** test read content of document ******************
+	// response = client.target(baseUri.toString() + "/documents/" +
+	// doc.getrObjectId() + "/content").request().get();
+	// assertEquals("Should return status 200", 200, response.getStatus());
+	//
+	// String base64EncodedString = response.readEntity(String.class);
+	// String content = AdminServiceImpl.base64Decode(base64EncodedString);
+	// String originalContent = AdminServiceImpl.base64Decode(documentContent);
+	// assertNotNull("Content should contain something",
+	// response.getEntity().toString());
+	// assertEquals("Content should be equal", originalContent, content);
+	//
+	// // *************** test destroy document ******************
 ////@formatter:off
 //			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
 //					.request(MediaType.APPLICATION_JSON)
 //					.header("X-Transaction-Id", X_Transaction_Id)
 //					.post(Entity.text(""));
 ////@formatter:on			
-//
-//			assertEquals("Should return status 200", 200, response.getStatus());
-//
-//		} catch (JsonParseException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (JsonMappingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//
-//	}
+	//
+	// assertEquals("Should return status 200", 200, response.getStatus());
+	//
+	// } catch (JsonParseException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// } catch (JsonMappingException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// } catch (IOException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	//
+	// }
 
-	@Test
+	@Test(timeout=10000000)
 	public void testDocumentUpdate() throws InterruptedException {
 
 		while (!AdminServiceImpl.started)
@@ -593,11 +610,18 @@ public class RestTest extends JerseyTest {
 		// HttpAuthenticationFeature feature =
 		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
 
+		// final List<Object> providers = new ArrayList<Object>();
+		JacksonJaxbJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider();
+		// providers.add( jacksonJsonProvider );
+
+		// webClient = WebClient.create( "http://localhost:8080/api", providers );
+
 		final Client client = ClientBuilder.newClient();
 		client.register(feature);
+		client.register(jacksonJsonProvider);
 
-		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
-		client.property(ClientProperties.READ_TIMEOUT, 10000000);
+		//client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
+		//client.property(ClientProperties.READ_TIMEOUT, 10000000);
 
 		String X_Transaction_Id = String.valueOf(System.currentTimeMillis());
 
@@ -617,6 +641,7 @@ public class RestTest extends JerseyTest {
 					  "  { \"name\": \"title\", \"values\": [ \"testni dokument\" ] }," +
 					  "  { \"name\": \"mob_type_id\", \"values\": [ \"142\" ] }," +
 					  "  { \"name\": \"mob_type\", \"values\": [ \"Pogodba\" ] }," +
+					  "  { \"name\": \"mob_subscriber_number\", \"values\": [ \"360269\" ] }," +
 					  "  { \"name\": \"mob_issue_date\", \"values\": [ \"01.01.2021 10:00:00\" ] }" +
 					  "]," +
 					  "\"rolesUsers\":" +
@@ -641,13 +666,13 @@ public class RestTest extends JerseyTest {
 				.header("X-Transaction-Id", X_Transaction_Id).
 				post(jsonImport);
 //@formatter:on			
-		
+
 		String json = response.readEntity(String.class);
 		ObjectMapper objectMapper = new ObjectMapper();
-		
+
 		try {
 			Document doc = objectMapper.readValue(json.getBytes(), Document.class);
-			
+
 			assertEquals("Import document should return status 200", 200, response.getStatus());
 			assertNotNull("Should return document", doc);
 			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
@@ -663,65 +688,71 @@ public class RestTest extends JerseyTest {
 			assertEquals("Content should be equal", originalContent, content);
 
 			// *************** test update document ******************
-			
+
 			// download from web
-			// 
-			URL url = new URL("https://web.archive.org/web/20081121022409fw_/http://testsuite.opendocumentfellowship.com/testcases/General/DocumentStructure/SingleDocumentContents/testDoc/testDoc.odt");
-			Scanner s = new Scanner(url.openStream());
-			String allFile = "";
-			while(s.hasNext())
-			{
-				String line=s.nextLine();
-				allFile = allFile + line;
+			//
+			URL url = new URL(
+					"https://web.archive.org/web/20081121022409fw_/http://testsuite.opendocumentfellowship.com/testcases/General/DocumentStructure/SingleDocumentContents/testDoc/testDoc.odt");
+
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			DataInputStream dis = new DataInputStream(conn.getInputStream());
+			ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+			byte buffer[] = new byte[1024];
+			int offset = 0;
+			int bytes;
+			while ((bytes = dis.read(buffer, offset, buffer.length)) > 0) {
+			    baOs.write(buffer, 0, bytes);
 			}
-			s.close();
-			String encodedString = Base64.getEncoder().encodeToString(allFile.getBytes());
+			baOs.close();
 			
+			String encodedString = Base64.getEncoder().encodeToString(baOs.toByteArray());
+
 			UpdateDocumentRequest updateDocReq = new UpdateDocumentRequest();
 			updateDocReq.addAttributesItem(new Attribute().name("title").addValuesItem("novTitle"));
-			updateDocReq.setContent(new DocumentContent().data(encodedString));
-			
-			Entity<UpdateDocumentRequest> jsonUpdate = Entity.json(updateDocReq);
-			
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId()).request(MediaType.APPLICATION_JSON)
-					.header("X-Transaction-Id", X_Transaction_Id).post(jsonUpdate);
+			DocumentContent cont = new DocumentContent();
+			cont.data(encodedString);
+			cont.format("odt");
+			updateDocReq.setContent(cont);
+			updateDocReq.setVersion(VersionEnum.MINOR);
 
-			// *************** test that document is in draft state ******************
+			Entity<UpdateDocumentRequest> jsonUpdate = Entity.json(updateDocReq);
+
+			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId()).request(MediaType.APPLICATION_JSON)
+					.header("X-Transaction-Id", X_Transaction_Id).put(jsonUpdate);
+
+			// *************** test that document is in effective state
+			// ******************
 			json = response.readEntity(String.class);
 			objectMapper = new ObjectMapper();
 			doc = objectMapper.readValue(json.getBytes(), Document.class);
 
-//			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
-//			json = response.readEntity(String.class);
-//			objectMapper = new ObjectMapper();
-//			QueryDocumentsResponse queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
-//			doc = queryDocsResp.getDocuments().get(0);
+			// response = client.target(baseUri.toString() +
+			// "/documents/query").queryParam("dql", "select * from dm_document where
+			// r_object_id='"+doc.getrObjectId()+"'").request().get();
+			// json = response.readEntity(String.class);
+			// objectMapper = new ObjectMapper();
+			// QueryDocumentsResponse queryDocsResp =
+			// objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
+			// doc = queryDocsResp.getDocuments().get(0);
 
-			assertEquals("State should be draft", "draft", doc.getState());
-			
+			assertEquals("State should be effective", "effective", doc.getState());
+
 			// *************** test promote document ******************
 			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/promote").request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
 
-			// *************** test that document is in effective state ******************
-//			response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_document where r_object_id='"+doc.getrObjectId()+"'").request().get();
-//			json = response.readEntity(String.class);
-//			objectMapper = new ObjectMapper();
-//			queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
-//			doc = queryDocsResp.getDocuments().get(0);
-
 			json = response.readEntity(String.class);
 			objectMapper = new ObjectMapper();
 			doc = objectMapper.readValue(json.getBytes(), Document.class);
 
-			assertEquals("State should be effective", "effective", doc.getState());
+			assertEquals("State should be archive", "archive", doc.getState());
 
 			// *************** test destroy document ******************
 //@formatter:off
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
-					.request(MediaType.APPLICATION_JSON)
-					.header("X-Transaction-Id", X_Transaction_Id)
-					.post(Entity.text(""));
+//			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
+//					.request(MediaType.APPLICATION_JSON)
+//					.header("X-Transaction-Id", X_Transaction_Id)
+//					.post(Entity.text(""));
 //@formatter:on			
 
 			assertEquals("Should return status 200", 200, response.getStatus());
@@ -731,6 +762,5 @@ public class RestTest extends JerseyTest {
 		}
 
 	}
-	
-	
+
 }

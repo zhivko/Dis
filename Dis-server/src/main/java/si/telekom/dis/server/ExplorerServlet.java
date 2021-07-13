@@ -229,9 +229,11 @@ public class ExplorerServlet extends HttpServlet {
 
 				}
 			} else if (rendition.equals("odt")) {
-				// make transformation odt fill in all custom fields
-				int id = Integer.valueOf(sysObj.getString("mob_template_id")).intValue();
-				bacontentStreamIs = makeSureAllFieldsExist(bacontentStreamIs, id);
+				if (sysObj.hasAttr("mob_template_id")) {
+					// make transformation odt fill in all custom fields
+					int id = Integer.valueOf(sysObj.getString("mob_template_id")).intValue();
+					bacontentStreamIs = makeSureAllFieldsExist(bacontentStreamIs, id);
+				}
 			} else if (rendition.equals("xml")) {
 				TransformerFactory factory = TransformerFactory.newInstance();
 				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -337,6 +339,9 @@ public class ExplorerServlet extends HttpServlet {
 			resp.setStatus(404);
 			resp.setContentType("text/html; charset=UTF-8");
 			baOs.write("Napaka pri pridobivanju vsebine.".getBytes("UTF-8"));
+			Logger.getLogger(this.getClass()).error(ex.getMessage());
+			String stacktrace = ExceptionUtils.getStackTrace(ex);
+			Logger.getLogger(this.getClass()).error(stacktrace);
 			new ServerException(ex);
 		} finally {
 			try {

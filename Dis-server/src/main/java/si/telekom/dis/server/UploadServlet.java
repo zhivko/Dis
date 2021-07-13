@@ -342,11 +342,7 @@ public class UploadServlet extends HttpServlet {
 												Object[] profileAndRolesOfUserAndState = ExplorerServiceImpl.getInstance().getProfileAndUserRolesAndState(sysObj, loginName,
 														userSession);
 												Profile prof = (Profile) profileAndRolesOfUserAndState[1];
-												// if (prof == null) {
-												// // can happen if we have unclassified documents
-												// prof =
-												// ExplorerServiceImpl.getInstance().findProfileForObjectType(sysObj);
-												// }
+
 												if (prof != null) {
 													HashMap<String, List<String>> roleUserGroups = (HashMap<String, List<String>>) (profileAndRolesOfUserAndState[4]);
 													if (roleUserGroups.keySet().size() == 0) {

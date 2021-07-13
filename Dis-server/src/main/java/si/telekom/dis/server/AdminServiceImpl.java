@@ -123,6 +123,7 @@ import com.documentum.fc.common.IDfValue;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.healthmarketscience.jackcess.util.ColumnValidator;
 
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.AdminService;
@@ -2256,7 +2257,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 *          ... target state
 	 */
 	public static void runStandardActions(IDfPersistentObject persObject, String stateId, IDfSession userSession) throws Exception {
-		String msg = "Runing standard actions for: " + persObject.getId("r_object_id").toString() + " to stateId: " + stateId;
+		String msg = "Runing standard actions for: " + persObject.getId("r_object_id").toString() + " for stateId: " + stateId;
 		WsServer.log(userSession.getLoginInfo().getUser(), msg);
 		Logger.getLogger(AdminServiceImpl.class).info(msg);
 		IDfCollection collection = null;
@@ -3180,14 +3181,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 //		if (dqlQuery.trim().toLowerCase().contains("mob_sender_code")) {
 //			System.out.println();
 //		}
-		
-
-		if (el.getAttribute("name").trim().toLowerCase().contains("mob_sender_code")) {
-			System.out.println();
-		}
-
-		
-		
 
 		String type = getObjecTypeFromDql(dqlQuery);
 		MyParametrizedQuery ret = new MyParametrizedQuery(new String(el.getAttribute("name").getBytes(), "UTF-8"), dqlQuery);
@@ -3767,6 +3760,14 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					String anotherCol = (columnName.equals("col_id") ? "col_name" : "col_id");
 					sql = "insert into " + scheme + ".t_subscription_inet_col (type_id, " + columnName + ", " + anotherCol + ", on_main_doc) values " + "("
 							+ templateId + ",'" + value + "','opis',1)";
+//// @formatter:off
+//					sql = "MERGE INTO "+scheme+".t_subscription_inet_col USING dual ON ( type_id="
+//						+ templateId + " and col_id='" + col_id_old + "')"
+//						+ "	WHEN MATCHED THEN UPDATE SET "+columnName+"='" + value + "' " + "	WHEN NOT MATCHED THEN "
+//						+ "		INSERT(type_id,"+columnName+",on_main_doc) VALUES(" + templateId	+ ",'" + value + "',1)";
+////@formatter:on
+//					
+					
 					Logger.getLogger(this.getClass()).info("sql: " + sql);
 					stmt.execute(sql);
 					Logger.getLogger(this.getClass()).info("done.");
