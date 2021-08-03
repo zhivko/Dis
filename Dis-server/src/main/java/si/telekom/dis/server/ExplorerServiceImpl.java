@@ -1748,13 +1748,18 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						coll.close();
 					}
 
-					String dql = "delete from dm_dbo.T_dm_audittrail_s where audited_obj_id='" + r_object_id + "'";
-					queryDelete = new DfQuery(dql);
-					coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
-					if (coll.next()) {
-						int rowsDeleted = coll.getInt("rows_deleted");
-						WsServer.log(loginName, "Executing delete in T_dm_audittrail_s..." + rowsDeleted + " rows deleted.");
-						coll.close();
+					try {
+						String dql = "delete from dm_dbo.T_dm_audittrail_s where audited_obj_id='" + r_object_id + "'";
+						queryDelete = new DfQuery(dql);
+						coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+						if (coll.next()) {
+							int rowsDeleted = coll.getInt("rows_deleted");
+							WsServer.log(loginName, "Executing delete in T_dm_audittrail_s..." + rowsDeleted + " rows deleted.");
+							coll.close();
+						}
+					} catch (Exception ex) {
+						Logger.getLogger(this.getClass()).debug("T_dm_audittrail_s not found (" + ex.getMessage()
+								+ "). It is used only in DEV and TEST environment simulating dbo.dm_audittrail_Mobitel_all table");
 					}
 
 					IDfQuery queryDelete2 = new DfQuery("delete from dm_dbo.T_DOCMAN_R where r_object_id='" + r_object_id_ + "'");
@@ -1771,8 +1776,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 
 			WsServer.log(loginName, "Executing delete...Done.");
-
 			WsServer.log(loginName, "Destroying...");
+
 			if (allVersions) {
 				adminSession = AdminServiceImpl.getAdminSession();
 				// check permissions on all versions if there is no permission add
