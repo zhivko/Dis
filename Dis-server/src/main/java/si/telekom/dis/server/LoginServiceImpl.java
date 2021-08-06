@@ -90,6 +90,9 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		loginName = escapeHtml(loginName);
 		userAgent = escapeHtml(userAgent);
 
+		if(loginName.contains("\\"))
+			throw new ServerException("Login name must not contain \\");
+		
 		try {
 			return checkPassword(loginName, passwordEncoded);
 		} catch (Exception ex) {
@@ -116,7 +119,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			InetAddress addr = InetAddress.getByName(ip);
 			String hostName = addr.getHostName();
 
-			boolean tryDevelop = true;
+			boolean tryDevelop = false;
 			if (tryDevelop && passwordEncoded.equals("") && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 5000;
@@ -133,7 +136,6 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				ret[4] = AdminServiceImpl.getInstance().repositoryName;
 
 				loginName = "e-kalapcievv";
-				loginName = "alzupan";
 				loginName = "lokart";
 
 				loginName = "drizvic";
@@ -142,6 +144,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				loginName = "zivkovick";
 				// loginName = "ikovacic";
 				loginName = "dmedos";
+				loginName = "alzupan";
 
 				ret[0] = loginName;
 				adminSession = AdminServiceImpl.getInstance().getAdminSession();

@@ -1874,7 +1874,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				}
 
 				IDfSysObject dfDocument = (IDfSysObject) persObject;
-				Logger.getLogger(this.getClass()).info(String.format("object_name: [%s]", dfDocument.getObjectName()));
+				Logger.getLogger(this.getClass())
+						.info(String.format("Deleting object_name: [%s] r_object_id: [%s]", dfDocument.getObjectName(), dfDocument.getId("r_object_id").getId()));
 
 				if (!allVersions) {
 					IDfQuery queryDelete = new DfQuery("delete from dm_dbo.T_DOCMAN_S where r_object_id='" + persObject.getId("r_object_id") + "'");
@@ -1908,8 +1909,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				// WsServer.log(loginName, "Commiting transaction ...");
 				userSession.commitTrans();
 				// WsServer.log(loginName, "Commiting transaction ...Done.");
+				String msg = "Deleting " + r_object_id + " ... DONE.";
+				WsServer.log(loginName, msg);
+				Logger.getLogger(this.getClass()).info(msg);
 
-				WsServer.log(loginName, "Deleting " + r_object_id + " ... DONE.");
 			}
 
 			Logger.getLogger(this.getClass()).info(String.format("deleteObjects end for user [%s].", loginName));
@@ -2154,9 +2157,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							allExtPermissions = allExtPermissions.substring(0, allExtPermissions.length() - 1);
 						}
 
-						IDfUser user = userSession.getUser(userGroup);
+						IDfUser user = (IDfUser) userSession.getObjectByQualification("dm_user where lower(user_name)='" + userGroup.toLowerCase() + "'");
 						if (user != null || userGroup.equals("dm_world") || userGroup.equals("dm_group") || userGroup.equals("dm_owner")) {
-							objAcl.grant(userGroup, maxGrant, allExtPermissions);
+							if(user!=null)
+								objAcl.grant(user.getUserName(), maxGrant, allExtPermissions);
+							else
+								objAcl.grant(userGroup, maxGrant, allExtPermissions);
 							Logger.getLogger(this.getClass().getName()).info("\tgranted: " + maxGrant + " extPermit: " + allExtPermissions + " for " + userGroup);
 						} else {
 							Logger.getLogger(this.getClass().getName()).info("No such user: " + userGroup);
@@ -2198,10 +2204,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			Logger.getLogger(this.getClass()).info("Acl domain: " + sysObj.getACLDomain());
 
 		} catch (Throwable ex) {
-			// StringWriter errorStringWriter = new StringWriter();
-			// PrintWriter pw = new PrintWriter(errorStringWriter);
-			// ex.printStackTrace(pw);
-			Logger.getLogger(this.getClass()).error(ex);
+			StringWriter errorStringWriter = new StringWriter();
+			PrintWriter pw = new PrintWriter(errorStringWriter);
+			ex.printStackTrace(pw);
+			Logger.getLogger(this.getClass()).error(errorStringWriter.getBuffer().toString());
 			WsServer.log(userSession.getLoginUserName(), ex.getMessage());
 			throw new ServerException(ex.getMessage());
 		} finally {
@@ -2718,8 +2724,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							+ " mob_release_no: " + relNo + " (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
 				}
 
-				query.setDQL(
-						"update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'");
+				String updateTDocmanS = "update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'";
+				Logger.getLogger(this.getClass()).info("to update t_docman_s: " + updateTDocmanS);
+				query.setDQL(updateTDocmanS);
 				collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 				if (collection.next()) {
 					int rowsUpdated = collection.getInt("rows_updated");

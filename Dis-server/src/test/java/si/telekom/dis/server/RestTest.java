@@ -6,13 +6,15 @@ import static org.junit.Assert.assertEquals;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URL;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Scanner;
 
 import javax.naming.InitialContext;
 import javax.ws.rs.client.Client;
@@ -21,11 +23,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
@@ -40,9 +37,6 @@ import org.glassfish.jersey.uri.UriComponent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -52,11 +46,13 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import si.telekom.dis.server.rest.Attribute;
 import si.telekom.dis.server.rest.Document;
 import si.telekom.dis.server.rest.DocumentContent;
+import si.telekom.dis.server.rest.QueryDocumentsResponse;
 import si.telekom.dis.server.rest.UpdateDocumentRequest;
 import si.telekom.dis.server.rest.UpdateDocumentRequest.VersionEnum;
 
 public class RestTest extends JerseyTest {
 	HttpServer server = null;
+	final org.glassfish.grizzly.servlet.WebappContext webappContext = new org.glassfish.grizzly.servlet.WebappContext("Test Context");
 
 	URI baseUri = URI.create("http://localhost:9998/");
 
@@ -64,9 +60,14 @@ public class RestTest extends JerseyTest {
 
 	static InitialContext ctx = null;
 
+	String[] users = { "user1", "user2", "user3" };
+	
+	static int userIndex;
+
+
 	@Before
 	public void setUp() throws Exception {
-		if (ctx == null) {
+		if (ctx == null && available(9998)) {
 			ctx = new InitialContext();
 			System.setProperty("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
@@ -103,23 +104,34 @@ public class RestTest extends JerseyTest {
 			server = GrizzlyWebContainerFactory.create(baseUri, initParams);
 			server.getServerConfiguration().addHttpHandler(new StaticHttpHandler(new File(".").getAbsolutePath() + "/web"));
 
-			org.glassfish.grizzly.servlet.WebappContext webappContext = new org.glassfish.grizzly.servlet.WebappContext("Test Context");
+			// File f = new File("./target/Dis-server-1.0-SNAPSHOT/WEB-INF/web.xml");
+			// DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			// javax.xml.parsers.DocumentBuilder builder =
+			// factory.newDocumentBuilder();
+			// org.w3c.dom.Document doc = builder.parse(f);
+			// XPathFactory xPathfactory = XPathFactory.newInstance();
+			// XPath xpath = xPathfactory.newXPath();
+			// XPathExpression expr = xpath.compile("/web-app/context-param");
+			//
+			// NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+			// for (int i = 0; i < nl.getLength(); i++) {
+			// Node n = nl.item(i);
+			// Element el = (Element) n;
+			// String paramName =
+			// el.getElementsByTagName("param-name").item(0).getTextContent();
+			// String paramValue =
+			// el.getElementsByTagName("param-value").item(0).getTextContent();
+			// System.out.println("webappContext.setInitParameter(\""+paramName+"\",
+			// \""+paramValue+"\");");
+			// webappContext.setInitParameter(paramName, paramValue);
+			// }
 
-			File f = new File("./target/Dis-server-1.0-SNAPSHOT/WEB-INF/web.xml");
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
-			org.w3c.dom.Document doc = builder.parse(f);
-			XPathFactory xPathfactory = XPathFactory.newInstance();
-			XPath xpath = xPathfactory.newXPath();
-			XPathExpression expr = xpath.compile("/web-app/context-param");
-
-			NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-			for (int i = 0; i < nl.getLength(); i++) {
-				Node n = nl.item(i);
-				Element el = (Element) n;
-				String paramName = el.getElementsByTagName("param-name").item(0).getTextContent();
-				String paramValue = el.getElementsByTagName("param-value").item(0).getTextContent();
-				webappContext.setInitParameter(paramName, paramValue);
+			File f = new File("./src/main/filters/test.properties");
+			Scanner input = new Scanner(f);
+			while (input.hasNextLine()) {
+				String line = input.nextLine();
+				if (line.split("=").length == 2)
+					webappContext.setInitParameter(line.split("=")[0], line.split("=")[1]);
 			}
 
 			webappContext.addListener(si.telekom.dis.server.WebAppListener.class);
@@ -131,15 +143,16 @@ public class RestTest extends JerseyTest {
 			System.out.println("documentum superuser password: " + AdminServiceImpl.getInstance().superUserPassword);
 
 			while (!AdminServiceImpl.started)
-				Thread.currentThread().sleep(500);
+				Thread.currentThread().sleep(5000);
+
 		}
 	}
 
 	@Override
 	public Application configure() {
 
-		enable(TestProperties.LOG_TRAFFIC);
-		enable(TestProperties.DUMP_ENTITY);
+		//enable(TestProperties.LOG_TRAFFIC);
+		//enable(TestProperties.DUMP_ENTITY);
 
 		ResourceConfig rc = new ResourceConfig();
 
@@ -159,23 +172,29 @@ public class RestTest extends JerseyTest {
 
 	@Test
 	public void testDocumentsQuery() {
-		// http://localhost:8080/Dis-server/api/documents/query?dql=select * from
-		// dm_cabinet
-		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
-		// HttpAuthenticationFeature feature =
-		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
-
-		final Client client = ClientBuilder.newClient();
-		client.register(feature);
-
+		HttpAuthenticationFeature feature = getFeature();
+		Client client = ClientBuilder.newClient();
 		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
 		client.property(ClientProperties.READ_TIMEOUT, 10000000);
+		
+		client.register(feature);
 
 		Response response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_cabinet").request().get();
 		String responseTxt = response.readEntity(String.class);
 		// System.out.println(responseTxt);
 		assertEquals("should return status 200", 200, response.getStatus());
-		assertNotNull("Should return user list", response.getEntity().toString());
+		assertNotNull("Should return documents list", response.getEntity().toString());
+	}
+
+	private HttpAuthenticationFeature getFeature() {
+		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(users[userIndex], "pwd");
+
+		if (userIndex + 1 >= users.length)
+			userIndex = 0;
+		else
+			userIndex++;
+
+		return feature;
 	}
 
 	@Test
@@ -184,15 +203,12 @@ public class RestTest extends JerseyTest {
 		while (!AdminServiceImpl.started)
 			Thread.currentThread().sleep(500);
 
-		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
-		// HttpAuthenticationFeature feature =
-		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
-
-		final Client client = ClientBuilder.newClient();
-		client.register(feature);
-
+		HttpAuthenticationFeature feature = getFeature();
+		Client client = ClientBuilder.newClient();
 		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
 		client.property(ClientProperties.READ_TIMEOUT, 10000000);
+
+		client.register(feature);
 
 		String X_Transaction_Id = String.valueOf(System.currentTimeMillis());
 
@@ -266,15 +282,11 @@ public class RestTest extends JerseyTest {
 		while (!AdminServiceImpl.started)
 			Thread.currentThread().sleep(500);
 
-		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
-		// HttpAuthenticationFeature feature =
-		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
-
-		final Client client = ClientBuilder.newClient();
-		client.register(feature);
-
+		HttpAuthenticationFeature feature = getFeature();
+		Client client = ClientBuilder.newClient();
 		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
 		client.property(ClientProperties.READ_TIMEOUT, 10000000);
+		client.register(feature);
 
 		String X_Transaction_Id = String.valueOf(System.currentTimeMillis());
 
@@ -366,18 +378,13 @@ public class RestTest extends JerseyTest {
 		while (!AdminServiceImpl.started)
 			Thread.currentThread().sleep(500);
 
-		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
-		// HttpAuthenticationFeature feature =
-		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
-
-		final Client client = ClientBuilder.newClient();
-		client.register(feature);
-
+		HttpAuthenticationFeature feature = getFeature();
+		Client client = ClientBuilder.newClient();
 		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
 		client.property(ClientProperties.READ_TIMEOUT, 10000000);
+		client.register(feature);
 
 		String X_Transaction_Id = String.valueOf(System.currentTimeMillis());
-
 		String documentContent = "dGVzdA==";
 
 //@formatter:off	
@@ -494,121 +501,17 @@ public class RestTest extends JerseyTest {
 
 	}
 
-	// @Test
-	// public void testDocumentsImport() throws InterruptedException {
-	//
-	// while (!AdminServiceImpl.started)
-	// Thread.currentThread().sleep(500);
-	//
-	// HttpAuthenticationFeature feature =
-	// HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
-	// // HttpAuthenticationFeature feature =
-	// // HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
-	//
-	// final Client client = ClientBuilder.newClient();
-	// client.register(feature);
-	//
-	// client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
-	// client.property(ClientProperties.READ_TIMEOUT, 10000000);
-	//
-	// String X_Transaction_Id = String.valueOf(System.currentTimeMillis());
-	//
-	// String documentContent = "dGVzdA==";
-	//
-////@formatter:off	
-//		Response response;
-//		
-//		String jsonLoad = 				
-//				"{  " +
-//			  "\"profileId\": \"mob_subscriber_document\"," +
-//			  "\"folderId\": \"/temp\"," +
-//			  "\"stateId\": \"effective\"," +
-//			  "\"attributes\": " +
-//			  "[" +
-//			  "  { \"name\": \"mob_classification_id\", \"values\": [ \"398\" ] }," +
-//			  "  { \"name\": \"title\", \"values\": [ \"testni dokument\" ] }," +
-//			  "  { \"name\": \"mob_type_id\", \"values\": [ \"142\" ] }," +
-//			  "  { \"name\": \"mob_type\", \"values\": [ \"Pogodba\" ] }," +
-//			  "  { \"name\": \"mob_issue_date\", \"values\": [ \"01.01.2021 10:00:00\" ] }" +
-//			  "]," +
-//			  "\"rolesUsers\":" +
-//			  "[" +
-//			  "  { \"roleId\": \"coordinator\", \"values\": [ \"kovacevicr\", \"zivkovick\"] }," +
-//			  "  { \"roleId\": \"user\", \"values\": [ \"dm_world\" ] }" +
-//			  "]," +
-//			  "\"content\":" +
-//			  "{" +
-//			  "  \"format\": \"crtext\"," +
-//			  "  \"data\": \"" + documentContent + "\"" +
-//			  "}" +
-//				"}";
-//
-//		System.out.println(jsonLoad);
-//		
-//		Entity<String> jsonImport = Entity.json(jsonLoad);
-//		
-//		response = client.target(baseUri.toString() + "/documents/import")
-//				.request(MediaType.APPLICATION_JSON)
-//				.header("X-Transaction-Id", X_Transaction_Id).
-//				post(jsonImport);
-////@formatter:on			
-	// String json = response.readEntity(String.class);
-	//
-	// ObjectMapper objectMapper = new ObjectMapper();
-	// Document doc;
-	// try {
-	// doc = objectMapper.readValue(json.getBytes(), Document.class);
-	//
-	// assertEquals("Import document should return status 200", 200,
-	// response.getStatus());
-	// assertNotNull("Should return document", doc);
-	// assertNotNull("Should return r_object_id for document",
-	// doc.getrObjectId());
-	//
-	// // *************** test read content of document ******************
-	// response = client.target(baseUri.toString() + "/documents/" +
-	// doc.getrObjectId() + "/content").request().get();
-	// assertEquals("Should return status 200", 200, response.getStatus());
-	//
-	// String base64EncodedString = response.readEntity(String.class);
-	// String content = AdminServiceImpl.base64Decode(base64EncodedString);
-	// String originalContent = AdminServiceImpl.base64Decode(documentContent);
-	// assertNotNull("Content should contain something",
-	// response.getEntity().toString());
-	// assertEquals("Content should be equal", originalContent, content);
-	//
-	// // *************** test destroy document ******************
-////@formatter:off
-//			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
-//					.request(MediaType.APPLICATION_JSON)
-//					.header("X-Transaction-Id", X_Transaction_Id)
-//					.post(Entity.text(""));
-////@formatter:on			
-	//
-	// assertEquals("Should return status 200", 200, response.getStatus());
-	//
-	// } catch (JsonParseException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// } catch (JsonMappingException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// } catch (IOException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	//
-	// }
-
-	@Test(timeout=10000000)
+	@Test(timeout = 10000000)
 	public void testDocumentUpdate() throws InterruptedException {
 
 		while (!AdminServiceImpl.started)
 			Thread.currentThread().sleep(500);
 
-		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("delovodnik", "P@$$w0rd1");
-		// HttpAuthenticationFeature feature =
-		// HttpAuthenticationFeature.basic("dmadmin", "tb25me81");
+		HttpAuthenticationFeature feature = getFeature();
+		Client client = ClientBuilder.newClient();
+		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
+		client.property(ClientProperties.READ_TIMEOUT, 10000000);
+		client.register(feature);
 
 		// final List<Object> providers = new ArrayList<Object>();
 		JacksonJaxbJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider();
@@ -616,12 +519,10 @@ public class RestTest extends JerseyTest {
 
 		// webClient = WebClient.create( "http://localhost:8080/api", providers );
 
-		final Client client = ClientBuilder.newClient();
-		client.register(feature);
 		client.register(jacksonJsonProvider);
 
-		//client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
-		//client.property(ClientProperties.READ_TIMEOUT, 10000000);
+		// client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
+		// client.property(ClientProperties.READ_TIMEOUT, 10000000);
 
 		String X_Transaction_Id = String.valueOf(System.currentTimeMillis());
 
@@ -672,6 +573,9 @@ public class RestTest extends JerseyTest {
 
 		try {
 			Document doc = objectMapper.readValue(json.getBytes(), Document.class);
+			String first_r_object_id = doc.getrObjectId();
+
+			String barcode = doc.getObjectName();
 
 			assertEquals("Import document should return status 200", 200, response.getStatus());
 			assertNotNull("Should return document", doc);
@@ -701,10 +605,10 @@ public class RestTest extends JerseyTest {
 			int offset = 0;
 			int bytes;
 			while ((bytes = dis.read(buffer, offset, buffer.length)) > 0) {
-			    baOs.write(buffer, 0, bytes);
+				baOs.write(buffer, 0, bytes);
 			}
 			baOs.close();
-			
+
 			String encodedString = Base64.getEncoder().encodeToString(baOs.toByteArray());
 
 			UpdateDocumentRequest updateDocReq = new UpdateDocumentRequest();
@@ -737,6 +641,17 @@ public class RestTest extends JerseyTest {
 
 			assertEquals("State should be effective", "effective", doc.getState());
 
+			// check there are two versions
+			response = client.target(baseUri.toString() + "/documents/query")
+					.queryParam("dql", "select * from mob_subscriber_document(all) where object_name ='" + barcode + "'").request().get();
+			json = response.readEntity(String.class);
+			objectMapper = new ObjectMapper();
+			QueryDocumentsResponse documentsResponse = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
+			assertEquals("There should be 2 versions of document", 2, documentsResponse.getDocuments().size());
+
+			// let's work on updated document!
+			doc = documentsResponse.getDocuments().get(1);
+
 			// *************** test promote document ******************
 			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/promote").request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
@@ -753,14 +668,61 @@ public class RestTest extends JerseyTest {
 					.request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id)
 					.post(Entity.text(""));
-//@formatter:on			
-
+//@formatter:on
 			assertEquals("Should return status 200", 200, response.getStatus());
+
+			// test that previous version is still available
+			response = client.target(baseUri.toString() + "/documents/query")
+					.queryParam("dql", "select * from mob_subscriber_document(all) where object_name ='" + barcode + "'").request().get();
+			json = response.readEntity(String.class);
+			objectMapper = new ObjectMapper();
+			documentsResponse = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
+			assertEquals("There should be only one version of document", documentsResponse.getDocuments().size(), 1);
+			Document doc2 = documentsResponse.getDocuments().get(0);
+			assertEquals("Previous version r_object_id should be: " + first_r_object_id, first_r_object_id, doc2.getrObjectId().toString());
+			System.out.println("Previous version r_object_id:" + first_r_object_id);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
+	}
+
+	/**
+	 * Checks to see if a specific port is available.
+	 *
+	 * @param port
+	 *          the port to check for availability
+	 */
+	public static boolean available(int port) {
+		if (port < Integer.MIN_VALUE || port > Integer.MAX_VALUE) {
+			throw new IllegalArgumentException("Invalid start port: " + port);
+		}
+
+		ServerSocket ss = null;
+		DatagramSocket ds = null;
+		try {
+			ss = new ServerSocket(port);
+			ss.setReuseAddress(true);
+			ds = new DatagramSocket(port);
+			ds.setReuseAddress(true);
+			return true;
+		} catch (IOException e) {
+		} finally {
+			if (ds != null) {
+				ds.close();
+			}
+
+			if (ss != null) {
+				try {
+					ss.close();
+				} catch (IOException e) {
+					/* should not be thrown */
+				}
+			}
+		}
+
+		return false;
 	}
 
 }

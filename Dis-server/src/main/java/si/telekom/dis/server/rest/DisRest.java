@@ -131,8 +131,11 @@ public class DisRest extends DocumentsApiService {
 						}
 					}
 					doc1.setAttributes(alAtts);
-					docResp.addDocumentsItem(doc1);
-					Logger.getLogger(this.getClass()).info("Added 1 object (object_name: " + doc.object_name + ") to result.");
+					if (!docResp.getDocuments().contains(doc1)) {
+						docResp.addDocumentsItem(doc1);
+						Logger.getLogger(this.getClass())
+								.info("Added 1 object (object_name: " + doc.object_name + ", r_object_id: " + doc.r_object_id + ") to result.");
+					}
 				}
 			}
 			return Response.ok(docResp).build();
@@ -251,7 +254,6 @@ public class DisRest extends DocumentsApiService {
 			String loginName = user.getId();
 			String password = user.getPaswordBase64Encoded();
 
-			userSession = AdminServiceImpl.getSession(loginName, password);
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			IDfPersistentObject persObj = userSession.getObject(new DfId(rObjectId));
 			IDfSysObject sysObj = (IDfSysObject) persObj;
@@ -524,8 +526,9 @@ public class DisRest extends DocumentsApiService {
 		try {
 			Logger.getLogger(this.getClass()).info("destroyDocuments for " + loginName + " for r_object_id: " + rObjectId);
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			IDfPersistentObject dfPersDoc = userSession.getObject(new DfId(rObjectId));
-			dfPersDoc.destroy();
+			ArrayList<String> al = new ArrayList<String>();
+			al.add(rObjectId);
+			ExplorerServiceImpl.getInstance().deleteObjects(loginName, password, al, false);
 			return Response.status(200).build();
 		} catch (Throwable ex) {
 			return Response.status(500).entity(ex.getMessage()).build();

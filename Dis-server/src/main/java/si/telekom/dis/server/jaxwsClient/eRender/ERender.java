@@ -74,6 +74,54 @@ public interface ERender {
 
     /**
      * 
+     * @return
+     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.Template>
+     */
+    @WebMethod
+    @WebResult(name = "template", targetNamespace = "")
+    @RequestWrapper(localName = "getTemplates", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplates")
+    @ResponseWrapper(localName = "getTemplatesResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplatesResponse")
+    public List<Template> getTemplates();
+
+    /**
+     * 
+     * @param pdfContent
+     * @param watermark
+     * @param fontSize
+     * @param opacity
+     * @return
+     *     returns byte[]
+     */
+    @WebMethod
+    @WebResult(name = "pdfWithOverlay", targetNamespace = "http://erender.telekom.si/")
+    @RequestWrapper(localName = "overlayPdf", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.OverlayPdf")
+    @ResponseWrapper(localName = "overlayPdfResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.OverlayPdfResponse")
+    public byte[] overlayPdf(
+        @WebParam(name = "pdfContent", targetNamespace = "http://erender.telekom.si/")
+        byte[] pdfContent,
+        @WebParam(name = "watermark", targetNamespace = "http://erender.telekom.si/")
+        String watermark,
+        @WebParam(name = "fontSize", targetNamespace = "http://erender.telekom.si/")
+        int fontSize,
+        @WebParam(name = "opacity", targetNamespace = "http://erender.telekom.si/")
+        float opacity);
+
+    /**
+     * 
+     * @param templateId
+     * @return
+     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.KeyValue>
+     */
+    @WebMethod
+    @WebResult(name = "templateField", targetNamespace = "")
+    @RequestWrapper(localName = "getTemplateFields", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFields")
+    @ResponseWrapper(localName = "getTemplateFieldsResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFieldsResponse")
+    public List<KeyValue> getTemplateFields(
+        @WebParam(name = "templateId", targetNamespace = "http://erender.telekom.si/")
+        int templateId);
+
+    /**
+     * 
      * @param winwordContent
      * @return
      *     returns byte[]
@@ -113,29 +161,6 @@ public interface ERender {
 
     /**
      * 
-     * @param pdfContent
-     * @param watermark
-     * @param fontSize
-     * @param opacity
-     * @return
-     *     returns byte[]
-     */
-    @WebMethod
-    @WebResult(name = "pdfWithOverlay", targetNamespace = "http://erender.telekom.si/")
-    @RequestWrapper(localName = "overlayPdf", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.OverlayPdf")
-    @ResponseWrapper(localName = "overlayPdfResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.OverlayPdfResponse")
-    public byte[] overlayPdf(
-        @WebParam(name = "pdfContent", targetNamespace = "http://erender.telekom.si/")
-        byte[] pdfContent,
-        @WebParam(name = "watermark", targetNamespace = "http://erender.telekom.si/")
-        String watermark,
-        @WebParam(name = "fontSize", targetNamespace = "http://erender.telekom.si/")
-        int fontSize,
-        @WebParam(name = "opacity", targetNamespace = "http://erender.telekom.si/")
-        float opacity);
-
-    /**
-     * 
      * @param arg0
      * @return
      *     returns java.lang.String
@@ -147,17 +172,6 @@ public interface ERender {
     public String getTemplateExtension(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0);
-
-    /**
-     * 
-     * @return
-     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.Template>
-     */
-    @WebMethod
-    @WebResult(name = "template", targetNamespace = "")
-    @RequestWrapper(localName = "getTemplates", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplates")
-    @ResponseWrapper(localName = "getTemplatesResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplatesResponse")
-    public List<Template> getTemplates();
 
     /**
      * 
@@ -187,20 +201,6 @@ public interface ERender {
         Holder<List<String>> roles,
         @WebParam(name = "document", targetNamespace = "http://erender.telekom.si/", mode = WebParam.Mode.OUT)
         Holder<byte[]> document);
-
-    /**
-     * 
-     * @param templateId
-     * @return
-     *     returns java.util.List<si.telekom.dis.server.jaxwsClient.eRender.KeyValue>
-     */
-    @WebMethod
-    @WebResult(name = "templateField", targetNamespace = "")
-    @RequestWrapper(localName = "getTemplateFields", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFields")
-    @ResponseWrapper(localName = "getTemplateFieldsResponse", targetNamespace = "http://erender.telekom.si/", className = "si.telekom.dis.server.jaxwsClient.eRender.GetTemplateFieldsResponse")
-    public List<KeyValue> getTemplateFields(
-        @WebParam(name = "templateId", targetNamespace = "http://erender.telekom.si/")
-        int templateId);
 
     /**
      * 

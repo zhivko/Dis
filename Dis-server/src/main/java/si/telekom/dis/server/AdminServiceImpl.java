@@ -3331,6 +3331,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			factory.setNamespaceAware(true); // never forget this!
 			builder = factory.newDocumentBuilder();
 
+			Logger.getLogger(this.getClass()).info("Parsing xml: " + configPathFileName);
 			docConfig = builder.parse(is);
 			reader.close();
 		}
@@ -3404,7 +3405,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
+	public synchronized void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
 			List<String> orderBys, List<String> orderBydirections, String filterClass, List<String> parameterLabels) throws ServerException {
 
 		Logger.getLogger(this.getClass()).info("Saving search: " + oldName);
@@ -3499,7 +3500,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					final String ip = getThreadLocalRequest().getRemoteHost();
 					InetAddress addr = InetAddress.getByName(ip);
 					String hostName = addr.getHostName();
-					if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
+					if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com") || hostName.equals("ip6-localhost")) {
 						File devConfig;
 						if (SystemUtils.IS_OS_LINUX) {
 							devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
