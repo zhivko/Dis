@@ -526,16 +526,15 @@
 
 							<parallel>methods</parallel>
 							<parallelOptimized>false</parallelOptimized>
-							<threadCount>10</threadCount>
 
 							<useUnlimitedThreads>true</useUnlimitedThreads>
-							<perCoreThreadCount>true</perCoreThreadCount>
+
 							<threadCountSuites>3</threadCountSuites>
 							<threadCountClasses>3</threadCountClasses>
 							<threadCountMethods>6</threadCountMethods>
 
 							<forkCount>3</forkCount>
-							<reuseForks>true</reuseForks>
+							<reuseForks>false</reuseForks>
 
 							<reportformat>plain</reportformat>
 

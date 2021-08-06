@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.io.IOUtils;
@@ -260,6 +261,12 @@ public class DisRest extends DocumentsApiService {
 			if (format == null || format.equals(""))
 				format = sysObj.getContentType();
 			IDfFormat formatObj = userSession.getFormat(format);
+
+			if (formatObj == null)
+				return Response.serverError().entity("No such format "+format+" for object objectName: " + persObj.getString("object_name") + " r_object_id: " + persObj.getString("object_name")+ " format: "+sysObj.getContentType()).build(); 
+//						.serverError(400,
+//								"No such format for object objectName: " + persObj.getString("object_name") + " r_object_id: " + persObj.getString("object_name"))
+//						.build();
 
 			String mimeType = formatObj.getMIMEType().toString();
 			String dosExtension = formatObj.getDOSExtension();

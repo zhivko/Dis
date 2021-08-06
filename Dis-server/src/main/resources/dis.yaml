@@ -167,11 +167,11 @@ paths:
           type: string
       - in: query
         name: format
-        description: format of document or null for primary content if empty or null take primary content else renditions. format can be any of documentum formats like pdf tiff word odf xlsx11 xlsx12
-        required: false
+        required: true
         schema:
           type: string
           example: pdf
+        description: format of document or null for primary content if empty or null take primary content else renditions. format can be any of documentum formats like pdf tiff word odf xlsx11 xlsx12
       responses:
         '200':
           description: success

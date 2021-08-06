@@ -2079,8 +2079,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			if (loginName.equals(AdminServiceImpl.superUserName)) {
 				loginInfo.setDomain(AdminServiceImpl.superUserDomain);
 				System.out.println("Password equals? " + password.equals(AdminServiceImpl.superUserPassword));
-			} else
-				loginInfo.setDomain(AdminServiceImpl.userDomain);
+			} else {
+				if (!loginName.startsWith("user"))
+					loginInfo.setDomain(AdminServiceImpl.userDomain);
+			}
 
 			loginInfo.setPassword(password);
 			loginInfo.setForceAuthentication(false);
@@ -3178,9 +3180,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		String dqlQuery = getFirstLevelTextContent((Node) el);
 
-//		if (dqlQuery.trim().toLowerCase().contains("mob_sender_code")) {
-//			System.out.println();
-//		}
+		// if (dqlQuery.trim().toLowerCase().contains("mob_sender_code")) {
+		// System.out.println();
+		// }
 
 		String type = getObjecTypeFromDql(dqlQuery);
 		MyParametrizedQuery ret = new MyParametrizedQuery(new String(el.getAttribute("name").getBytes(), "UTF-8"), dqlQuery);
@@ -3189,7 +3191,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		Matcher m1 = p1.matcher(dqlQuery);
 
 		if (!m1.find()) {
-			String msg = "ParametrizedQuery with name: "+el.getAttribute("name")+" dql not formed correctly: " + dqlQuery;
+			String msg = "ParametrizedQuery with name: " + el.getAttribute("name") + " dql not formed correctly: " + dqlQuery;
 			WsServer.log(loginName, msg);
 			Logger.getLogger(this.getClass()).warn(msg);
 			return ret;
@@ -3288,7 +3290,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				DcmtAttribute dcmtAtt = typeAttributes.get(attName);
 				if (dcmtAtt == null)
 					return ret;
-				
+
 				Attribute a = new Attribute();
 				a.label = (label.equals("") ? attName : label);
 				a.dcmtAttName = dcmtAtt.attr_name;
@@ -3405,8 +3407,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public synchronized void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql, List<String> groups,
-			List<String> orderBys, List<String> orderBydirections, String filterClass, List<String> parameterLabels) throws ServerException {
+	public synchronized void editParametrizedQuery(String loginName, String loginPass, String oldName, String newName, String newDql,
+			List<String> groups, List<String> orderBys, List<String> orderBydirections, String filterClass, List<String> parameterLabels)
+			throws ServerException {
 
 		Logger.getLogger(this.getClass()).info("Saving search: " + oldName);
 		ArrayList<MyParametrizedQuery> queries = new ArrayList<MyParametrizedQuery>();
@@ -3767,8 +3770,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 //						+ "	WHEN MATCHED THEN UPDATE SET "+columnName+"='" + value + "' " + "	WHEN NOT MATCHED THEN "
 //						+ "		INSERT(type_id,"+columnName+",on_main_doc) VALUES(" + templateId	+ ",'" + value + "',1)";
 ////@formatter:on
-//					
-					
+					//
+
 					Logger.getLogger(this.getClass()).info("sql: " + sql);
 					stmt.execute(sql);
 					Logger.getLogger(this.getClass()).info("done.");

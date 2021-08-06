@@ -24,6 +24,7 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.jersey.client.ClientProperties;
@@ -126,7 +127,7 @@ public class RestTest extends JerseyTest {
 			// webappContext.setInitParameter(paramName, paramValue);
 			// }
 
-			File f = new File("./src/main/filters/test.properties");
+			File f = new File("./src/main/filters/prod.properties");
 			Scanner input = new Scanner(f);
 			while (input.hasNextLine()) {
 				String line = input.nextLine();
@@ -187,6 +188,7 @@ public class RestTest extends JerseyTest {
 	}
 
 	private HttpAuthenticationFeature getFeature() {
+		Logger.getLogger(this.getClass()).info("test with user with userIndex: " + userIndex);
 		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(users[userIndex], "pwd");
 
 		if (userIndex + 1 >= users.length)
