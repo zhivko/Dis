@@ -36,6 +36,7 @@ import si.telekom.dis.client.MyListBox;
 import si.telekom.dis.client.MySimplePager;
 import si.telekom.dis.client.MyTextArea;
 import si.telekom.dis.client.WindowBox;
+import si.telekom.dis.client.action.EditColIds.Row;
 import si.telekom.dis.shared.ExplorerService;
 import si.telekom.dis.shared.ExplorerServiceAsync;
 
@@ -91,6 +92,9 @@ public class DocumentAuditTrail extends WindowBox {
 		cellTable.setTableLayoutFixed(true);
 		cellTable.setWidth("100%");
 		pager.setDisplay(cellTable);
+		
+		
+		
 		cellTable.setPageSize(MainPanel.getInstance().us.auditTrailPerPageCount);
 
 		Column<Row, String> r_obj_id = new Column<Row, String>(new TextCell()) {
@@ -120,19 +124,19 @@ public class DocumentAuditTrail extends WindowBox {
 		cellTable.addColumn(r_version_label, "r_version_label");
 		cellTable.setColumnWidth(r_version_label, ordinaryColWidth + 30, Unit.PX);
 
-		Column<Row, String> aclName = new Column<Row, String>(new TextCell()) {
-			@Override
-			public String getValue(Row row) {
-				return row.values.get(3);
-			}
-		};
-		cellTable.addColumn(aclName, "acl_name");
-		cellTable.setColumnWidth(aclName, ordinaryColWidth + 30, Unit.PX);
+		// Column<Row, String> aclName = new Column<Row, String>(new TextCell()) {
+		// @Override
+		// public String getValue(Row row) {
+		// return row.values.get(3);
+		// }
+		// };
+		// cellTable.addColumn(aclName, "acl_name");
+		// cellTable.setColumnWidth(aclName, ordinaryColWidth + 30, Unit.PX);
 
 		Column<Row, String> col_time_stamp = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
-				return row.values.get(4);
+				return row.values.get(3);
 			}
 		};
 		cellTable.addColumn(col_time_stamp, "time_stamp");
@@ -141,7 +145,7 @@ public class DocumentAuditTrail extends WindowBox {
 		Column<Row, String> col_timestamp_utc = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
-				return row.values.get(5);
+				return row.values.get(4);
 			}
 		};
 		cellTable.addColumn(col_timestamp_utc, "time_stamp_utc");
@@ -150,7 +154,7 @@ public class DocumentAuditTrail extends WindowBox {
 		Column<Row, String> col_event_name = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
-				return row.values.get(6);
+				return row.values.get(5);
 			}
 		};
 		cellTable.addColumn(col_event_name, "event_name");
@@ -159,7 +163,7 @@ public class DocumentAuditTrail extends WindowBox {
 		Column<Row, String> col_event_description = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
-				return row.values.get(7);
+				return row.values.get(6);
 			}
 		};
 		cellTable.addColumn(col_event_description, "event_description");
@@ -168,7 +172,7 @@ public class DocumentAuditTrail extends WindowBox {
 		Column<Row, String> col_user_name = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
-				return row.values.get(8);
+				return row.values.get(7);
 			}
 		};
 		cellTable.addColumn(col_user_name, "user_name");
@@ -177,7 +181,7 @@ public class DocumentAuditTrail extends WindowBox {
 		Column<Row, String> col_string_1 = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
-				return row.values.get(9);
+				return row.values.get(8);
 			}
 		};
 		cellTable.addColumn(col_string_1, "string_1");
@@ -186,7 +190,7 @@ public class DocumentAuditTrail extends WindowBox {
 		Column<Row, String> col_string_2 = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
-				return row.values.get(10);
+				return row.values.get(9);
 			}
 		};
 		cellTable.addColumn(col_string_2, "string_2");
@@ -195,7 +199,7 @@ public class DocumentAuditTrail extends WindowBox {
 		Column<Row, String> col_attribute_list = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
-				return row.values.get(11);
+				return row.values.get(10);
 			}
 		};
 		cellTable.addColumn(col_attribute_list, "attribute_list");
@@ -205,7 +209,7 @@ public class DocumentAuditTrail extends WindowBox {
 		Column<Row, String> col_attribute_list_old = new Column<Row, String>(new TextCell()) {
 			@Override
 			public String getValue(Row row) {
-				return row.values.get(12);
+				return row.values.get(11);
 			}
 		};
 		cellTable.addColumn(col_attribute_list_old, "attribute_list_old");
@@ -394,8 +398,8 @@ public class DocumentAuditTrail extends WindowBox {
 			DocumentAuditTrail.instance.cellTable.setRowCount(0);
 			onRangeChanged(DocumentAuditTrail.instance.cellTable);
 
-//			allRows.clear();
-//			DocumentAuditTrail.instance.cellTable.redraw();
+			// allRows.clear();
+			// DocumentAuditTrail.instance.cellTable.redraw();
 		}
 
 		@Override
@@ -403,37 +407,19 @@ public class DocumentAuditTrail extends WindowBox {
 			// Get the new range.
 			final Range range = display.getVisibleRange();
 
-			// int min1 = Math.min(range.getStart() + range.getLength(),
-			// MyDataProvider.this.allRows.size());
-
-			final int from = range.getStart() ;
-			final int to = range.getStart() + pageSize;
-
-			explorerService.auditTrail(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, eventFilter, from, to,
+			explorerService.auditTrail(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, eventFilter, range.getStart(), range.getLength(),
 					new AsyncCallback<List<List<String>>>() {
 
 						@Override
 						public void onSuccess(List<List<String>> result) {
 							// TODO Auto-generated method stub
-							allRows.clear();
-							int i = 0;
+							ArrayList<Row> rows = new ArrayList<Row>();
 							for (List<String> row1 : result) {
 								Row row = new Row(row1);
-								allRows.add(from + i, row);
-								i++;
+								rows.add(row);
 							}
-
-							// if (range.getStart() < MyDataProvider.this.allRows.size()) {
-							
-							int from1  = from;
-							int to1 = Math.min(to, allRows.size());
-							
-							updateRowData(from, MyDataProvider.this.allRows.subList(from1, to1));
-							//display.setVisibleRange(new Range(from, Math.min(to - 1, allRows.size())));
-							updateRowCount(to1, true);
+							updateRowData(range.getStart(), rows);							
 							DocumentAuditTrail.instance.centerMyPanel();
-							// }
-
 						}
 
 						@Override

@@ -1716,13 +1716,18 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					coll.close();
 				}
 
-				String dql = "delete from dm_dbo.T_dm_audittrail_s where audited_obj_id='" + persObject.getId("r_object_id") + "'";
-				queryDelete = new DfQuery(dql);
-				coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
-				if (coll.next()) {
-					int rowsDeleted = coll.getInt("rows_deleted");
-					WsServer.log(loginName, "Executing delete in T_dm_audittrail_s..." + rowsDeleted + " rows deleted.");
-					coll.close();
+				try {
+					String dql = "delete from dm_dbo.T_dm_audittrail_s where audited_obj_id='" + persObject.getId("r_object_id") + "'";
+					queryDelete = new DfQuery(dql);
+					coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+					if (coll.next()) {
+						int rowsDeleted = coll.getInt("rows_deleted");
+						WsServer.log(loginName, "Executing delete in T_dm_audittrail_s..." + rowsDeleted + " rows deleted.");
+						coll.close();
+					}
+				} catch (Exception ex) {
+					Logger.getLogger(this.getClass()).debug("T_dm_audittrail_s not found (" + ex.getMessage()
+							+ "). It is used only in DEV and TEST environment simulating dbo.dm_audittrail_Mobitel_all table");
 				}
 
 				IDfQuery queryDelete2 = new DfQuery("delete from dm_dbo.T_DOCMAN_R where r_object_id='" + persObject.getId("r_object_id") + "'");
@@ -2159,7 +2164,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 						IDfUser user = (IDfUser) userSession.getObjectByQualification("dm_user where lower(user_name)='" + userGroup.toLowerCase() + "'");
 						if (user != null || userGroup.equals("dm_world") || userGroup.equals("dm_group") || userGroup.equals("dm_owner")) {
-							if(user!=null)
+							if (user != null)
 								objAcl.grant(user.getUserName(), maxGrant, allExtPermissions);
 							else
 								objAcl.grant(userGroup, maxGrant, allExtPermissions);
@@ -2724,7 +2729,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							+ " mob_release_no: " + relNo + " (" + mandatoryAttNamesNotSet + ") niso nastavljeni.");
 				}
 
-				String updateTDocmanS = "update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='" + r_object_id + "'";
+				String updateTDocmanS = "update dm_dbo.T_DOCMAN_S set current_state_id='" + prof.states.get(stateNo).getId() + "' where r_object_id='"
+						+ r_object_id + "'";
 				Logger.getLogger(this.getClass()).info("to update t_docman_s: " + updateTDocmanS);
 				query.setDQL(updateTDocmanS);
 				collection = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
@@ -3031,7 +3037,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// try to get profile from local path - if it doesnt exist load it from
 			// documentum
 
-			Logger.getLogger(this.getClass()).info("AuditTrail for " + loginName + " for: " + orig_r_object_id);
+			String msg = "AuditTrail for " + loginName + " for: " + orig_r_object_id + " from: " + start + " to: " + end;
+			Logger.getLogger(this.getClass()).info(msg);
+			WsServer.log(loginName, msg);
 
 			if (loginName == null) {
 				throw new Exception("LoginName should not be null");
@@ -3076,10 +3084,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// }
 
 			if (eventFilter == null || eventFilter.equals("")) {
-				dql = "select r_object_id, audited_obj_id, time_stamp, time_stamp_utc, event_name, event_description, user_name, string_1,string_2,attribute_list,attribute_list_old from dm_audittrail_Mobitel_all where audited_obj_id  = '"
+				dql = "select r_object_id, audited_obj_id, version_label, time_stamp, time_stamp_utc, event_name, event_description, user_name, string_1,string_2,attribute_list,attribute_list_old from dm_audittrail_Mobitel_all where audited_obj_id  = '"
 						+ orig_r_object_id + "' " + " ENABLE(RETURN_RANGE " + start + " " + end + " 'r_object_id DESC')";
 			} else {
-				dql = "select r_object_id, audited_obj_id, time_stamp, time_stamp_utc, event_name, event_description, user_name, string_1,string_2,attribute_list,attribute_list_old from dm_audittrail_Mobitel_all where audited_obj_id = '"
+				dql = "select r_object_id, audited_obj_id, version_label, time_stamp, time_stamp_utc, event_name, event_description, user_name, string_1,string_2,attribute_list,attribute_list_old from dm_audittrail_Mobitel_all where audited_obj_id = '"
 						+ orig_r_object_id + "' and" + " event_name = '" + eventFilter + "' ENABLE(RETURN_RANGE " + start + " " + end + " 'r_object_id DESC')";
 			}
 
@@ -3090,16 +3098,17 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			long milis2 = System.currentTimeMillis();
 			Logger.getLogger(this.getClass()).info("Ended in: " + (int) ((milis2 - milis1) / 1000) + "s");
 			while (collection.next()) {
-				IDfPersistentObject auditedObj = userSession
-						.getObjectByQualification("dm_document(all) where r_object_id='" + collection.getValue("audited_obj_id") + "' enable (return_top 1)");
-				String rVersionLabels = auditedObj.getAllRepeatingStrings("r_version_label", ",");
-				String aclName = auditedObj.getString("acl_name");
+				// IDfPersistentObject auditedObj = userSession
+				// .getObjectByQualification("dm_document(all) where r_object_id='" +
+				// collection.getValue("audited_obj_id") + "' enable (return_top 1)");
+				// String rVersionLabels =
+				// auditedObj.getAllRepeatingStrings("r_version_label", ",");
+				// String aclName = auditedObj.getString("acl_name");
 				ArrayList<String> row = new ArrayList<String>();
 				for (int i = 0; i < collection.getAttrCount(); i++) {
-					if (i == 2) {
-						row.add(rVersionLabels);
-						row.add(aclName);
-					}
+					// if (i == 2) {
+					// row.add(rVersionLabels);
+					// }
 					row.add(collection.getValue(collection.getAttr(i).getName()).asString());
 				}
 				if (ret.size() % 10 == 0) {
@@ -3110,7 +3119,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				// .info("added audit trail row for audited_obj_id: " +
 				// collection.getValue("audited_obj_id").asString());
 			}
-			WsServer.log(loginName, "audittrail records returned: " + ret.size());
+			WsServer.log(loginName, "audittrail records returned: " + ret.size() + " - from: " + start + " to:" + end);
 			Logger.getLogger(this.getClass()).info("rows: " + ret.size());
 		} catch (Exception ex) {
 			// ex.printStackTrace();
