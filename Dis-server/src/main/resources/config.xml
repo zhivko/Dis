@@ -1695,17 +1695,21 @@ enable (return_range 1 20 'r_object_id')
 (mob_classification_id_cont is null or mob_classification_id_cont='') and 
 (any r_version_label='draft' or any r_version_label='effective')  
 enable (return_range 1 20 'r_object_id')
+         
+            
+             
          <userGroups>
                <userGroup id="dm_world" name="dm_world"/>
             </userGroups>
             <orderBys/>
             <filterClass/>
+            <parameterLabels/>
          </query>
          <query name="Varnost - dostop do dokumentov za osebo v obdobju">select distinct audited_obj_id from dm_audittrail_Mobitel_all where 
-lower(user_name) = lower('&lt;1&gt;') and 
-time_stamp_utc &gt;= DATE('&lt;2&gt;','MM/DD/YYYY hh:mm:ss') and 
-time_stamp_utc &lt; DATE('&lt;3&gt;','MM/DD/YYYY hh:mm:ss') 
-enable (UNCOMMITTED_READ, return_range 1 20 'r_object_id')
+lower(user_name) = lower('&lt;0&gt;') and 
+time_stamp_utc &gt;= DATE('&lt;1&gt;','MM/DD/YYYY hh:mm:ss') and 
+time_stamp_utc &lt; DATE('&lt;2&gt;','MM/DD/YYYY hh:mm:ss') 
+enable (UNCOMMITTED_READ, return_range 1 20 'r_object_id') 
          
             
             
@@ -1722,12 +1726,16 @@ enable (UNCOMMITTED_READ, return_range 1 20 'r_object_id')
                <label>Do datuma</label>
             </parameterLabels>
          </query>
-         <query name="Iskanje računa po mob_sender_code">select r_object_id from mob_outgoing_invoice where 
-mob_sender_code = '&lt;1&gt;' 
-enable (return_range 1 20 'r_object_id')
-         <userGroups/>
-            <orderBys/>
+         <query name="Video identifikacija">select r_object_id from mob_subscriber_document where 
+mob_classification_id = '397.22' 
+enable (return_range 1 20 'r_creation_date')<userGroups>
+               <userGroup id="documentum-admin" name="documentum-admin"/>
+            </userGroups>
+            <orderBys>
+               <orderBy direction="D" name="r_creation_date"/>
+            </orderBys>
             <filterClass/>
+            <parameterLabels/>
          </query>
       </queries>
    </docbase>

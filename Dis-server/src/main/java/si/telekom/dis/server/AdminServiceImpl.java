@@ -2092,7 +2092,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			long t1 = System.currentTimeMillis();
 			String msg = "Getting session for " + loginInfo.getDomain() + "\\" + loginInfo.getUser() + "...";
-			Logger.getLogger(AdminServiceImpl.class).info(msg);
+			//Logger.getLogger(AdminServiceImpl.class).info(msg);
 			WsServer.log(loginName, msg);
 			WsServer.setLastGetSessionTime(loginInfo.getUser());
 			userSession = sessMgr.getSession(AdminServiceImpl.repositoryName);
@@ -2100,7 +2100,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			String durationStr = String.format(Locale.ROOT, "%.3fs", (t2 - t1) / 1000.0);
 			String msg2 = msg + "Done in: " + durationStr;
 			WsServer.log(loginName, msg2);
-			Logger.getLogger(AdminServiceImpl.class).info(msg2);
+			//Logger.getLogger(AdminServiceImpl.class).info(msg2);
 		}
 
 		return userSession;

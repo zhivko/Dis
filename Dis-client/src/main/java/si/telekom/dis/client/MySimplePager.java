@@ -32,21 +32,21 @@ public class MySimplePager extends SimplePager {
 		return formatter.format(pageStart) + "-" + formatter.format(endIndex) + (exact ? " of " : " of over ") + formatter.format(dataSize);
 	}
 
-//	@Override
-//	public void setPageStart(int index) {
-//	  if (getDisplay() != null) {
-//	    Range range = getDisplay().getVisibleRange();
-//	    int pageSize = range.getLength();
-//
-//	    // Removed the min to show fixed ranges
-//	    //if (isRangeLimited && display.isRowCountExact()) {
-//	    //  index = Math.min(index, display.getRowCount() - pageSize);
-//	    //}
-//
-//	    index = Math.max(0, index);
-//	    if (index != range.getStart()) {
-//	      getDisplay().setVisibleRange(index, pageSize);
-//	    }
-//	  }
-//	}
+	@Override
+	public void setPageStart(int index) {
+	  if (getDisplay() != null) {
+	    Range range = getDisplay().getVisibleRange();
+	    int pageSize = range.getLength();
+
+	    // Removed the min to show fixed ranges
+	    //if (isRangeLimited && display.isRowCountExact()) {
+	    //  index = Math.min(index, display.getRowCount() - pageSize);
+	    //}
+
+	    index = Math.max(0, index);
+	    if (index != range.getStart()) {
+	      getDisplay().setVisibleRange(index, pageSize);
+	    }
+	  }
+	}
 }

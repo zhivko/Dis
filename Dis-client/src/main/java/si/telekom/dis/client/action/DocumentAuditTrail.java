@@ -64,7 +64,7 @@ public class DocumentAuditTrail extends WindowBox {
 
 		MySimplePager pager;
 		MySimplePager.Resources pagerResources = GWT.create(SimplePager.Resources.class);
-		pager = new MySimplePager(TextLocation.RIGHT, pagerResources, false, 0, true);
+		pager = new MySimplePager(TextLocation.RIGHT, pagerResources, false, 0, false);
 		pager.setPageSize(MainPanel.getInstance().us.auditTrailPerPageCount);
 		pager.setWidth("100%");
 
@@ -407,7 +407,7 @@ public class DocumentAuditTrail extends WindowBox {
 			// Get the new range.
 			final Range range = display.getVisibleRange();
 
-			explorerService.auditTrail(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, eventFilter, range.getStart(), range.getLength(),
+			explorerService.auditTrail(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, eventFilter, range.getStart(), range.getStart() + range.getLength(),
 					new AsyncCallback<List<List<String>>>() {
 
 						@Override

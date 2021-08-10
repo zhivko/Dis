@@ -3092,6 +3092,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 
 			query.setDQL(dql);
+			query.setBatchSize(Integer.MAX_VALUE);
 			Logger.getLogger(this.getClass()).info("Started dql query: " + dql);
 			long milis1 = System.currentTimeMillis();
 			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
@@ -3878,9 +3879,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 											ret1.lastItemFromQuery++;
 											return ret1;
 										}
-									}
-									else
-									{
+									} else {
 										Logger.getLogger(this.getClass()).warn("Only adding document to result of search and not: " + persObj.getType().getName());
 										nonExistentRObjectIds.add(r_object_id);
 									}
@@ -3888,10 +3887,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							}
 						} catch (Exception ex) {
 							if (ex.getMessage().contains("DM_SYSOBJECT_E_CANT_FETCH_INVALID_ID"))
-								Logger.getLogger(this.getClass()).warn(ex.getMessage());
+								nonExistentRObjectIds.add(r_object_id);
 							else if (ex.getMessage().contains("DM_API_E_EXIST")) {
 								nonExistentRObjectIds.add(r_object_id);
-								Logger.getLogger(this.getClass()).warn(ex.getMessage());
 							}
 						}
 
@@ -3919,10 +3917,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								}
 							} catch (Exception ex) {
 								if (ex.getMessage().contains("DM_SYSOBJECT_E_CANT_FETCH_INVALID_ID"))
-									Logger.getLogger(this.getClass()).warn(ex.getMessage());
+									nonExistentRObjectIds.add(r_object_id);
 								else if (ex.getMessage().contains("DM_API_E_EXIST")) {
 									nonExistentRObjectIds.add(r_object_id);
-									Logger.getLogger(this.getClass()).warn(ex.getMessage());
 								}
 
 							}
@@ -3963,8 +3960,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			String durationStr = String.format(Locale.ROOT, "%.2f", (milis3 - milis1) / 1000.0);
 			float duration = Float.valueOf(durationStr).floatValue();
 
-			String msg2 = "Returned: " + ret.size() + " objects, nonexisting documents count: "
-					+ nonExistentRObjectIds.size() + " working for: " + duration + "s";
+			String msg2 = "Returned: " + ret.size() + " objects, nonexisting documents count: " + nonExistentRObjectIds.size() + " working for: " + duration
+					+ "s";
 			Logger.getLogger(this.getClass()).info(msg2);
 			WsServer.log(loginName, msg2);
 			WsServer.setLastGetSessionTime(loginName);

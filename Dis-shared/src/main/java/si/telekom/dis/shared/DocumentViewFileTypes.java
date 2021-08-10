@@ -10,7 +10,7 @@ public class DocumentViewFileTypes {
 	static String[] imageHtmlFormatsArr = { "png", "tiff", "jpeg", "jpg" };
 	static String[] odfFormatsArr = { };
 	static String[] htmlFormatsArr = { "html", "htm" };
-	static String[] downloadFormatsArr = { "msw12", "excel12book", "excel8book", "msw8", "msw" };
+	static String[] downloadFormatsArr = { "msw12", "excel12book", "excel8book", "msw8", "msw" , "zip"};
 
 	public static List<String> couldDisplayFormats;
 	public static List<String> viewerJSFormats;
