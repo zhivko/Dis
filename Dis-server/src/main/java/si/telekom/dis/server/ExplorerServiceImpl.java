@@ -3759,6 +3759,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 		ArrayList<Document> ret = new ArrayList<Document>();
 		ArrayList<String> alRObjectIds = new ArrayList<String>();
+		ArrayList<String> nonExistentRObjectIds = new ArrayList<String>();
 		IDfQuery query = new DfQuery();
 
 		// remove lines starting with #
@@ -3832,6 +3833,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				query.setDQL(dql);
 				Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
 				WsServer.log(loginName, dql);
+				WsServer.setLastGetSessionTime(loginName);
 				collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
 				long milis2 = System.currentTimeMillis();
 				String msg = "Ended query in: " + (int) ((milis2 - milis1) / 1000) + "s";
@@ -3864,36 +3866,43 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 							IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 							if (filter.shouldInclude((IDfSysObject) persObj, userSession)) {
-								if (!alRObjectIds.contains(r_object_id)) {
-									if (persObj.getType().isSubTypeOf("dm_document")) {
+								if (!alRObjectIds.contains(r_object_id) && !nonExistentRObjectIds.contains(r_object_id)) {
+									if (persObj.getType().getName().equals("dm_document") || persObj.getType().isSubTypeOf("dm_document")) {
 										Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
 										ret.add(doc);
 										alRObjectIds.add(r_object_id);
 										addedToResultCount++;
-
 										if (ret.size() == length) {
 											ret1.documents = ret;
 											ret1.done = false;
 											ret1.lastItemFromQuery++;
 											return ret1;
 										}
-
+									}
+									else
+									{
+										Logger.getLogger(this.getClass()).warn("Only adding document to result of search and not: " + persObj.getType().getName());
+										nonExistentRObjectIds.add(r_object_id);
 									}
 								}
 							}
 						} catch (Exception ex) {
 							if (ex.getMessage().contains("DM_SYSOBJECT_E_CANT_FETCH_INVALID_ID"))
 								Logger.getLogger(this.getClass()).warn(ex.getMessage());
+							else if (ex.getMessage().contains("DM_API_E_EXIST")) {
+								nonExistentRObjectIds.add(r_object_id);
+								Logger.getLogger(this.getClass()).warn(ex.getMessage());
+							}
 						}
 
 					} else {
-						if (!alRObjectIds.contains(r_object_id)) {
+						if (!alRObjectIds.contains(r_object_id) && !nonExistentRObjectIds.contains(r_object_id)) {
 							try {
 								IDfPersistentObject persObj = userSession.getObject(new DfId(r_object_id));
 								// IDfPersistentObject persObj =
 								// userSession.getObjectByQualification("dm_document(all) where
 								// r_object_id='" + r_object_id + "'");
-								if (persObj.getType().isSubTypeOf("dm_document")) {
+								if (persObj.getType().getName().equals("dm_document") || persObj.getType().isSubTypeOf("dm_document")) {
 									Document doc = docFromSysObject((IDfSysObject) persObj, loginName, userSession);
 									ret.add(doc);
 									alRObjectIds.add(r_object_id);
@@ -3906,10 +3915,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 									}
 								} else {
 									Logger.getLogger(this.getClass()).warn("Only adding document to result of search and not: " + persObj.getType().getName());
+									nonExistentRObjectIds.add(r_object_id);
 								}
 							} catch (Exception ex) {
 								if (ex.getMessage().contains("DM_SYSOBJECT_E_CANT_FETCH_INVALID_ID"))
 									Logger.getLogger(this.getClass()).warn(ex.getMessage());
+								else if (ex.getMessage().contains("DM_API_E_EXIST")) {
+									nonExistentRObjectIds.add(r_object_id);
+									Logger.getLogger(this.getClass()).warn(ex.getMessage());
+								}
+
 							}
 						}
 					}
@@ -3923,6 +3938,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 						Logger.getLogger(this.getClass()).info("\t" + message);
 						WsServer.log(loginName, message);
 						prevLogOutputDuration = duration;
+						WsServer.setLastGetSessionTime(loginName);
 					}
 				}
 				collection.close();
@@ -3947,9 +3963,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			String durationStr = String.format(Locale.ROOT, "%.2f", (milis3 - milis1) / 1000.0);
 			float duration = Float.valueOf(durationStr).floatValue();
 
-			String msg2 = "Returned: " + ret.size() + " objects, result count: " + resultCount + " working for: " + duration + "s";
+			String msg2 = "Returned: " + ret.size() + " objects, nonexisting documents count: "
+					+ nonExistentRObjectIds.size() + " working for: " + duration + "s";
 			Logger.getLogger(this.getClass()).info(msg2);
 			WsServer.log(loginName, msg2);
+			WsServer.setLastGetSessionTime(loginName);
 
 		} catch (Throwable ex) {
 			// ex.printStackTrace();

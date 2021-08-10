@@ -1701,17 +1701,18 @@ enable (return_range 1 20 'r_object_id')
             <orderBys/>
             <filterClass/>
          </query>
-         <query name="Varnost - dostop do dokumentov za osebo v obdobju">select audited_obj_id from dm_audittrail_Mobitel_all where 
+         <query name="Varnost - dostop do dokumentov za osebo v obdobju">select distinct audited_obj_id from dm_audittrail_Mobitel_all where 
 lower(user_name) = lower('&lt;1&gt;') and 
 time_stamp_utc &gt;= DATE('&lt;2&gt;','MM/DD/YYYY hh:mm:ss') and 
 time_stamp_utc &lt; DATE('&lt;3&gt;','MM/DD/YYYY hh:mm:ss') 
 enable (UNCOMMITTED_READ, return_range 1 20 'r_object_id')
-
+         
             
             
             
          <userGroups>
-               <userGroup id="dm_world" name="dm_world"/>
+               <userGroup id="varnost-dctm-dostop" name="varnost-dctm-dostop"/>
+               <userGroup id="documentum-admin" name="documentum-admin"/>
             </userGroups>
             <orderBys/>
             <filterClass/>
