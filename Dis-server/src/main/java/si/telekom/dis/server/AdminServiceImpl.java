@@ -4257,7 +4257,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				final String ip = getThreadLocalRequest().getRemoteHost();
 				InetAddress addr = InetAddress.getByName(ip);
 				String hostName = addr.getHostName();
-				if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
+				if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com") || hostName.equals("ip6-localhost")) {
 					File devConfig;
 					if (SystemUtils.IS_OS_LINUX) {
 						devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
@@ -4313,7 +4313,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				final String ip = getThreadLocalRequest().getRemoteHost();
 				InetAddress addr = InetAddress.getByName(ip);
 				String hostName = addr.getHostName();
-				if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
+				if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com") || hostName.equals("ip6-localhost")) {
 					File devConfig;
 					if (SystemUtils.IS_OS_LINUX) {
 						devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
@@ -4616,7 +4616,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					final String ip = getThreadLocalRequest().getRemoteHost();
 					InetAddress addr = InetAddress.getByName(ip);
 					String hostName = addr.getHostName();
-					if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com")) {
+					if (hostName.equals("localhost") || hostName.equals("activation.cloud.techsmith.com") || hostName.equals("ip6-localhost")) {
 						File devConfig;
 						if (SystemUtils.IS_OS_LINUX) {
 							devConfig = new File("/home/klemen/git/Dis/Dis-server/src/main/resources/config.xml");
