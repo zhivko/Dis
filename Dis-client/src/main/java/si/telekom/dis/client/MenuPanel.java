@@ -50,6 +50,7 @@ import si.telekom.dis.client.action.ImportDocument;
 import si.telekom.dis.client.action.NewDocument;
 import si.telekom.dis.client.action.NewFolder;
 import si.telekom.dis.client.action.NewProfile;
+import si.telekom.dis.client.action.NewProfileFromXml;
 import si.telekom.dis.client.action.RegisterTable;
 import si.telekom.dis.client.action.SyncDoctypes;
 import si.telekom.dis.shared.Action;
@@ -264,6 +265,7 @@ public class MenuPanel extends Composite {
 		adminPanel.add(NewProfile.getMenuItem());
 		adminPanel.add(SyncDoctypes.getMenuItem());
 		adminPanel.add(RegisterTable.getMenuItem());
+		adminPanel.add(NewProfileFromXml.getMenuItem());
 
 		// adminPanel.add(classifyButton);
 

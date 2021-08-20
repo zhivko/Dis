@@ -64,4 +64,6 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		Void syncERenderTemplate(String loginName, String password, String r_object_id) throws ServerException;
 		
 		Void configureERender(String loginName, String password, String xml) throws ServerException;
+		
+		List<String> decryptZip(String loginName, String password, String r_object_id, String documentumPathToPK) throws ServerException;
 	}

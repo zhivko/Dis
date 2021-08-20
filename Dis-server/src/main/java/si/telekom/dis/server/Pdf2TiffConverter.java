@@ -1,20 +1,9 @@
 package si.telekom.dis.server;
 
-import java.io.File;
-
 import java.awt.image.BufferedImage;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-// import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
-// import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.rendering.PDFRenderer;
-
 import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.OutputStream;
+import java.io.File;
+import java.io.IOException;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -23,6 +12,12 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
+
+// import org.apache.pdfbox.io.IOUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+// import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 
 public class Pdf2TiffConverter {
 

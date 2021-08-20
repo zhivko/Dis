@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.xml.namespace.QName;
@@ -22,7 +21,6 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 import org.apache.log4j.Logger;
 
 import io.swagger.annotations.Api;
-import si.telekom.dis.server.restExtra.api.CustomerSearchApi;
 import si.telekom.dis.server.restExtra.api.CustomerSearchApiService;
 import si.telekom.dis.server.restExtra.api.NotFoundException;
 import si.telekom.schemas.common.customer.v1.Customer;
@@ -109,7 +107,7 @@ public class CustomerSearchRest extends CustomerSearchApiService {
 			return Response.ok(ret.toArray()).build();
 		} catch (Exception ex) {
 			Logger.getLogger(this.getClass()).error("error", ex);
-			return Response.status(500, ex.getMessage()).build();
+			return Response.serverError().build();
 		}
 
 	}

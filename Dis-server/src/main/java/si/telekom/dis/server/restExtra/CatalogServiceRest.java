@@ -101,7 +101,7 @@ public class CatalogServiceRest extends CatalogMilestonesSearchApiService {
 			return Response.ok(ret.toArray()).build();
 		} catch (Exception e) {
 			Logger.getLogger(this.getClass()).error("error", e);
-			return Response.status(500, e.getMessage()).build();
+			return Response.serverError().build();
 		}
 
 	}

@@ -228,7 +228,7 @@ public class UploadServlet extends HttpServlet {
 									explorerImpl.importDocument(loginName, loginPassword, null, profileId, stateId, attributes, roleUsersHm, encoded, fmt.getName());
 								} else {
 									IDfPersistentObject persObj = userSession.getObject(new DfId(objectId));
-									if (persObj.getType().getName().equals("dm_folder")) {
+									if (persObj.getType().getName().equals("dm_folder") || persObj.getType().getName().equals("dm_cabinet")) {
 										// folder.importDocument action
 										String profileId = req.getParameter("profileId");
 

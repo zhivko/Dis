@@ -16,6 +16,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -123,7 +124,6 @@ import com.documentum.fc.common.IDfValue;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.healthmarketscience.jackcess.util.ColumnValidator;
 
 import si.telekom.dis.shared.Action;
 import si.telekom.dis.shared.AdminService;
@@ -702,6 +702,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		ret.add(new Action("document.demote", "v prejšnje stanje", permit.WRITE, extPermitPromoteDemote));
 		ret.add(new Action("document.pdfTags", "pdf tagi", permit.READ));
 		ret.add(new Action("document.newRelease", "nova različica", permit.READ));
+		ret.add(new Action("document.decryptZipFile", "dekriptiraj vsebino", permit.READ));
 
 		ret.add(new Action("folder.importDocument", "uvozi dokument", permit.WRITE));
 		ret.add(new Action("folder.useForAiTraining", "uporabi za ai učenje", permit.READ));
@@ -817,7 +818,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 
 			// now profileFile should exist, lets parse it
-			ret = parseProfile(profileFile.getAbsolutePath());
+			ret = parseProfileFromFile(profileFile.getAbsolutePath());
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
@@ -855,7 +856,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			File profileFile = new File(configPath + "/" + object_name + ".xml");
 
 			sysObj.getFile(profileFile.getAbsolutePath());
-			prof = parseProfile(profileFile.getAbsolutePath());
+			prof = parseProfileFromFile(profileFile.getAbsolutePath());
 			Logger.getLogger(AdminServiceImpl.class).info("\tCopied and parsed profile from docbase.");
 
 			profiles.put(prof.id, prof);
@@ -873,7 +874,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			String object_name = "profile_" + prof.id;
 			File profileFile = new File(configPath + "/" + object_name + ".xml");
-			prof = parseProfile(profileFile.getAbsolutePath());
+			prof = parseProfileFromFile(profileFile.getAbsolutePath());
 
 			try {
 				// String ret = saveProfile(prof, profileFile.getAbsolutePath(),
@@ -892,22 +893,50 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		}
 	}
 
-	private static Profile parseProfile(String absolutePath) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
-		// TODO Auto-generated method stub
-		Logger.getLogger(AdminServiceImpl.class).info("Parse profile: " + absolutePath);
-		Profile retProfile = new Profile();
-		// DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	private static Profile parseProfileFromFile(String absolutePath)
+			throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+		Logger.getLogger(AdminServiceImpl.class).info("Parse profile from path: " + absolutePath);
+		Date modifiedTime = null;
+		modifiedTime = new Date((new File(absolutePath)).lastModified());
+		InputSource is = new InputSource(new FileInputStream(new File(absolutePath)));
+		return parseProfile(is, modifiedTime);
+	}
+
+	public void parseProfileFromXml(String xml) throws ServerException {
+		Logger.getLogger(AdminServiceImpl.class).info("Parse profile from xml.");
+		Date modifiedTime = new Date();
+		InputSource is = new InputSource(new StringReader(xml));
+		try {
+			Profile prof = parseProfile(is, modifiedTime);
+			profiles.put(prof.id, prof);
+			doctypes.get(prof.objType).profiles.put(prof.id, prof);
+			try {
+				serializeProfiles();
+				serializeDocTypes();
+			} catch (Exception e) {
+				Logger.getLogger(AdminServiceImpl.class).error("Error serializing dcmtypes and profiles.");
+			}
+			
+		} catch (Exception ex) {
+			throw new ServerException(ex);
+		}
+	}
+
+	private static Profile parseProfile(InputSource is, Date otherModifiedTime)
+			throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance("com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl",
 				AdminServiceImpl.class.getClassLoader());
 		DocumentBuilder builder = factory.newDocumentBuilder();
 
-		Logger.getLogger(AdminServiceImpl.class).info("Parsing: " + absolutePath);
-		Document doc = builder.parse("file:///" + absolutePath);
+		Logger.getLogger(AdminServiceImpl.class).info("Parsing profile.");
+
+		Document doc = builder.parse(is);
 		XPath xPath = XPathFactory.newInstance().newXPath();
 		XPathExpression expr = xPath.compile("/profile");
 
 		// Evaluate expression result on XML document
 		Element profileNode = (Element) expr.evaluate(doc, XPathConstants.NODE);
+		Profile retProfile = new Profile();
 
 		Date modifiedTime = null;
 		String modifiedTimeStr = profileNode.getAttribute("modify_date_utc");
@@ -929,7 +958,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				// modifiedTime = new Date((new File(absolutePath)).lastModified());
 			}
 		else
-			modifiedTime = new Date((new File(absolutePath)).lastModified());
+			modifiedTime = otherModifiedTime;
+
 		retProfile.modifyDateUTC = modifiedTime;
 
 		Field[] fields = retProfile.getClass().getDeclaredFields();
@@ -1964,7 +1994,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				File profileFile = new File(configPath + "/" + object_name + ".xml");
 				if (profileFile.exists()) {
 					try {
-						Profile prof = parseProfile(profileFile.getAbsolutePath());
+						Profile prof = parseProfileFromFile(profileFile.getAbsolutePath());
 
 						IDfSysObject dfSysObject = (IDfSysObject) dfSuperUserSession
 								.getObjectByQualification("dm_document where r_object_id='" + collection.getString("r_object_id") + "'");
@@ -1988,7 +2018,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						String profileId = object_name.substring(object_name.indexOf("_") + 1, object_name.length());
 						Profile prof = profiles.get(profileId);
 						if (prof == null) {
-							prof = parseProfile(child.getAbsolutePath());
+							prof = parseProfileFromFile(child.getAbsolutePath());
 							try {
 								getInstance().setProfile(superUserName, superUserPassword, prof);
 							} catch (Exception ex) {
@@ -2092,7 +2122,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 			long t1 = System.currentTimeMillis();
 			String msg = "Getting session for " + loginInfo.getDomain() + "\\" + loginInfo.getUser() + "...";
-			//Logger.getLogger(AdminServiceImpl.class).info(msg);
+			// Logger.getLogger(AdminServiceImpl.class).info(msg);
 			WsServer.log(loginName, msg);
 			WsServer.setLastGetSessionTime(loginInfo.getUser());
 			userSession = sessMgr.getSession(AdminServiceImpl.repositoryName);
@@ -2100,7 +2130,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			String durationStr = String.format(Locale.ROOT, "%.3fs", (t2 - t1) / 1000.0);
 			String msg2 = msg + "Done in: " + durationStr;
 			WsServer.log(loginName, msg2);
-			//Logger.getLogger(AdminServiceImpl.class).info(msg2);
+			// Logger.getLogger(AdminServiceImpl.class).info(msg2);
 		}
 
 		return userSession;
@@ -4012,7 +4042,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				String object_name = collection.getString("object_name");
 				File profileFile = new File(configPath + "/" + object_name + ".xml");
 				if (profileFile.exists()) {
-					Profile prof = parseProfile(profileFile.getAbsolutePath());
+					Profile prof = parseProfileFromFile(profileFile.getAbsolutePath());
 
 					IDfSysObject dfSysObject = (IDfSysObject) userSess
 							.getObjectByQualification("dm_document where r_object_id='" + collection.getString("r_object_id") + "'");
@@ -4030,7 +4060,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 					String fromDocbaseFile = profileFile + "_fromDocBase";
 					dfSysObject.getFile(fromDocbaseFile);
 
-					Profile prof1 = parseProfile(fromDocbaseFile);
+					Profile prof1 = parseProfileFromFile(fromDocbaseFile);
 
 					if (!prof1.modifyDateUTC.equals(date)) {
 

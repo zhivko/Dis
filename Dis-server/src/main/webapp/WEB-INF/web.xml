@@ -181,7 +181,7 @@
 		<servlet-name>uploadServ</servlet-name>
 		<url-pattern>/WebUi2/uploadServlet</url-pattern>
 	</servlet-mapping>
-	
+
 	<servlet>
 		<servlet-name>eRenderServlet</servlet-name>
 		<servlet-class>si.telekom.dis.server.ERenderServlet</servlet-class>

@@ -45,6 +45,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import si.telekom.dis.client.CustomTreeModel.MyAsyncDataProvider;
 import si.telekom.dis.client.action.ClassifyDocument;
+import si.telekom.dis.client.action.DecryptZipFile;
 import si.telekom.dis.client.action.DocumentAddRendition;
 import si.telekom.dis.client.action.DocumentAddVersionLabel;
 import si.telekom.dis.client.action.DocumentApiDump;
@@ -334,7 +335,7 @@ public class ExplorerPanel extends Composite {
 		} else if (actionId.equals("document.addRendition")) {
 			adb = new DocumentAddRendition(r_object_id);
 		} else if (actionId.equals("document.apiDump")) {
-			adb = new DocumentApiDump(r_object_id);			
+			adb = new DocumentApiDump(r_object_id);
 		} else if (actionId.equals("document.removeRendition")) {
 			adb = new DocumentRemoveRendition(r_object_id);
 		} else if (actionId.equals("document.checkOut")) {
@@ -353,14 +354,14 @@ public class ExplorerPanel extends Composite {
 		} else if (actionId.equals("document.cancelCheckOut")) {
 			explorerService.cancelCheckout(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, new AsyncCallback<Void>() {
 
-	@Override
-	public void onSuccess(Void result) {
-		// TODO Auto-generated method stub
-		MainPanel.log("CancelCheckout succesfull");
-		MenuPanel.activeExplorerInstance.refreshLastSelectedNode();
-	}
+				@Override
+				public void onSuccess(Void result) {
+					// TODO Auto-generated method stub
+					MainPanel.log("CancelCheckout succesfull");
+					MenuPanel.activeExplorerInstance.refreshLastSelectedNode();
+				}
 
-	@Override
+				@Override
 				public void onFailure(Throwable caught) {
 					MainPanel.log("CancelCheckout error: " + caught.getMessage());
 				}
@@ -406,13 +407,13 @@ public class ExplorerPanel extends Composite {
 			explorerService.updateBusinessNotification(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id,
 					new AsyncCallback<Void>() {
 
-	@Override
-	public void onSuccess(Void result) {
-		// TODO Auto-generated method stub
-		MainPanel.log("updateBusinessNotification succesfull");
-	}
+						@Override
+						public void onSuccess(Void result) {
+							// TODO Auto-generated method stub
+							MainPanel.log("updateBusinessNotification succesfull");
+						}
 
-	@Override
+						@Override
 						public void onFailure(Throwable caught) {
 							MainPanel.log("updateBusinessNotification error: " + caught.getMessage());
 						}
@@ -433,6 +434,11 @@ public class ExplorerPanel extends Composite {
 		else if (actionId.equals("document.classifyDoc")) {
 			adb = new ClassifyDocument(r_object_id);
 		}
+		else if (actionId.equals("document.decryptZipFile")) {
+			adb = new DecryptZipFile(r_object_id);
+		}
+		
+		
 		if (adb != null) {
 			// <- popup content changes here
 			adb.show();
@@ -532,9 +538,10 @@ public class ExplorerPanel extends Composite {
 			MyAsyncDataProvider adp = model.getDataProviderThatHandlesDoc(selectedDocument.r_object_id, selectedDocument.i_chronicle_id);
 			if (adp != null) {
 				for (Document doc : adp.documents) {
-					//if (doc.r_object_id == selectedDocument.r_object_id || doc.i_chronicle_id == selectedDocument.i_chronicle_id) {
-						doc.isHighlighted = false;
-					//}
+					// if (doc.r_object_id == selectedDocument.r_object_id ||
+					// doc.i_chronicle_id == selectedDocument.i_chronicle_id) {
+					doc.isHighlighted = false;
+					// }
 				}
 				adp.updateRowData(0, adp.documents);
 			}
@@ -546,7 +553,8 @@ public class ExplorerPanel extends Composite {
 				for (CustomTreeModel.MyAsyncDataProvider adp : model.allDataProviders) {
 					if (adp.documents != null) {
 						for (Document doc : adp.documents) {
-							//if (doc.r_object_id == toBeSelected.r_object_id || doc.i_chronicle_id == toBeSelected.i_chronicle_id) {
+							// if (doc.r_object_id == toBeSelected.r_object_id ||
+							// doc.i_chronicle_id == toBeSelected.i_chronicle_id) {
 							if (doc.r_object_id == toBeSelected.r_object_id) {
 								doc.isHighlighted = true;
 								break;
@@ -674,5 +682,5 @@ public class ExplorerPanel extends Composite {
 	public void hideTxtFolder() {
 		vp.remove(hpFolder);
 	}
-	
+
 }

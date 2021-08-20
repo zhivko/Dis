@@ -7,10 +7,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -24,12 +27,19 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
+import java.nio.file.CopyOption;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -45,13 +55,17 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -72,6 +86,10 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -180,125 +198,144 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		String loginPassword = request.getParameter("loginPassword");
 		String rObjectId = request.getParameter("r_object_id");
 		String rendition = request.getParameter("rendition");
+		String decryptedZipFile = request.getParameter("decryptedZipFile");
 
 		IDfSession userSession = null;
 		try {
-			userSession = AdminServiceImpl.getSession(loginName, loginPassword);
-			IDfPersistentObject persObj = userSession.getObject(new DfId(rObjectId));
-			IDfSysObject dfSysObj = (IDfSysObject) persObj;
-			ByteArrayInputStream bacontentStreamIs = dfSysObj.getContentEx(rendition, 0);
 
-			if (rendition.equals("tiff") || rendition.equals("png") || rendition.equals("jpg")) {
-				Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName(rendition);
-				ImageReader reader = (ImageReader) iterator.next();
-				ImageInputStream iis = ImageIO.createImageInputStream(bacontentStreamIs);
-				reader.setInput(iis, true);
-				ImageReadParam param = reader.getDefaultReadParam();
-				BufferedImage bi = reader.read(0, param);
+			if (decryptedZipFile != null) {
+				File f = new File(decryptedZipFile);
+				ByteArrayInputStream bacontentStreamIs = new ByteArrayInputStream(FileUtils.readFileToByteArray(f));
 
-				File tmpFile = File.createTempFile(dfSysObj.getObjectId().getId().toString(), rendition);
+				response.setHeader("Content-Type", "application/octet-stream;");
+				response.setHeader("Content-Disposition", "attachment;filename=\"" + f.getName() + "\"");
+				OutputStream os = response.getOutputStream();
+				BufferedInputStream buf = new BufferedInputStream(bacontentStreamIs);
+				int readBytes = 0;
+				while ((readBytes = buf.read()) != -1) {
+					os.write(readBytes);
+				}
+				os.flush();
+				os.close();// *important*
+				return;
 
-				ImageIO.write(bi, "png", tmpFile);
-				bacontentStreamIs = new ByteArrayInputStream(FileUtils.readFileToByteArray(tmpFile));
+			} else {
 
-				tmpFile.delete();
-			} else if (rendition.equals("msg")) {
+				userSession = AdminServiceImpl.getSession(loginName, loginPassword);
+				IDfPersistentObject persObj = userSession.getObject(new DfId(rObjectId));
+				IDfSysObject dfSysObj = (IDfSysObject) persObj;
+				ByteArrayInputStream bacontentStreamIs = dfSysObj.getContentEx(rendition, 0);
 
-				File msgfile = File.createTempFile(dfSysObj.getObjectId().getId().toString(), rendition);
-				IOUtils.copy(bacontentStreamIs, new FileOutputStream(msgfile.getAbsolutePath()));
+				if (rendition.equals("tiff") || rendition.equals("png") || rendition.equals("jpg")) {
+					Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName(rendition);
+					ImageReader reader = (ImageReader) iterator.next();
+					ImageInputStream iis = ImageIO.createImageInputStream(bacontentStreamIs);
+					reader.setInput(iis, true);
+					ImageReadParam param = reader.getDefaultReadParam();
+					BufferedImage bi = reader.read(0, param);
 
-				ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+					File tmpFile = File.createTempFile(dfSysObj.getObjectId().getId().toString(), rendition);
 
-				MAPIMessage msg = new MAPIMessage(new POIFSFileSystem(msgfile));
-				Chunks mainChunks = msg.getMainChunks();
-				if (mainChunks != null) {
-					String encoding = null;
+					ImageIO.write(bi, "png", tmpFile);
+					bacontentStreamIs = new ByteArrayInputStream(FileUtils.readFileToByteArray(tmpFile));
 
-					Map<MAPIProperty, List<PropertyValue>> props = mainChunks.getProperties();
-					if (props != null) {
-						// First choice is a codepage property
-						for (MAPIProperty prop : new MAPIProperty[] { MAPIProperty.MESSAGE_CODEPAGE, MAPIProperty.INTERNET_CPID }) {
-							List<PropertyValue> val = props.get(prop);
-							if (val != null && val.size() > 0) {
-								int codepage = ((PropertyValue.LongPropertyValue) val.get(0)).getValue();
+					tmpFile.delete();
+				} else if (rendition.equals("msg")) {
 
-								try {
-									encoding = CodePageUtil.codepageToEncoding(codepage, true);
-								} catch (UnsupportedEncodingException e) {
-									// swallow
+					File msgfile = File.createTempFile(dfSysObj.getObjectId().getId().toString(), rendition);
+					IOUtils.copy(bacontentStreamIs, new FileOutputStream(msgfile.getAbsolutePath()));
+
+					ByteArrayOutputStream baOs = new ByteArrayOutputStream();
+
+					MAPIMessage msg = new MAPIMessage(new POIFSFileSystem(msgfile));
+					Chunks mainChunks = msg.getMainChunks();
+					if (mainChunks != null) {
+						String encoding = null;
+
+						Map<MAPIProperty, List<PropertyValue>> props = mainChunks.getProperties();
+						if (props != null) {
+							// First choice is a codepage property
+							for (MAPIProperty prop : new MAPIProperty[] { MAPIProperty.MESSAGE_CODEPAGE, MAPIProperty.INTERNET_CPID }) {
+								List<PropertyValue> val = props.get(prop);
+								if (val != null && val.size() > 0) {
+									int codepage = ((PropertyValue.LongPropertyValue) val.get(0)).getValue();
+									try {
+										encoding = CodePageUtil.codepageToEncoding(codepage, true);
+									} catch (UnsupportedEncodingException e) {
+										Logger.getLogger(this.getClass()).warn("Unsupported encoding: " + e.getMessage());
+									}
+									tryToSet7BitEncoding(msg, encoding);
 								}
-								tryToSet7BitEncoding(msg, encoding);
 							}
 						}
-					}
 
 //@formatter:off			
-                    baOs.write(("<!DOCTYPE html>" + "<html>" + "<head>" + "<title>Page Title</title>"
-                            + "<meta charset='" + encoding + "'>" + "</head>" + "<body>").getBytes());
+          baOs.write(("<!DOCTYPE html>" + "<html>" + "<head>" + "<title>Page Title</title>"
+                  + "<meta charset='" + encoding + "'>" + "</head>" + "<body>").getBytes());
 //@formatter:on
-					if (msg.getMainChunks() != null) {
-						baOs.write(("<br><br>\n").getBytes(encoding));
-						baOs.write(("<strong>DATE:</strong>" + sdf.format(msg.getMessageDate().getTime()) + "<br>\n").getBytes(encoding));
-						baOs.write(("<strong>FROM:</strong>" + msg.getDisplayFrom() + "<br>\n").getBytes(encoding));
-						baOs.write(("<strong>TO:</strong>" + msg.getDisplayTo() + "<br>\n").getBytes(encoding));
-						baOs.write(("<br>").getBytes(encoding));
-						baOs.write(("<strong>SUBJECT:</strong>" + msg.getConversationTopic() + "<br>\n").getBytes(encoding));
-
-						// BodyContentHandler handler = new BodyContentHandler(new
-						// ToXMLContentHandler());
-						// AutoDetectParser parser = new AutoDetectParser();
-						// Metadata metadata = new Metadata();
-						// try (InputStream stream = new
-						// FileInputStream(msgfile.getAbsolutePath())) {
-						// parser.parse(stream, handler, metadata);
-						// }
-						baOs.write(("<br><br>").getBytes(encoding));
-						try {
-							baOs.write(("<br><br>" + msg.getHtmlBody() + "<br>\n").getBytes(encoding));
-						} catch (Exception ex) {
-
-							baOs.write(("<br><br>" + msg.getTextBody().replaceAll("\\n", "<br>") + "<br>\n").getBytes(encoding));
-						}
-
-						for (AttachmentChunks att : msg.getAttachmentFiles()) {
-							if (att.getAttachmentDirectory() != null) {
-								baOs.write((att.getAttachFileName() + "." + att.getAttachExtension()).getBytes("UTF-8"));
-							} else {
-								String filename = att.getAttachFileName().getValue();
-
-								String encodedStr = Base64.getEncoder().withoutPadding().encodeToString(att.getAttachData().getValue());
-
-								// height=\"1000\" width=\"800\"
-								if (filename.toLowerCase().endsWith("pdf")) {
-									baOs.write(("<embed src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
-								} else {
-									baOs.write(
-											("<img alt=\"" + filename + "\" src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
-								}
-							}
+						if (msg.getMainChunks() != null) {
+							baOs.write(("<br><br>\n").getBytes(encoding));
+							baOs.write(("<strong>DATE:</strong>" + sdf.format(msg.getMessageDate().getTime()) + "<br>\n").getBytes(encoding));
+							baOs.write(("<strong>FROM:</strong>" + msg.getDisplayFrom() + "<br>\n").getBytes(encoding));
+							baOs.write(("<strong>TO:</strong>" + msg.getDisplayTo() + "<br>\n").getBytes(encoding));
 							baOs.write(("<br>").getBytes(encoding));
+							baOs.write(("<strong>SUBJECT:</strong>" + msg.getConversationTopic() + "<br>\n").getBytes(encoding));
 
+							// BodyContentHandler handler = new BodyContentHandler(new
+							// ToXMLContentHandler());
+							// AutoDetectParser parser = new AutoDetectParser();
+							// Metadata metadata = new Metadata();
+							// try (InputStream stream = new
+							// FileInputStream(msgfile.getAbsolutePath())) {
+							// parser.parse(stream, handler, metadata);
+							// }
+							baOs.write(("<br><br>").getBytes(encoding));
+							try {
+								baOs.write(("<br><br>" + msg.getHtmlBody() + "<br>\n").getBytes(encoding));
+							} catch (Exception ex) {
+
+								baOs.write(("<br><br>" + msg.getTextBody().replaceAll("\\n", "<br>") + "<br>\n").getBytes(encoding));
+							}
+
+							for (AttachmentChunks att : msg.getAttachmentFiles()) {
+								if (att.getAttachmentDirectory() != null) {
+									baOs.write((att.getAttachFileName() + "." + att.getAttachExtension()).getBytes("UTF-8"));
+								} else {
+									String filename = att.getAttachFileName().getValue();
+
+									String encodedStr = Base64.getEncoder().withoutPadding().encodeToString(att.getAttachData().getValue());
+
+									// height=\"1000\" width=\"800\"
+									if (filename.toLowerCase().endsWith("pdf")) {
+										baOs.write(("<embed src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
+									} else {
+										baOs.write(
+												("<img alt=\"" + filename + "\" src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
+									}
+								}
+								baOs.write(("<br>").getBytes(encoding));
+
+							}
+							baOs.write(("</body>").getBytes("UTF-8"));
+
+							bacontentStreamIs = new ByteArrayInputStream(baOs.toByteArray());
 						}
-						baOs.write(("</body>").getBytes("UTF-8"));
-
-						bacontentStreamIs = new ByteArrayInputStream(baOs.toByteArray());
 					}
 				}
-			}
 
-			String name = dfSysObj.getObjectName();
-			response.setHeader("Content-Type", "application/octet-stream;");
-			response.setHeader("Content-Disposition", "attachment;filename=\"" + name + "\"");
-			OutputStream os = response.getOutputStream();
-			BufferedInputStream buf = new BufferedInputStream(bacontentStreamIs);
-			int readBytes = 0;
-			while ((readBytes = buf.read()) != -1) {
-				os.write(readBytes);
+				String name = dfSysObj.getObjectName();
+				response.setHeader("Content-Type", "application/octet-stream;");
+				response.setHeader("Content-Disposition", "attachment;filename=\"" + name + "\"");
+				OutputStream os = response.getOutputStream();
+				BufferedInputStream buf = new BufferedInputStream(bacontentStreamIs);
+				int readBytes = 0;
+				while ((readBytes = buf.read()) != -1) {
+					os.write(readBytes);
+				}
+				os.flush();
+				os.close();// *important*
+				return;
 			}
-			os.flush();
-			os.close();// *important*
-			return;
-
 		} catch (Throwable e1) {
 			throw new ServletException("Throwable: ", new IOException(e1));
 		} finally {
@@ -484,7 +521,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 
 			IDfSysObject sysObj = ((IDfSysObject) persObj);
-			doc.object_name = sysObj.getObjectName();
+			doc.object_name = sysObj.getObjectName().length() == 0 ? sysObj.getTitle() : sysObj.getObjectName();
 
 			doc.state_id = (stateId == null ? null : stateId);
 
@@ -2296,7 +2333,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		try {
 			ServletContext ctx = this.getServletContext();
 
-			String hostname = this.getServletContext().getVirtualServerName();
+			String hostname = this.getThreadLocalRequest().getLocalName();
 
 			Client client = ClientBuilder.newClient();
 			String uri = client.target(restUrl).getUri().toString();
@@ -3418,13 +3455,16 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			}
 
-			GregorianCalendar gcal = new GregorianCalendar();
-			gcal.setTime(new Date());
-			String barcode = AdminServiceImpl.getBarcode(prof.namePolicyBarcodeType, "0", "9", "10", gcal, 1, "DisTelekom")[0];
+			if (prof.namePolicyBarcodeType > 0) {
+				GregorianCalendar gcal = new GregorianCalendar();
+				gcal.setTime(new Date());
 
-			persObject.setString("object_name", barcode);
-			if (persObject.hasAttr("mob_barcode")) {
-				persObject.setString("mob_barcode", barcode);
+				String barcode = AdminServiceImpl.getBarcode(prof.namePolicyBarcodeType, "0", "9", "10", gcal, 1, "DisTelekom")[0];
+
+				persObject.setString("object_name", barcode);
+				if (persObject.hasAttr("mob_barcode")) {
+					persObject.setString("mob_barcode", barcode);
+				}
 			}
 
 			try {
@@ -3848,7 +3888,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					// si.telekom.dis.server.reports.FilterSapObjects
 					Logger.getLogger(this.getClass()).info("filtering by filter class: '" + pQuery.filterClass + "'");
 
-					final Class<?> aClass = WebappContext.servletContext.getClassLoader().loadClass(pQuery.filterClass);
+					final Class<?> aClass = WebappContext.class.getClassLoader().loadClass(pQuery.filterClass);
 					final Constructor<IIncludeInReport> constr = (Constructor<IIncludeInReport>) aClass.getConstructor();
 					filter = constr.newInstance();
 				}
@@ -4472,16 +4512,28 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		IDfCollection collection = null;
 		IDfSession sess = null;
 
+		// base64Content
+
 		File tempFile = null;
 		try {
 			tempFile = File.createTempFile("recognize", ".new");
 
-			byte[] data = Base64.getDecoder().decode(base64Content.split(",")[1]);
+			String[] base64contentsplit = base64Content.split(",");
+			byte[] data = Base64.getDecoder().decode(base64contentsplit[1]);
 			try (OutputStream stream = new FileOutputStream(tempFile.getAbsolutePath())) {
 				stream.write(data);
 			}
 
 			TikaInputStream tis = TikaInputStream.get(data);
+
+			// AutoDetectParser parser = new AutoDetectParser();
+			// BodyContentHandler handler = new BodyContentHandler();
+			// Metadata metadata = new Metadata();
+			// try (InputStream stream = new
+			// FileInputStream(tempFile.getAbsolutePath())) {
+			// parser.parse(stream, handler, metadata);
+			// handler.toString();
+			// }
 
 			Tika tika = new Tika();
 			String filetype = tika.detect(tis);
@@ -4499,7 +4551,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			} else {
 				// String mimeType = Files.probeContentType(tempFile.toPath());
 				sess = AdminServiceImpl.getAdminSession();
-				query.setDQL("select name from dm_format where mime_type='" + filetype + "'");
+				String mimeTypeFromClient = base64contentsplit[0].split(":")[1].split(";")[0];
+				query.setDQL("select name from dm_format where mime_type in ('" + filetype + "','" + mimeTypeFromClient + "')");
 				collection = query.execute(sess, DfQuery.DF_READ_QUERY);
 
 				while (collection.next()) {
@@ -4507,6 +4560,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					Logger.getLogger(this.getClass()).info("\t" + collection.getString("name"));
 				}
 				collection.close();
+
 				Logger.getLogger(this.getClass()).info("Recognizing format...Done.");
 
 			}
@@ -5011,4 +5065,238 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return null;
 	}
 
+	@Override
+	public List<String> decryptZip(String loginName, String password, String r_object_id, String documentumPathToPK) throws ServerException {
+		ArrayList<String> ret = new ArrayList<String>();
+		IDfSession userSession = null;
+		try {
+			userSession = AdminServiceImpl.getSession(loginName, password);
+			Map<String, String> env = new HashMap<>();
+			// Create the zip file if it doesn't exist
+
+			Path tempDirWithPrefix = Files.createTempDirectory("decryptTar-");
+			tempDirWithPrefix.toFile().deleteOnExit();
+
+			String[] splittedPK = documentumPathToPK.split("/");
+			String folderToPK = documentumPathToPK.substring(0, documentumPathToPK.lastIndexOf("/"));
+			String objectName = documentumPathToPK.substring(documentumPathToPK.lastIndexOf("/") + 1, documentumPathToPK.length());
+			IDfSysObject sysObjPk = (IDfSysObject) userSession
+					.getObjectByQualification("dm_document where folder('" + folderToPK + "') and object_name='" + objectName + "'");
+			File pkTempFile = new File(tempDirWithPrefix.toFile().getAbsolutePath() + "/keystore.pfx");
+			sysObjPk.getFile(pkTempFile.getAbsolutePath());
+			pkTempFile.deleteOnExit();
+
+			KeyStore keystore = KeyStore.getInstance("PKCS12");
+			String p12Password = "valuid";
+			keystore.load(new FileInputStream(pkTempFile), p12Password.toCharArray());
+
+			// export private key
+			File pk = new File(tempDirWithPrefix.toFile().getAbsolutePath() + "/key.pem");
+
+			String commandExportPK = "/usr/local/ssl/bin/openssl pkcs12 -nodes -in " + pkTempFile.getAbsolutePath() + " -nocerts -out " + pk.getAbsolutePath()
+					+ " -password pass:" + p12Password;
+			Process p = Runtime.getRuntime().exec(commandExportPK.split(" (?=(([^'\\\"]*['\\\"]){2})*[^'\\\"]*$)"));
+			ByteArrayOutputStream baOsErr = new ByteArrayOutputStream();
+			PrintStream psErr = new PrintStream(baOsErr);
+			inheritIO(p.getErrorStream(), psErr);
+			p.waitFor();
+			if (baOsErr.toString().length() > 0) {
+				Logger.getLogger(this.getClass()).info(baOsErr.toString());
+				//throw new ServerException(baOsErr.toString());
+			}
+
+			// remove pass from pk
+			File pkWithoutPass = new File(tempDirWithPrefix.toFile().getAbsolutePath() + "/server.key");
+			String commandremovePassFromPK = "/usr/local/ssl/bin/openssl rsa -in "+pk.getAbsolutePath()+" -out " + pkWithoutPass.getAbsolutePath();
+			p = Runtime.getRuntime().exec(commandremovePassFromPK.split(" (?=(([^'\\\"]*['\\\"]){2})*[^'\\\"]*$)"));
+			baOsErr = new ByteArrayOutputStream();
+			psErr = new PrintStream(baOsErr);
+			inheritIO(p.getErrorStream(), psErr);
+			p.waitFor();
+			if (baOsErr.toString().length() > 0) {
+				Logger.getLogger(this.getClass()).info(baOsErr.toString());
+			}
+
+			// export certificate
+			File cert = new File(tempDirWithPrefix.toFile().getAbsolutePath() + "/cert.pem");
+			String commandExportCERT = "/usr/local/ssl/bin/openssl pkcs12 -in " + pkTempFile.getAbsolutePath() + " -nokeys -out " + cert.getAbsolutePath() + " -password pass:"
+					+ p12Password;
+			p = Runtime.getRuntime().exec(commandExportCERT.split(" (?=(([^'\\\"]*['\\\"]){2})*[^'\\\"]*$)"));
+			baOsErr = new ByteArrayOutputStream();
+			psErr = new PrintStream(baOsErr);
+			inheritIO(p.getErrorStream(), psErr);
+			p.waitFor();
+			if (baOsErr.toString().length() > 0) {
+				Logger.getLogger(this.getClass()).info(baOsErr.toString());
+				//throw new ServerException(baOsErr.toString());
+			}
+
+			// env.put("create", "true");
+			IDfSysObject sysObj = (IDfSysObject) userSession.getObjectByQualification("dm_document where r_object_id='" + r_object_id + "'");
+
+			String fileName = FileUtils.getTempDirectory().getAbsolutePath() + "/" + System.currentTimeMillis() + ".tar";
+			sysObj.getFile(fileName);
+			File zipFile = new File(fileName);
+
+			unTar(zipFile, tempDirWithPrefix.toFile());
+
+			Files.walkFileTree(tempDirWithPrefix, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+					if (path.toFile().getAbsolutePath().endsWith("wav.gz")) {
+						// You can do anything you want with the path here
+						Path copied = Paths.get(tempDirWithPrefix.toFile().getAbsoluteFile().getAbsolutePath(), path.toFile().getName());
+						// Files.copy(path, copied, StandardCopyOption.REPLACE_EXISTING);
+						// copied.toFile().deleteOnExit();
+
+						if (copied.toFile().getAbsolutePath().endsWith(".gz")) {
+							// we need to decompress with gunzip
+							int loca = copied.toFile().getAbsolutePath().indexOf(".gz");
+							String fullPathOfDecompressed = new File(copied.toFile().getAbsolutePath().substring(0, loca)).getAbsolutePath();
+							Path pathDecompresed = new File(fullPathOfDecompressed).toPath();
+							decompressGzip(copied, pathDecompresed);
+							CopyOption[] options = new CopyOption[] { java.nio.file.StandardCopyOption.COPY_ATTRIBUTES,
+									java.nio.file.StandardCopyOption.REPLACE_EXISTING };
+							copied = pathDecompresed;
+						}
+
+						File decryptedFile = new File(copied.toFile().getAbsolutePath() + ".decrypted");
+
+//@formatter:off			
+			    		String command = "/usr/local/ssl/bin/openssl cms -decrypt -binary "
+			    				+ "-in "+copied.toFile().getAbsolutePath()+" "
+	    						+ "-inform SMIME "
+			    				+	"-inkey " + pkWithoutPass.getAbsolutePath() + " "
+//			    				+ "-recip " + cert.getAbsolutePath() + " "
+//									+	"-recip " + pemFile.getAbsolutePath() + " "	    						
+  								+ "-out " + decryptedFile.getAbsolutePath() + " " 
+//  								+ "-CAfile /home/klemen/temp/Test_TS_Storitve_CA_Test_TS_Storitve_Root_.cer" + " "
+  								+ "-debug_decrypt";
+//@formatter:on			
+						Logger.getLogger(this.getClass()).info(command);
+						Process p = Runtime.getRuntime().exec(command.split(" "));
+						ByteArrayOutputStream baOsErr = new ByteArrayOutputStream();
+						PrintStream psErr = new PrintStream(baOsErr);
+						ByteArrayOutputStream baOsOut = new ByteArrayOutputStream();
+						PrintStream psOut = new PrintStream(baOsOut);
+						inheritIO(p.getErrorStream(), psErr);
+						inheritIO(p.getInputStream(), psOut);
+						try {
+							p.waitFor();
+							Logger.getLogger(this.getClass()).info("OpenSSL out:" + baOsOut.toString() + " err: " + baOsErr.toString());
+							if (baOsErr.toString().length() > 0) {
+								String[] splittedLines = baOsErr.toString().split("\n");
+								String wholeError = "";
+								for (String line : splittedLines) {
+									if (line.trim().length() > 0) {
+										wholeError = wholeError + "\n" + line;
+									}
+								}
+								// throw new ServerException(wholeError);
+								Logger.getLogger(this.getClass()).error("OpenSSL out:" + wholeError);
+								WsServer.log(loginName, wholeError);
+							}
+
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					return FileVisitResult.CONTINUE;
+				}
+
+				// The FileVisitor interface has more methods that
+				// are useful for handling directories.
+			});
+		} catch (Exception ex) {
+			Logger.getLogger(this.getClass()).error(ex);
+			WsServer.log(loginName, ex.getMessage());
+		} finally {
+			if (userSession != null)
+				if (userSession.isConnected()) {
+					userSession.getSessionManager().release(userSession);
+				}
+		}
+		return ret;
+	}
+
+	private static void inheritIO(final InputStream src, final PrintStream dest) {
+		new Thread(new Runnable() {
+			public void run() {
+				Scanner sc = new Scanner(src);
+				while (sc.hasNextLine()) {
+					dest.println(sc.nextLine() + "\n");
+				}
+				sc.close();
+			}
+		}).start();
+	}
+
+	/**
+	 * Untar an input file into an output file.
+	 * 
+	 * The output file is created in the output folder, having the same name as
+	 * the input file, minus the '.tar' extension.
+	 * 
+	 * @param inputFile
+	 *          the input .tar file
+	 * @param outputDir
+	 *          the output directory file.
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 * 
+	 * @return The {@link List} of {@link File}s with the untared content.
+	 * @throws ArchiveException
+	 */
+	private static List<File> unTar(final File inputFile, final File outputDir) throws FileNotFoundException, IOException, ArchiveException {
+		Logger.getLogger(ExplorerServiceImpl.class)
+				.info(String.format("Untaring %s to dir %s.", inputFile.getAbsolutePath(), outputDir.getAbsolutePath()));
+
+		final List<File> untaredFiles = new LinkedList<File>();
+		final InputStream is = new FileInputStream(inputFile);
+		final TarArchiveInputStream debInputStream = (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream("tar", is);
+		TarArchiveEntry entry = null;
+		while ((entry = (TarArchiveEntry) debInputStream.getNextEntry()) != null) {
+			final File outputFile = new File(outputDir, entry.getName());
+			if (entry.isDirectory()) {
+				Logger.getLogger(ExplorerServiceImpl.class).info(String.format("Attempting to write output directory %s.", outputFile.getAbsolutePath()));
+				if (!outputFile.exists()) {
+					Logger.getLogger(ExplorerServiceImpl.class).info(String.format("Attempting to create output directory %s.", outputFile.getAbsolutePath()));
+					if (!outputFile.mkdirs()) {
+						throw new IllegalStateException(String.format("Couldn't create directory %s.", outputFile.getAbsolutePath()));
+					}
+				}
+			} else {
+				Logger.getLogger(ExplorerServiceImpl.class).info(String.format("Creating output file %s.", outputFile.getAbsolutePath()));
+				final OutputStream outputFileStream = new FileOutputStream(outputFile);
+				IOUtils.copy(debInputStream, outputFileStream);
+				outputFileStream.close();
+			}
+			untaredFiles.add(outputFile);
+		}
+		debInputStream.close();
+
+		return untaredFiles;
+	}
+
+	private String getHexString(byte[] b) {
+		String result = "";
+		for (int i = 0; i < b.length; i++) {
+			result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+		}
+		return result;
+	}
+
+	public static void decompressGzip(Path source, Path target) throws IOException {
+
+		GZIPInputStream gis = new GZIPInputStream(new FileInputStream(source.toFile()));
+		FileOutputStream fos = new FileOutputStream(target.toFile());
+
+		// copy GZIPInputStream to FileOutputStream
+		byte[] buffer = new byte[1024];
+		int len;
+		while ((len = gis.read(buffer)) > 0) {
+			fos.write(buffer, 0, len);
+		}
+	}
 }

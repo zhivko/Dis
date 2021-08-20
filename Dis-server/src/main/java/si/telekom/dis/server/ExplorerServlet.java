@@ -37,9 +37,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
@@ -260,12 +262,51 @@ public class ExplorerServlet extends HttpServlet {
 						String encoding = con.getContentEncoding();
 						encoding = encoding == null ? "UTF-8" : encoding;
 						String body = IOUtils.toString(in, encoding);
+						InputSource is = new InputSource(new ByteArrayInputStream(body.getBytes()));
 
 						// String fileHref =
 						// "/home/klemen/Downloads/SkupinaTelekom_2_0_vizualizacija.xslt";
-						SAXSource source = new SAXSource(new InputSource(new ByteArrayInputStream(body.getBytes())));
+
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+						Document documentXSLT = dbf.newDocumentBuilder().parse(is);
+
+						XPathFactory xpf = XPathFactory.newInstance();
+						XPath xpath = xpf.newXPath();
+						XPathExpression expression = xpath.compile("//*[local-name() = 'output' and @method='html' and @version='1.0']");
+						// XPathExpression expression = xpath.compile("//*[local-name() =
+						// 'output']");
+						Node b13Node = (Node) expression.evaluate(documentXSLT, XPathConstants.NODE);
+
+						SAXSource source;
+						if (b13Node != null) {
+							b13Node.getParentNode().removeChild(b13Node);
+							TransformerFactory tf = TransformerFactory.newInstance();
+							Transformer t = tf.newTransformer();
+							ByteArrayOutputStream baOsNewXSLT = new ByteArrayOutputStream();
+							t.transform(new DOMSource(documentXSLT), new StreamResult(baOsNewXSLT));
+							source = new SAXSource(new InputSource(new ByteArrayInputStream(baOsNewXSLT.toString().getBytes())));
+						} else {
+							source = new SAXSource(is);
+						}
 
 						Transformer transformer = factory.newTransformer(source);
+						transformer.setErrorListener(new ErrorListener() {
+
+							@Override
+							public void warning(TransformerException exception) throws TransformerException {
+								System.out.println("warning: " + exception.getMessage());
+							}
+
+							@Override
+							public void fatalError(TransformerException exception) throws TransformerException {
+								System.out.println("fatal error: " + exception.getMessage());
+							}
+
+							@Override
+							public void error(TransformerException exception) throws TransformerException {
+								System.out.println("error: " + exception.getMessage());
+							}
+						});
 
 						if (!transfErrList.getMsgs().equals("")) {
 							String msg = "Unsucesfull transforming xml with stlyesheet: " + xslSource.getSystemId() + "\n" + transfErrList.getMsgs();
@@ -279,6 +320,7 @@ public class ExplorerServlet extends HttpServlet {
 							String msg = "Succesfully transformed xml with stlyesheet: " + xslSource.getSystemId();
 							baOs = new ByteArrayOutputStream();
 							StreamResult result = new StreamResult(baOs);
+							transformer.setOutputProperty(OutputKeys.METHOD, "html");
 							transformer.transform(domSource, result);
 							bacontentStreamIs = new ByteArrayInputStream(baOs.toByteArray());
 							transformedToHTML = true;
@@ -308,7 +350,9 @@ public class ExplorerServlet extends HttpServlet {
 					}
 					baIs.close();
 				} catch (Exception ex1) {
-					Logger.getLogger(this.getClass()).warn("Unable to process xml: " + ex1.getMessage());
+					String msg = "Unable to process xml: " + ex1.getMessage();
+					WsServer.log(loginName, msg);
+					Logger.getLogger(this.getClass()).warn(msg);
 				}
 			}
 

@@ -1,6 +1,12 @@
 package si.telekom.dis.shared;
 
+import java.io.IOException;
 import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+
+import org.xml.sax.SAXException;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -73,5 +79,6 @@ public interface AdminService extends RemoteService {
 	
 	void updateParameterLabelForParametrizedQuery(String loginName, String loginPass, String name, List<String> parameterLabels) throws ServerException;
 
+	void parseProfileFromXml(String xml) throws ServerException;
 
 }
