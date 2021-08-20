@@ -127,6 +127,7 @@ public class ExplorerServlet extends HttpServlet {
 				resp.setContentLength(baOs.size());
 				resp.setContentType("application/x-download");
 				resp.setHeader("Content-Disposition", "attachment; filename=" + "\"" + f.getName() + "\"");
+				
 				resp.setStatus(200);
 
 				ServletOutputStream out = resp.getOutputStream();

@@ -38,8 +38,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.cert.Certificate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -61,7 +59,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -91,6 +88,7 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -5069,6 +5067,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	public List<String> decryptZip(String loginName, String password, String r_object_id, String documentumPathToPK) throws ServerException {
 		ArrayList<String> ret = new ArrayList<String>();
 		IDfSession userSession = null;
+
+		// String openSSL = "/usr/local/ssl/bin/openssl";
+		String openSSL = "openssl";
+
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
 			Map<String, String> env = new HashMap<>();
@@ -5093,7 +5095,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// export private key
 			File pk = new File(tempDirWithPrefix.toFile().getAbsolutePath() + "/key.pem");
 
-			String commandExportPK = "/usr/local/ssl/bin/openssl pkcs12 -nodes -in " + pkTempFile.getAbsolutePath() + " -nocerts -out " + pk.getAbsolutePath()
+			String commandExportPK = openSSL + " pkcs12 -nodes -in " + pkTempFile.getAbsolutePath() + " -nocerts -out " + pk.getAbsolutePath()
 					+ " -password pass:" + p12Password;
 			Process p = Runtime.getRuntime().exec(commandExportPK.split(" (?=(([^'\\\"]*['\\\"]){2})*[^'\\\"]*$)"));
 			ByteArrayOutputStream baOsErr = new ByteArrayOutputStream();
@@ -5102,12 +5104,12 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			p.waitFor();
 			if (baOsErr.toString().length() > 0) {
 				Logger.getLogger(this.getClass()).info(baOsErr.toString());
-				//throw new ServerException(baOsErr.toString());
+				// throw new ServerException(baOsErr.toString());
 			}
 
 			// remove pass from pk
 			File pkWithoutPass = new File(tempDirWithPrefix.toFile().getAbsolutePath() + "/server.key");
-			String commandremovePassFromPK = "/usr/local/ssl/bin/openssl rsa -in "+pk.getAbsolutePath()+" -out " + pkWithoutPass.getAbsolutePath();
+			String commandremovePassFromPK = openSSL + " rsa -in " + pk.getAbsolutePath() + " -out " + pkWithoutPass.getAbsolutePath();
 			p = Runtime.getRuntime().exec(commandremovePassFromPK.split(" (?=(([^'\\\"]*['\\\"]){2})*[^'\\\"]*$)"));
 			baOsErr = new ByteArrayOutputStream();
 			psErr = new PrintStream(baOsErr);
@@ -5119,8 +5121,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			// export certificate
 			File cert = new File(tempDirWithPrefix.toFile().getAbsolutePath() + "/cert.pem");
-			String commandExportCERT = "/usr/local/ssl/bin/openssl pkcs12 -in " + pkTempFile.getAbsolutePath() + " -nokeys -out " + cert.getAbsolutePath() + " -password pass:"
-					+ p12Password;
+			String commandExportCERT = openSSL + " pkcs12 -in " + pkTempFile.getAbsolutePath() + " -nokeys -out " + cert.getAbsolutePath()
+					+ " -password pass:" + p12Password;
 			p = Runtime.getRuntime().exec(commandExportCERT.split(" (?=(([^'\\\"]*['\\\"]){2})*[^'\\\"]*$)"));
 			baOsErr = new ByteArrayOutputStream();
 			psErr = new PrintStream(baOsErr);
@@ -5128,7 +5130,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			p.waitFor();
 			if (baOsErr.toString().length() > 0) {
 				Logger.getLogger(this.getClass()).info(baOsErr.toString());
-				//throw new ServerException(baOsErr.toString());
+				// throw new ServerException(baOsErr.toString());
 			}
 
 			// env.put("create", "true");
@@ -5139,31 +5141,53 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			File zipFile = new File(fileName);
 
 			unTar(zipFile, tempDirWithPrefix.toFile());
+			int[] count = { 0 };
+			final boolean isEnded = false;
 
-			Files.walkFileTree(tempDirWithPrefix, new SimpleFileVisitor<Path>() {
+			SimpleFileVisitor<Path> myVisitor = new SimpleFileVisitor<Path>() {
+				private int depth = -1;
+				private long filesCount;
+
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					// TODO Auto-generated method stub
+					depth++;
+					return FileVisitResult.CONTINUE;
+				}
+
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+					if (exc == null) {
+						depth--;
+						return FileVisitResult.CONTINUE;
+					} else {
+						throw exc;
+					}
+				}
+
 				@Override
 				public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-					if (path.toFile().getAbsolutePath().endsWith("wav.gz")) {
-						// You can do anything you want with the path here
-						Path copied = Paths.get(tempDirWithPrefix.toFile().getAbsoluteFile().getAbsolutePath(), path.toFile().getName());
-						// Files.copy(path, copied, StandardCopyOption.REPLACE_EXISTING);
-						// copied.toFile().deleteOnExit();
+					// if (path.toFile().getAbsolutePath().endsWith("wav.gz")) {
+					// You can do anything you want with the path here
+					Path copied = Paths.get(tempDirWithPrefix.toFile().getAbsoluteFile().getAbsolutePath(), path.toFile().getName());
+					// Files.copy(path, copied, StandardCopyOption.REPLACE_EXISTING);
+					// copied.toFile().deleteOnExit();
 
-						if (copied.toFile().getAbsolutePath().endsWith(".gz")) {
-							// we need to decompress with gunzip
-							int loca = copied.toFile().getAbsolutePath().indexOf(".gz");
-							String fullPathOfDecompressed = new File(copied.toFile().getAbsolutePath().substring(0, loca)).getAbsolutePath();
-							Path pathDecompresed = new File(fullPathOfDecompressed).toPath();
-							decompressGzip(copied, pathDecompresed);
-							CopyOption[] options = new CopyOption[] { java.nio.file.StandardCopyOption.COPY_ATTRIBUTES,
-									java.nio.file.StandardCopyOption.REPLACE_EXISTING };
-							copied = pathDecompresed;
-						}
+					if (copied.toFile().getAbsolutePath().endsWith(".gz")) {
+						// we need to decompress with gunzip
+						int loca = copied.toFile().getAbsolutePath().indexOf(".gz");
+						String fullPathOfDecompressed = new File(copied.toFile().getAbsolutePath().substring(0, loca)).getAbsolutePath();
+						Path pathDecompresed = new File(fullPathOfDecompressed).toPath();
+						decompressGzip(copied, pathDecompresed);
+						CopyOption[] options = new CopyOption[] { java.nio.file.StandardCopyOption.COPY_ATTRIBUTES,
+								java.nio.file.StandardCopyOption.REPLACE_EXISTING };
+						copied = pathDecompresed;
 
-						File decryptedFile = new File(copied.toFile().getAbsolutePath() + ".decrypted");
+						File decryptedFile = new File(
+								copied.toFile().getAbsolutePath() + ".decrypted." + FilenameUtils.getExtension(copied.toFile().getAbsolutePath()));
 
 //@formatter:off			
-			    		String command = "/usr/local/ssl/bin/openssl cms -decrypt -binary "
+			    		String command = openSSL + " cms -decrypt -binary "
 			    				+ "-in "+copied.toFile().getAbsolutePath()+" "
 	    						+ "-inform SMIME "
 			    				+	"-inkey " + pkWithoutPass.getAbsolutePath() + " "
@@ -5195,6 +5219,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 								// throw new ServerException(wholeError);
 								Logger.getLogger(this.getClass()).error("OpenSSL out:" + wholeError);
 								WsServer.log(loginName, wholeError);
+							} else {
+								filesCount++;
+								ret.add(decryptedFile.getAbsolutePath());
 							}
 
 						} catch (InterruptedException e) {
@@ -5202,12 +5229,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 							e.printStackTrace();
 						}
 					}
+					// }
 					return FileVisitResult.CONTINUE;
 				}
 
-				// The FileVisitor interface has more methods that
-				// are useful for handling directories.
-			});
+			};
+			Files.walkFileTree(tempDirWithPrefix, myVisitor);
+
+			WsServer.log(loginName, "Decrypted " + ret.size() + " files.");
 		} catch (Exception ex) {
 			Logger.getLogger(this.getClass()).error(ex);
 			WsServer.log(loginName, ex.getMessage());

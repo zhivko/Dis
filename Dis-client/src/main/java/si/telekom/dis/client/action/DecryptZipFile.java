@@ -35,7 +35,7 @@ public class DecryptZipFile extends WindowBox {
 
 	public DecryptZipFile(String r_object_id_) {
 		r_object_id = r_object_id_;
-		setText("Document Delete");
+		setText("Document decrypt");
 		setGlassEnabled(true);
 
 		documentumPathToPK = new MyTxtBox("Documentum path to privateKeyToDecrypt:");
@@ -53,7 +53,7 @@ public class DecryptZipFile extends WindowBox {
 							public void onSuccess(List<String> result) {
 								MainPanel.log("Prepared decrypted ZIP succesfull: " + result.size() + " files.");
 								for (String file : result) {
-									Anchor a = new Anchor(file);
+									Anchor a = new Anchor(file, file, "_blank");
 									try {
 										a.setHref(calculateSafeUriDownload(file));
 										getContentPanel().add(a);
