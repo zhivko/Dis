@@ -117,7 +117,10 @@ public class WopiRest extends WopiApiServiceImpl {
 //        objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
 //        
 //        String Json =  mapper.writev
-        return Response.ok().entity(info).build();
+        
+        return Response.status(Response.Status.OK)
+        		.header("Content-Type", "application/json")
+        		.entity(info).build();
     } catch (Exception e) {
         e.printStackTrace();
     		return Response.serverError().build();
