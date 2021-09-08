@@ -1,0 +1,172 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: 'Wopi '
+  description: 'wopi '
+# Added by API Auto Mocking Plugin
+host: virtserver.swaggerhub.com
+basePath: /Anja/Wopi/1.0
+schemes:
+  - https
+tags:
+  - name: Basic Actions
+    description: getFile and CheckFileInfo 
+  - name: Update
+    description: PutFile and PutRelativeFile (necessary for View)
+  - name: Locks
+    description: Lock, RefreshLock,  Unlock, UnlockandRelock (necessary for Edit)
+paths:
+  /files/{file_id}/contents:
+    get:
+      tags:
+        - Basic Actions
+      description: Get file content
+      operationId: getFile
+      parameters:
+        - $ref: '#/parameters/pathParameter'
+        - name: access_token
+          in: query
+          description: An access token that the host will use to determine whether the request is authorized.
+          type: string
+          required: true
+        - name: X-WOPI-MaxExpectedSize
+          in: header
+          description: An integer specifying the upper bound of the expected size of the file being requested
+          type: integer
+          required: false
+      responses:
+        '200':
+          description: Successful Response
+          headers:
+            X-WOPI-ItemVersion:
+              type: string
+              #An optional value indicating the version of the file. Its value should be the same as Version value in CheckFileInfo
+          content:
+            'application/octet-stream':
+              schema: 
+                type: string
+                format: binary
+            #The response body must be the full binary contents of the file.
+        '401':  
+          description: Unautorized - Invalid access token
+        '404':
+          description: Not found - Resource not found / user unauthorized
+        '412':  
+          description: Precondition Failed - File is larger than X-WOPI-MaxExpectedSize
+        '500':
+          description: Internal Server Error - Server error
+  /files/{file_id}:
+    get:
+      tags: 
+        - Basic Actions
+      description: Get information about a file and general information about the capabilities the WOPI host has on the file as well as the information a user has on the file
+      operationId: CheckFileInfo
+      parameters:
+        - $ref: '#/parameters/pathParameter'
+        - name: access_token
+          in: query
+          description: An access token that the host will use to determine whether the request is authorized.
+          type: string
+          required: true
+        - name: X-WOPI-SessionContext
+          in: header
+          description: The value of the Session context parameter, if provided on the initial WOPI action URL using the sc parameter.
+          type: string
+          required: false
+      produces: 
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/FileProperties'
+        '401':    
+          description: Unautorized - Invalid access token
+        '404':
+          description: Not found - Resource not found / user unauthorized
+        '500':
+          description: Internal Server Error - Server error
+    post:
+      tags: 
+        - Locks
+      description: |
+        locks a file for editing
+      operationId: Lock
+      parameters:
+        - $ref: '#/parameters/pathParameter'
+        - name: access_token
+          in: query
+          description: An access token that the host will use to determine whether the request is authorized
+          type: string
+          required: true
+        - name: X-WOPI-Override
+          in: header
+          type: string
+          required: true
+          enum: 
+          - LOCK
+          - UNLOCK
+          - REFRESH_LOCK
+        - name: X-WOPI-Lock
+          description: A string provided by the WOPI client that the host must use to identify the lock on the file
+          in: header
+          type: string
+          required: true
+        - name: X-WOPI-OldLock
+          type: string
+          description: existing lock on the file, only required for UnlockAndRelock
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-WOPI-ItemVersion:
+              type: string
+              description: optional value indicating the version of the file, should be the same as Version value in CheckFileInfo
+        '400':
+          description: X-WOPI-Lock was not provided or was empty
+        '401':    
+          description: Unautorized - Invalid access token
+        '404':
+          description: Not found - Resource not found / user unauthorized
+        '409':
+          description: Conflict - Lock mismatch/locked by another interface, an X-WOPI-Lock response header containing the value of the current lock on the file must always be included when using this response code
+          headers:
+            X-WOPI-Lock:
+              type: string
+              description: value identifying the current lock on the file
+            X-WOPI-LockFailureReason:
+              type: string 
+              description: optional value indicating the cause of a lock failure
+        '500':
+          description: Internal Server Error - Server error
+        '501':
+          description: Not Implemented - Operation not supported
+parameters:
+  pathParameter:
+    name: file_id
+    in: path
+    required: true
+    type: string
+definitions:
+  FileProperties:
+    description: List of file, url, host und user properties that are included in the CheckFileInfo response
+    type: object
+    properties:
+      BaseFileName: 
+        type: string
+      OwnerID:
+        type: string
+      Size: 
+        type: integer 
+        format: int64
+      UserID:
+        type: string
+      Version:
+        type: string
+        description: The current version of the file based on the server s file version schema
+      SupportsLocks:
+        type: boolean
+      SupportsUpdate:
+        type: boolean
+      UserCanWrite:
+        type: boolean

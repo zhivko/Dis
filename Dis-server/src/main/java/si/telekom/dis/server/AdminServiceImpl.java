@@ -902,21 +902,24 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return parseProfile(is, modifiedTime);
 	}
 
-	public void parseProfileFromXml(String xml) throws ServerException {
+	public void parseProfileFromXml(String loginName, String xml) throws ServerException {
 		Logger.getLogger(AdminServiceImpl.class).info("Parse profile from xml.");
 		Date modifiedTime = new Date();
 		InputSource is = new InputSource(new StringReader(xml));
 		try {
 			Profile prof = parseProfile(is, modifiedTime);
+			getInstance().setProfile(superUserName, superUserPassword, prof);
 			profiles.put(prof.id, prof);
 			doctypes.get(prof.objType).profiles.put(prof.id, prof);
 			try {
 				serializeProfiles();
 				serializeDocTypes();
 			} catch (Exception e) {
-				Logger.getLogger(AdminServiceImpl.class).error("Error serializing dcmtypes and profiles.");
+				String msg = "Error serializing dcmtypes and profiles.";
+				Logger.getLogger(AdminServiceImpl.class).error(msg);
+				WsServer.log(loginName, msg);
 			}
-			
+
 		} catch (Exception ex) {
 			throw new ServerException(ex);
 		}
@@ -1267,7 +1270,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public synchronized String setProfile(String loginName, String passwordEncrypted, Profile prof) throws ServerException {
 		String profileId = prof.id;
 
-		String password = new String(Base64Utils.fromBase64(passwordEncrypted), Charset.forName("UTF-8"));
+		// String password = new String(Base64Utils.fromBase64(passwordEncrypted),
+		// Charset.forName("UTF-8"));
 
 		if (profileId.equals("")) {
 			throw new ServerException("profileId should not be empty: prof name:" + prof.name);
@@ -2055,12 +2059,14 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			// new ServerException(e.getMessage());
 		} finally {
 			try {
-				collection.close();
+				if (collection != null)
+					collection.close();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			try {
-				dfSuperUserSession.getSessionManager().release(dfSuperUserSession);
+				if (dfSuperUserSession != null && dfSuperUserSession.isConnected())
+					dfSuperUserSession.getSessionManager().release(dfSuperUserSession);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}

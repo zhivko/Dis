@@ -17,6 +17,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 
 import si.telekom.dis.client.ExplorerPanel;
 import si.telekom.dis.client.MainPanel;
@@ -32,22 +33,65 @@ public class DecryptZipFile extends WindowBox {
 	private final static Logger logger = java.util.logging.Logger.getLogger("mylogger");
 
 	MyTxtBox documentumPathToPK;
+	MyTxtBox documentumPathToPK_r_object_id;
+	
 
 	public DecryptZipFile(String r_object_id_) {
 		r_object_id = r_object_id_;
 		setText("Document decrypt");
 		setGlassEnabled(true);
 
+		String dql = "select r_object_id, object_name from mob_document where folder('/Certifikati', descend) and mob_valid_to>(select r_creation_date from dm_document where r_object_id='"+r_object_id_+"') order by mob_valid_to desc enable (return_top 1)";
+		try
+		{
+		explorerService.dqlLookup(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, dql, new AsyncCallback<List<List<String>>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				MainPanel.log("Error: " + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(List<List<String>> result) {
+				if(result.size()<1)
+				{
+					MainPanel.log("No certificate with pk to decrypt content in folder '/Certifikati'");
+				}
+				else
+				{
+					List<String> listS = result.get(0);
+					String r_object_id_cert = listS.get(0);
+					String objectName_cert = listS.get(1);
+
+					documentumPathToPK.setValue("/Certifikati/" + objectName_cert);
+					documentumPathToPK_r_object_id.setValue(r_object_id_cert);
+				}
+			}
+		});
+		}
+		catch(Exception ex)
+		{
+			MainPanel.log("Error: " + ex.getMessage());
+		}
+		
 		documentumPathToPK = new MyTxtBox("Documentum path to privateKeyToDecrypt:");
-		documentumPathToPK.setValue("/Certificates/VALU_VideoID_Storage_test.pfx");
-		getContentPanel().add(documentumPathToPK);
+		
+		documentumPathToPK_r_object_id = new MyTxtBox("r_object_id of pk");
+		
+		
+		HorizontalPanel hp = new HorizontalPanel();
+		hp.add(documentumPathToPK);
+		hp.add(documentumPathToPK_r_object_id);
+		
+		
+		getContentPanel().add(hp);
 
 		getOkButton().addClickHandler(new ClickHandler() {
 
 			@Override
 			public void onClick(ClickEvent event) {
 				// TODO Auto-generated method stub
-				explorerService.decryptZip(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, documentumPathToPK.getValue(),
+				explorerService.decryptZip(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id, documentumPathToPK_r_object_id.getValue(),
 						new AsyncCallback<List<String>>() {
 							@Override
 							public void onSuccess(List<String> result) {

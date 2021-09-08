@@ -16,12 +16,12 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -38,6 +38,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -50,6 +52,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -95,10 +98,6 @@ import org.apache.log4j.Logger;
 import org.apache.poi.hsmf.MAPIMessage;
 import org.apache.poi.hsmf.datatypes.AttachmentChunks;
 import org.apache.poi.hsmf.datatypes.Chunks;
-import org.apache.poi.hsmf.datatypes.MAPIProperty;
-import org.apache.poi.hsmf.datatypes.PropertyValue;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.util.CodePageUtil;
 import org.apache.tika.Tika;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.parser.AutoDetectParser;
@@ -245,27 +244,31 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 					ByteArrayOutputStream baOs = new ByteArrayOutputStream();
 
-					MAPIMessage msg = new MAPIMessage(new POIFSFileSystem(msgfile));
+					MAPIMessage msg = new MAPIMessage(msgfile);
 					Chunks mainChunks = msg.getMainChunks();
 					if (mainChunks != null) {
 						String encoding = null;
 
-						Map<MAPIProperty, List<PropertyValue>> props = mainChunks.getProperties();
-						if (props != null) {
-							// First choice is a codepage property
-							for (MAPIProperty prop : new MAPIProperty[] { MAPIProperty.MESSAGE_CODEPAGE, MAPIProperty.INTERNET_CPID }) {
-								List<PropertyValue> val = props.get(prop);
-								if (val != null && val.size() > 0) {
-									int codepage = ((PropertyValue.LongPropertyValue) val.get(0)).getValue();
-									try {
-										encoding = CodePageUtil.codepageToEncoding(codepage, true);
-									} catch (UnsupportedEncodingException e) {
-										Logger.getLogger(this.getClass()).warn("Unsupported encoding: " + e.getMessage());
-									}
-									tryToSet7BitEncoding(msg, encoding);
-								}
-							}
-						}
+						// Map<MAPIProperty, List<PropertyValue>> props =
+						// mainChunks.messageProperties;
+						// if (props != null) {
+						// // First choice is a codepage property
+						// for (MAPIProperty prop : new MAPIProperty[] {
+						// MAPIProperty.MESSAGE_CODEPAGE, MAPIProperty.INTERNET_CPID }) {
+						// List<PropertyValue> val = props.get(prop);
+						// if (val != null && val.size() > 0) {
+						// int codepage = ((PropertyValue.LongPropertyValue)
+						// val.get(0)).getValue();
+						// try {
+						// encoding = CodePageUtil.codepageToEncoding(codepage, true);
+						// } catch (UnsupportedEncodingException e) {
+						// Logger.getLogger(this.getClass()).warn("Unsupported encoding: " +
+						// e.getMessage());
+						// }
+						// tryToSet7BitEncoding(msg, encoding);
+						// }
+						// }
+						// }
 
 //@formatter:off			
           baOs.write(("<!DOCTYPE html>" + "<html>" + "<head>" + "<title>Page Title</title>"
@@ -307,8 +310,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 									if (filename.toLowerCase().endsWith("pdf")) {
 										baOs.write(("<embed src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
 									} else {
-										baOs.write(
-												("<img alt=\"" + filename + "\" src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
+										baOs.write(("<img alt=\"" + filename + "\" src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
 									}
 								}
 								baOs.write(("<br>").getBytes(encoding));
@@ -1747,7 +1749,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				IDfCollection coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 				if (coll.next()) {
 					int rowsDeleted = coll.getInt("rows_deleted");
-					WsServer.log(loginName, "Executing delete in DOCMAN_S..." + rowsDeleted + " rows deleted.");
+					Logger.getLogger(this.getClass()).info("Executing delete in DOCMAN_S..." + rowsDeleted + " rows deleted.");
 					coll.close();
 				}
 
@@ -1757,7 +1759,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 					if (coll.next()) {
 						int rowsDeleted = coll.getInt("rows_deleted");
-						WsServer.log(loginName, "Executing delete in T_dm_audittrail_s..." + rowsDeleted + " rows deleted.");
+						Logger.getLogger(this.getClass()).info("Executing delete in T_dm_audittrail_s..." + rowsDeleted + " rows deleted.");
 						coll.close();
 					}
 				} catch (Exception ex) {
@@ -1771,7 +1773,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				coll = queryDelete2.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 				if (coll.next()) {
 					int rowsDeleted = coll.getInt("rows_deleted");
-					WsServer.log(loginName, "Executing delete in DOCMAN_R..." + rowsDeleted + " rows deleted.");
+					Logger.getLogger(this.getClass()).info("Executing delete in DOCMAN_R..." + rowsDeleted + " rows deleted.");
 				}
 				coll.close();
 			} else {
@@ -1784,7 +1786,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					IDfCollection coll = queryDelete.execute(userSession, IDfQuery.DF_EXEC_QUERY);
 					if (coll.next()) {
 						int rowsDeleted = coll.getInt("rows_deleted");
-						WsServer.log(loginName, "Executing delete in DOCMAN_S..." + rowsDeleted + " rows deleted.");
+						Logger.getLogger(this.getClass()).info("Executing delete in DOCMAN_S..." + rowsDeleted + " rows deleted.");
 						coll.close();
 					}
 
@@ -1850,7 +1852,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					// }
 					IDfPersistentObject docPersObject = userSession.getObject(new DfId(r_object_id_));
 					docPersObject.destroy();
-					WsServer.log(loginName, "Destroyed version of object: " + r_object_id_);
+					String msg = "Destroyed version of object: " + r_object_id_;
+					WsServer.log(loginName, msg);
+					Logger.getLogger(this.getClass()).info(msg);
 				}
 				col2.close();
 			} else {
@@ -4532,16 +4536,37 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// parser.parse(stream, handler, metadata);
 			// handler.toString();
 			// }
+			
+			Path path = tempFile.toPath();
+	    String filetype = Files.probeContentType(path);
+			
+//			ClassLoader classloader = org.apache.poi.poifs.filesystem.POIFSFileSystem.class.getClassLoader();
+//			URL res = classloader.getResource("org/apache/poi/util/XMLHelper.class");
+//			String path = res.getPath();
+//			System.out.println("Core POI came from " + path);
+//
+//			Tika tika = new Tika();
+//			String filetype = tika.detect(tis);
 
-			Tika tika = new Tika();
-			String filetype = tika.detect(tis);
+			if (filetype.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") || filetype.equals("application/zip")) {
+				sess = AdminServiceImpl.getAdminSession();
+				String mimeTypeFromClient = base64contentsplit[0].split(":")[1].split(";")[0];
+				query.setDQL("select name from dm_format where mime_type in ('" + filetype + "','" + mimeTypeFromClient + "')");
+				collection = query.execute(sess, DfQuery.DF_READ_QUERY);
 
-			if (filetype.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
-				al.add("msw12");
-			} else if (filetype.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+				while (collection.next()) {
+					al.add(collection.getString("name"));
+					Logger.getLogger(this.getClass()).info("\t" + collection.getString("name"));
+				}
+				collection.close();
+
+				Logger.getLogger(this.getClass()).info("Recognizing format...Done.");
+			} else if (filetype.equals("application/vnd.oasis.opendocument.spreadsheet")) {
 				al.add("ods");
 			} else if (filetype.equals("application/xhtml+xml")) {
 				al.add("html");
+			} else if (filetype.equals("application/vnd.oasis.opendocument.text")) {
+				al.add("odt");
 			} // else if (filetype.equals("application/vnd.ms-excel"))
 			// al.add("xls");
 			else if (filetype.equals("text/html")) {
@@ -4878,6 +4903,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
                         + "a_content_type='msg' or "
                         + "a_content_type='odt' or "
                         + "a_content_type='csv' or "
+                        + "a_content_type='msw12' or "
                         + "a_content_type='tiff' or "
                         + "a_content_type='tiff')"
                 );
@@ -5064,7 +5090,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	}
 
 	@Override
-	public List<String> decryptZip(String loginName, String password, String r_object_id, String documentumPathToPK) throws ServerException {
+	public List<String> decryptZip(String loginName, String password, String r_object_id, String rObjectIdOfCertWithPK) throws ServerException {
 		ArrayList<String> ret = new ArrayList<String>();
 		IDfSession userSession = null;
 
@@ -5073,24 +5099,54 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			Map<String, String> env = new HashMap<>();
-			// Create the zip file if it doesn't exist
+
+			IDfSysObject sysObj = (IDfSysObject) userSession.getObjectByQualification("dm_document where r_object_id='" + r_object_id + "'");
+
+			String fileName = FileUtils.getTempDirectory().getAbsolutePath() + "/" + System.currentTimeMillis() + ".tar";
+			Logger.getLogger(this.getClass()).info("Tar fileName: " + fileName);
+			sysObj.getFile(fileName);
+			File tarFile = new File(fileName);
+
+			if (tarFile.length() == 0) {
+				throw new ServerException("File size is 0 bytes! Possibly defective tar file.");
+			}
 
 			Path tempDirWithPrefix = Files.createTempDirectory("decryptTar-");
 			tempDirWithPrefix.toFile().deleteOnExit();
 
-			String[] splittedPK = documentumPathToPK.split("/");
-			String folderToPK = documentumPathToPK.substring(0, documentumPathToPK.lastIndexOf("/"));
-			String objectName = documentumPathToPK.substring(documentumPathToPK.lastIndexOf("/") + 1, documentumPathToPK.length());
-			IDfSysObject sysObjPk = (IDfSysObject) userSession
-					.getObjectByQualification("dm_document where folder('" + folderToPK + "') and object_name='" + objectName + "'");
+			IDfSysObject sysObjPk = (IDfSysObject) userSession.getObject(new DfId(rObjectIdOfCertWithPK));
 			File pkTempFile = new File(tempDirWithPrefix.toFile().getAbsolutePath() + "/keystore.pfx");
 			sysObjPk.getFile(pkTempFile.getAbsolutePath());
 			pkTempFile.deleteOnExit();
 
 			KeyStore keystore = KeyStore.getInstance("PKCS12");
+			// KeyStore keystore = KeyStore.getInstance("BKS", "BC");
 			String p12Password = "valuid";
 			keystore.load(new FileInputStream(pkTempFile), p12Password.toCharArray());
+
+			try {
+				Enumeration aliases = keystore.aliases();
+				for (; aliases.hasMoreElements();) {
+					String alias = (String) aliases.nextElement();
+					CertificateFactory certificateFactory = certificateFactory = CertificateFactory.getInstance("X.509");
+					ByteArrayInputStream bais = new ByteArrayInputStream(keystore.getCertificate(alias).getEncoded());
+					X509Certificate x509Certificate = (X509Certificate) certificateFactory.generateCertificate(bais);
+					Date certExpiryDate = x509Certificate.getNotAfter();
+
+					SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					// Tue Oct 17 06:02:22 AEST 2006
+					Date today = new Date();
+					long dateDiff = certExpiryDate.getTime() - today.getTime();
+					long expiresIn = dateDiff / (24 * 60 * 60 * 1000);
+					String msg = "Certificate: " + alias + "\tExpires On: " + certExpiryDate + "\tFormated Date: " + ft.format(certExpiryDate)
+							+ "\tToday's Date: " + ft.format(today) + "\tExpires In: " + expiresIn;
+					WsServer.log(loginName, msg);
+				}
+			}
+
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 
 			// export private key
 			File pk = new File(tempDirWithPrefix.toFile().getAbsolutePath() + "/key.pem");
@@ -5134,13 +5190,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			}
 
 			// env.put("create", "true");
-			IDfSysObject sysObj = (IDfSysObject) userSession.getObjectByQualification("dm_document where r_object_id='" + r_object_id + "'");
 
-			String fileName = FileUtils.getTempDirectory().getAbsolutePath() + "/" + System.currentTimeMillis() + ".tar";
-			sysObj.getFile(fileName);
-			File zipFile = new File(fileName);
-
-			unTar(zipFile, tempDirWithPrefix.toFile());
+			unTar(tarFile, tempDirWithPrefix.toFile());
 			int[] count = { 0 };
 			final boolean isEnded = false;
 
@@ -5249,7 +5300,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		return ret;
 	}
 
-	private static void inheritIO(final InputStream src, final PrintStream dest) {
+	public static void inheritIO(final InputStream src, final PrintStream dest) {
 		new Thread(new Runnable() {
 			public void run() {
 				Scanner sc = new Scanner(src);

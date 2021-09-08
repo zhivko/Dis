@@ -79,6 +79,6 @@ public interface AdminService extends RemoteService {
 	
 	void updateParameterLabelForParametrizedQuery(String loginName, String loginPass, String name, List<String> parameterLabels) throws ServerException;
 
-	void parseProfileFromXml(String xml) throws ServerException;
+	void parseProfileFromXml(String loginName, String xml) throws ServerException;
 
 }

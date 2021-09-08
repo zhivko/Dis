@@ -64,7 +64,8 @@ import si.telekom.dis.shared.UserSettings;
 @RemoteServiceRelativePath("login")
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
 
-	public static List<String> admins = Arrays.asList(new String[] { "zivkovick", "kovacevicr", "shvalec", "dmadmin", "sjakic", "lokart", "kastelicb" });
+	public static List<String> admins = Arrays
+			.asList(new String[] { "zivkovick", "kovacevicr", "shvalec", "dmadmin", "sjakic", "lokart", "kastelicb" });
 
 	/**
 	 * returns objects of following ret[0] ... loginName ret[1] ... password
@@ -90,9 +91,9 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		loginName = escapeHtml(loginName);
 		userAgent = escapeHtml(userAgent);
 
-		if(loginName.contains("\\"))
+		if (loginName.contains("\\"))
 			throw new ServerException("Login name must not contain \\");
-		
+
 		try {
 			return checkPassword(loginName, passwordEncoded);
 		} catch (Exception ex) {
@@ -120,7 +121,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			String hostName = addr.getHostName();
 
 			boolean tryDevelop = false;
-			if (tryDevelop && passwordEncoded.equals("") && (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
+			if (tryDevelop && passwordEncoded.equals("")
+					&& (hostName.contentEquals("localhost") || ip.contentEquals("127.0.0.1") || ip.contentEquals("0:0:0:0:0:0:0:1"))) {
 				// if (false) {
 				WsServer.maxInactivityTimeSec = 5000;
 				ret[0] = "zivkovick";
@@ -145,6 +147,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				// loginName = "ikovacic";
 				loginName = "dmedos";
 				loginName = "alzupan";
+				loginName = "platisem";
 
 				ret[0] = loginName;
 				adminSession = AdminServiceImpl.getInstance().getAdminSession();
@@ -153,7 +156,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				if (loginName.contentEquals("zivkovick"))
 					ret[1] = Base64.getEncoder().encodeToString("Doitman890123".getBytes());
 				else
-					ret[1] = Base64.getEncoder().encodeToString(AdminServiceImpl.getInstance().getAdminSession().getLoginTicketForUser(AdminServiceImpl.userDomain + "\\" + ret[0]).getBytes());
+					ret[1] = Base64.getEncoder().encodeToString(
+							AdminServiceImpl.getInstance().getAdminSession().getLoginTicketForUser(AdminServiceImpl.userDomain + "\\" + ret[0]).getBytes());
 
 				if (admins.contains(loginName))
 					ret[2] = "administrator";
@@ -171,8 +175,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				return ret;
 			}
 
-			//byte[] fromBase64 = Base64.getDecoder().decode(password);
-			//String password = new String(fromBase64);
+			// byte[] fromBase64 = Base64.getDecoder().decode(password);
+			// String password = new String(fromBase64);
 			// String password = Tools.decryptString(passwordHashed);
 
 			if (passwordEncoded.equals(""))
@@ -365,6 +369,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				us.explorerReturnResultCount = 30;
 				us.searchReturnResultCount = 30;
 				us.auditTrailPerPageCount = 100;
+				us.useColaboraOnlineForEdit = false;
 
 				Marshaller m = context.createMarshaller();
 				m.marshal(us, writer);
@@ -433,6 +438,19 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		}
 		return null;
 
+	}
+
+	@Override
+	public String getServerIp() {
+		String ret = "";
+		try {
+			String[] split= InetAddress.getLocalHost().toString().split("/");
+			
+			ret = split[split.length-1];
+		} catch (Exception ex) {
+			Logger.getLogger(this.getClass()).error(ex);
+		}
+		return ret;
 	}
 
 }

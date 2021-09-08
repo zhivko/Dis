@@ -12,7 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.io.IOUtils;
@@ -35,7 +34,6 @@ import io.swagger.annotations.Api;
 import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
 import si.telekom.dis.server.UploadServlet;
-import si.telekom.dis.server.WsServer;
 import si.telekom.dis.server.rest.UpdateDocumentRequest.VersionEnum;
 import si.telekom.dis.server.rest.api.DocumentsApiService;
 import si.telekom.dis.server.rest.api.NotFoundException;
@@ -90,7 +88,6 @@ public class DisRest extends DocumentsApiService {
 			IDfQuery query = new DfQuery();
 			query.setDQL(dql);
 			Logger.getLogger(this.getClass()).info("\tStarted dql query: " + dql);
-			WsServer.log(loginName, "Started dql query...");
 			long milis1 = System.currentTimeMillis();
 			collection = query.execute(userSession, IDfQuery.DF_READ_QUERY);
 			long milis2 = System.currentTimeMillis();

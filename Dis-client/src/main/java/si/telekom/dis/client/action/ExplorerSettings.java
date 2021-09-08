@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import si.telekom.dis.client.Images;
 import si.telekom.dis.client.MainPanel;
+import si.telekom.dis.client.MyCheckBox;
 import si.telekom.dis.client.MyTxtBox;
 import si.telekom.dis.client.WindowBox;
 import si.telekom.dis.shared.LoginService;
@@ -31,15 +32,17 @@ public class ExplorerSettings extends WindowBox {
 		explorerResultSize.setValue(String.valueOf(MainPanel.getInstance().us.explorerReturnResultCount));
 		MyTxtBox searchResultSize = new MyTxtBox("Search result size");
 		searchResultSize.setValue(String.valueOf(MainPanel.getInstance().us.searchReturnResultCount));
+		
+		MyCheckBox checkBox = new MyCheckBox("Use callabora online for editing documents");
+		checkBox.setValue(String.valueOf(MainPanel.getInstance().us.useColaboraOnlineForEdit));
 
 		MyTxtBox auditTrailPerPageCount = new MyTxtBox("Audittrail per page count");
 		auditTrailPerPageCount.setValue(String.valueOf(MainPanel.getInstance().us.auditTrailPerPageCount));
 		
-		
 		getContentPanel().add(explorerResultSize);
 		getContentPanel().add(searchResultSize);
 		getContentPanel().add(auditTrailPerPageCount);
-		
+		getContentPanel().add(checkBox);
 		
 		this.getOkButton().addClickHandler(new ClickHandler() {
 
@@ -48,6 +51,7 @@ public class ExplorerSettings extends WindowBox {
 				MainPanel.getInstance().us.explorerReturnResultCount = Integer.valueOf(explorerResultSize.getValue());
 				MainPanel.getInstance().us.searchReturnResultCount = Integer.valueOf(searchResultSize.getValue());
 				MainPanel.getInstance().us.auditTrailPerPageCount = Integer.valueOf(auditTrailPerPageCount.getValue());
+				MainPanel.getInstance().us.useColaboraOnlineForEdit = Boolean.valueOf(checkBox.getValue());
 				try {
 					loginService.saveUserSettings(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, MainPanel.getInstance().us,
 							new AsyncCallback<Void>() {

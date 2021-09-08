@@ -66,7 +66,7 @@ public interface ExplorerServiceAsync {
 
 	void configureERender(String loginName, String password, String xml, AsyncCallback<Void> callback);
 	
-	void decryptZip(String loginName, String password, String r_object_id, String documentumPathToPK, AsyncCallback<List<String>> callback);
+	void decryptZip(String loginName, String password, String r_object_id, String rObjectIdOfCertWithPK, AsyncCallback<List<String>> callback);
 	
 
 }

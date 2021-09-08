@@ -11,4 +11,6 @@ public interface LoginServiceAsync {
 	void getUserSettings(String loginName, String passwordEncrypted, AsyncCallback<UserSettings> callback) throws IllegalArgumentException;
 
 	void saveUserSettings(String loginName, String passwordEncrypted, UserSettings us, AsyncCallback<Void> callback) throws IllegalArgumentException;
+	
+	void getServerIp(AsyncCallback<String> callback) throws IllegalArgumentException;
 }

@@ -132,12 +132,12 @@
 				<activeByDefault>false</activeByDefault>
 				<property>
 					<name>env</name>
-					<value>prod</value>
+					<value>localhost-ubuntu</value>
 				</property>
 			</activation>
 			<build>
 				<filters>
-					<filter>${basedir}/src/main/filters/prod.properties</filter>
+					<filter>${basedir}/src/main/filters/localhost-ubuntu.properties</filter>
 				</filters>
 			</build>
 		</profile>

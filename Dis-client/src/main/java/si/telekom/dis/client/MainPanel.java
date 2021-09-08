@@ -36,6 +36,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.WebSocket;
+import si.telekom.dis.client.action.DocumentViewCollabora;
 import si.telekom.dis.client.action.SearchEdit;
 import si.telekom.dis.shared.AdminService;
 import si.telekom.dis.shared.AdminServiceAsync;
@@ -141,7 +142,7 @@ public class MainPanel extends Composite {
 		String str1 = GWT.getHostPageBaseURL();
 		String str2 = str1.replaceAll("http", "ws");
 
-		SafeUri wsUri = UriUtils.fromTrustedString(str2 + "ws?loginName=" + loginName);
+		SafeUri wsUri = UriUtils.fromTrustedString(str2 + "wsDis?loginName=" + loginName);
 		// SafeUri wsUri = UriUtils.fromTrustedString(str2 + "ws");
 		String str3 = wsUri.asString();
 
@@ -281,6 +282,7 @@ public class MainPanel extends Composite {
 			MainPanel.log(e.getMessage());
 		}		
 		*/
+		
 		
 		initWidget(splitLayoutPanel);
 

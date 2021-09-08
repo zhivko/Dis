@@ -8,7 +8,7 @@ public class DocumentViewFileTypes {
 	static String[] couldDisplayFormatsArr = { "acroformpdf", "pdf", "odt", "ods", "msg", "html", "htm", "pub_html", "crtext", "xml" };
 	static String[] viewerJSFormatsArr = { "acroformpdf", "pdf", "ods", "odt" };
 	static String[] imageHtmlFormatsArr = { "png", "tiff", "jpeg", "jpg" };
-	static String[] odfFormatsArr = { };
+	static String[] odfFormatsArr = { "odt", "ods"};
 	static String[] htmlFormatsArr = { "html", "htm" };
 	static String[] downloadFormatsArr = { "msw12", "excel12book", "excel8book", "msw8", "msw" , "zip"};
 

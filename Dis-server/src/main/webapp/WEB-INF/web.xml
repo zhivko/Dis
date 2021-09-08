@@ -13,12 +13,14 @@
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
 			<param-value>
-                io.swagger.jaxrs.listing,
-                io.swagger.sample.resource,
-                si.telekom.dis.server.restCommon,
-                si.telekom.dis.server.rest,
-                si.telekom.dis.server.rest.api
-            </param-value>
+				io.swagger.jaxrs.listing,
+				io.swagger.sample.resource,
+				si.telekom.dis.server.restCommon,
+				si.telekom.dis.server.rest,
+				si.telekom.dis.server.rest.api,
+				si.telekom.dis.server.wopi,
+				si.telekom.dis.server.wopi.api
+			</param-value>
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.server.provider.classnames</param-name>
@@ -36,6 +38,10 @@
 			<param-name>DocumentsApi.implementation</param-name>
 			<param-value>si.telekom.dis.server.rest.DisRest</param-value>
 		</init-param>
+		<init-param>
+			<param-name>WopiApi.implementation</param-name>
+			<param-value>si.telekom.dis.server.rest.WopiRest</param-value>
+		</init-param>
 
 		<load-on-startup>1</load-on-startup>
 	</servlet>
@@ -51,12 +57,12 @@
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
 			<param-value>
-                io.swagger.jaxrs.listing,
-                io.swagger.sample.resource,
-                si.telekom.dis.server.restCommon,
-                si.telekom.dis.server.restExtra,                
-                si.telekom.dis.server.restExtra.api
-            </param-value>
+				io.swagger.jaxrs.listing,
+				io.swagger.sample.resource,
+				si.telekom.dis.server.restCommon,
+				si.telekom.dis.server.restExtra,
+				si.telekom.dis.server.restExtra.api
+			</param-value>
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.server.provider.classnames</param-name>
@@ -190,7 +196,7 @@
 		<servlet-name>eRenderServlet</servlet-name>
 		<url-pattern>/WebUi2/eRenderServlet</url-pattern>
 	</servlet-mapping>
-	
+
 	<servlet>
 		<servlet-name>classSignConfig</servlet-name>
 		<servlet-class>si.telekom.dis.server.ClassSignConfig</servlet-class>
@@ -199,7 +205,7 @@
 		<servlet-name>classSignConfig</servlet-name>
 		<url-pattern>/WebUi2/classSignConfig</url-pattern>
 	</servlet-mapping>
-	
+
 	<!-- Default page to serve -->
 	<welcome-file-list>
 		<welcome-file>WebUi2.html</welcome-file>
@@ -241,7 +247,8 @@
 	</context-param>
 
 	<context-param>
-		<description>Retention addUnit takes place in retention date calculation can add days or years to classification retention on document. value can me day, month or year</description>
+		<description>Retention addUnit takes place in retention date calculation can add days or years to classification retention on document. value can me
+			day, month or year</description>
 		<param-name>retention.addUnit</param-name>
 		<param-value>${retention.addUnit}</param-value>
 	</context-param>

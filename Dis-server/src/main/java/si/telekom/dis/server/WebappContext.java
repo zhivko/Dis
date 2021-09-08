@@ -62,10 +62,8 @@ public class WebappContext {
 	protected static void init(ServletContext servletContext) throws Exception {
 		WebappContext.servletContext = servletContext;
 		WebappContext instance = new WebappContext(servletContext);
-	
 		
 		servletContext.setAttribute(KEY, instance);
-
 	}
 
 	protected static void destroy(ServletContext servletContext) {

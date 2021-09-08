@@ -35,4 +35,7 @@ public class UserSettings implements Serializable {
 	@XmlElement(name="auditTrailPerPageCount")
 	public int auditTrailPerPageCount;
 
+	@XmlElement(name="useColaboraOnlineForEdit")
+	public boolean useColaboraOnlineForEdit;
+	
 }

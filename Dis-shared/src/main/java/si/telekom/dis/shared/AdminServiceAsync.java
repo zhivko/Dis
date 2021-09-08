@@ -77,5 +77,5 @@ public interface AdminServiceAsync {
 	
 	void updateParameterLabelForParametrizedQuery(String loginName, String loginPass, String name, List<String> parameterLabels, AsyncCallback<Void> asyncCallback) throws ServerException;
 
-	void parseProfileFromXml(String xml, AsyncCallback<Void> asyncCallback) throws ServerException;
+	void parseProfileFromXml(String loginName, String xml, AsyncCallback<Void> asyncCallback) throws ServerException;
 }

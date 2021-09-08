@@ -1,0 +1,23 @@
+version: "3.5"
+
+services:
+  collabora:
+    image: collabora/code
+#    restart: unless-stopped
+    environment:
+      - DONT_GEN_SSL_CERT="True"
+      - extra_params=--o:ssl.enable=false --o:ssl.termination=false
+      - username=admin
+      - password=admin
+      - dictionaries=en_US
+      - domain=share.example.com
+    cap_add:
+      - MKNOD
+    ports:
+      - "9980:9980"
+    container_name: collabora
+    privileged: true
+
+  wopivalidator:
+    image: tylerbutler/wopi-validator
+#    restart: unless-stopped

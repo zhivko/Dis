@@ -15,13 +15,10 @@ import javax.xml.ws.Holder;
 
 import org.apache.log4j.Logger;
 
-import com.google.gwt.user.datepicker.client.DateBox.Format;
-
 import si.telekom.dis.server.jaxwsClient.eRender.ERender;
 import si.telekom.dis.server.jaxwsClient.eRender.ERenderImplService;
 import si.telekom.dis.server.jaxwsClient.eRender.HashMapWrapper;
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.Exception_Exception;
-import si.telekom.dis.server.jaxwsClient.pdfGenerator.HashMapWrapper.Parameters;
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGenerator;
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGeneratorImplService;
 

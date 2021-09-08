@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import si.telekom.dis.server.jobs.MoveMobFormTemplateToEffective;
+import si.telekom.dis.server.rest.WopiRest;
 
 public final class WebAppListener implements ServletContextAttributeListener, ServletContextListener {
 
@@ -69,6 +70,8 @@ public final class WebAppListener implements ServletContextAttributeListener, Se
 		Logger.getLogger(this.getClass()).info("contextInitialized");
 		this.context = event.getServletContext();
 		
+		//WopiRest.checkCollaboraDockerIsRunning();
+
 		AdminServiceImpl.readStartupParamFromServletContext(context);
 		
 		try {
@@ -85,6 +88,7 @@ public final class WebAppListener implements ServletContextAttributeListener, Se
 			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 			scheduler.scheduleAtFixedRate(job, 0, 60, TimeUnit.MINUTES);
 		}
+		
 		
 	}
 

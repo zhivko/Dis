@@ -56,6 +56,9 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 			return;
 		}
 
+		if (path.contains("wopi"))
+			return;
+
 		// Access allowed for all
 		if (!method.isAnnotationPresent(PermitAll.class)) {
 			// Access denied for all

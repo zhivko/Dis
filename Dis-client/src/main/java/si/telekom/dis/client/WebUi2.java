@@ -30,6 +30,8 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import si.telekom.dis.client.action.DocumentView;
+import si.telekom.dis.client.action.DocumentViewCollabora;
 import si.telekom.dis.client.action.SearchEdit;
 import si.telekom.dis.shared.AdminService;
 import si.telekom.dis.shared.AdminServiceAsync;
@@ -256,9 +258,24 @@ public class WebUi2 implements EntryPoint {
           	handler.sendNameToServer(false);
           }
       };
-
       timer.schedule(1000);
-		}			
+		}
+		
+		loginService.getServerIp(new AsyncCallback<String>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onSuccess(String result) {
+				DocumentViewCollabora dv = new DocumentViewCollabora("224234", result);
+				dv.show();
+				
+			}
+		});		
+		
 	}
 
 	private static native String b64encode(String a) /*-{

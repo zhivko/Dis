@@ -180,11 +180,30 @@ public class RestTest extends JerseyTest {
 		
 		client.register(feature);
 
-		Response response = client.target(baseUri.toString() + "/documents/query").queryParam("dql", "select * from dm_cabinet").request().get();
-		String responseTxt = response.readEntity(String.class);
-		// System.out.println(responseTxt);
+		Document doc=null;
+		
+		Response response = client.target(baseUri.toString() + "documents/query").queryParam("dql", "select * from dm_document where folder('/Temp')").request().get();
+		String json = response.readEntity(String.class);
+		System.out.println(json);
+		ObjectMapper objectMapper = new ObjectMapper();
+		try {
+			QueryDocumentsResponse queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
+			doc = queryDocsResp.getDocuments().get(0);
+			
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 		assertEquals("should return status 200", 200, response.getStatus());
-		assertNotNull("Should return documents list", response.getEntity().toString());
+		assertNotNull("Should return at least 1 document", doc);
 	}
 
 	private HttpAuthenticationFeature getFeature() {

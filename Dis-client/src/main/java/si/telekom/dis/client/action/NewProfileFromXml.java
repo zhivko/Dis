@@ -38,10 +38,12 @@ public class NewProfileFromXml extends ActionDialogBox implements ClickHandler {
 	@Override
 	public void onClick(ClickEvent event) {
 		try {
-			adminService.parseProfileFromXml(profileXML.getValue(), new AsyncCallback<Void>() {
+			adminService.parseProfileFromXml(MainPanel.getInstance().loginName, profileXML.getValue(), new AsyncCallback<Void>() {
 				@Override
 				public void onSuccess(Void result) {
 					MainPanel.log("Loaded profile.");
+					MainPanel.getInstance().menuPanel.refreshDocTypesAndAtts();
+					NewProfileFromXml.instance.hide(true);
 				}
 
 				@Override

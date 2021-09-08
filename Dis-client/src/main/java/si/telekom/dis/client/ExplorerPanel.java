@@ -136,6 +136,7 @@ public class ExplorerPanel extends Composite {
 		txtFolderLb.addItem("/MOB/PPM/EP/SP/MC/Subscriber/Current");
 		txtFolderLb.addItem("/MOB/PPM/EP/SP/MC/Subscriber/" + yearStr);
 		txtFolderLb.addItem("/MOB/PFK/Contract");
+		txtFolderLb.addItem("/MOB/PKSP/KS/Slike/TS");
 		txtFolderLb.addItem("/Temp/Jobs");
 		// txtFolderLb.setWidth("10em");
 

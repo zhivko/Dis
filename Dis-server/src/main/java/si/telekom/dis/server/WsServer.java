@@ -28,7 +28,7 @@ import javax.websocket.server.ServerEndpoint;
 
 import org.apache.log4j.Logger;
 
-@ServerEndpoint(value = "/ws")
+@ServerEndpoint(value = "/wsDis")
 public class WsServer {
 
 	static Timer timer = new Timer();
@@ -147,7 +147,7 @@ public class WsServer {
 			if (toUser != null)
 				if (toUser.contentEquals("_all_")) {
 					for (String user : sessions.keySet()) {
-						if (sessions.get(toUser) != null && sessions.get(toUser).isOpen()) {
+						if (sessions.get(user) != null && sessions.get(user).isOpen()) {
 							checkLastSendComplete();
 							_lastFuture = sessions.get(user).getAsyncRemote().sendText(message);
 						}
@@ -183,7 +183,7 @@ public class WsServer {
 					// java.lang.IllegalStateException: The remote endpoint was in state
 					// [TEXT_FULL_WRITING] which is an invalid state for called method
 					do {
-						Thread.sleep(1);
+						Thread.sleep(10);
 					} while (!_lastFuture.isDone());
 				}
 				// Get the result to ensure

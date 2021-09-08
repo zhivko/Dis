@@ -195,18 +195,20 @@
 		</dependency>
 
 
-		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi-scratchpad -->
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-scratchpad</artifactId>
-			<version>4.1.1</version>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.poi</groupId> -->
+		<!-- <artifactId>poi-scratchpad</artifactId> -->
+		<!-- <version>4.1.1</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.poi</groupId> -->
+		<!-- <artifactId>poi</artifactId> -->
+		<!-- <version>4.1.1</version> -->
+		<!-- </dependency> -->
+
 		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
-			<version>4.1.1</version>
-		</dependency>
+
+
 		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
 		<!-- <dependency> -->
 		<!-- <groupId>org.apache.tika</groupId> -->
@@ -240,7 +242,7 @@
 		<dependency>
 			<groupId>org.simplejavamail</groupId>
 			<artifactId>outlook-message-parser</artifactId>
-			<version>1.5.0</version>
+			<version>1.7.12</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api -->
@@ -331,6 +333,10 @@
 					<groupId>org.glassfish.jaxb</groupId>
 					<artifactId>jaxb-runtime</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.apache.poi</groupId>
+					<artifactId>poi</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
@@ -338,6 +344,12 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>5.0.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.poi</groupId>
+					<artifactId>poi</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
 		<dependency>
@@ -345,7 +357,7 @@
 			<artifactId>commons-compress</artifactId>
 			<version>1.21</version>
 		</dependency>
-		
+
 
 		<dependency>
 			<groupId>javax.annotation</groupId>
@@ -462,7 +474,7 @@
 			<groupId>org.glassfish.jersey.test-framework.providers</groupId>
 			<artifactId>jersey-test-framework-provider-grizzly2</artifactId>
 			<version>${jersey2-version}</version>
-			<scope>test</scope>
+			<!-- <scope>test</scope> -->
 		</dependency>
 
 		<dependency>
@@ -493,6 +505,41 @@
 			<version>2.0.24</version>
 		</dependency>
 
+
+		<dependency>
+			<groupId>org.mandas</groupId>
+			<artifactId>docker-client</artifactId>
+			<version>5.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.13</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.media/jersey-media-json-jackson -->
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-jackson</artifactId>
+			<version>${jersey2-version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.connectors/jersey-apache-connector -->
+		<dependency>
+			<groupId>org.glassfish.jersey.connectors</groupId>
+			<artifactId>jersey-apache-connector</artifactId>
+			<version>${jersey2-version}</version>
+		</dependency>
+
+
+		<!-- <dependency> -->
+		<!-- <groupId>org.glassfish.jersey.media</groupId> -->
+		<!-- <artifactId>jersey-media-json-jackson</artifactId> -->
+		<!-- <version>${jersey2-version}</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.glassfish.jersey.connectors</groupId> -->
+		<!-- <artifactId>jersey-apache-connector</artifactId> -->
+		<!-- <version>3.0.2</version> -->
+		<!-- </dependency> -->
 
 
 
@@ -643,6 +690,31 @@
 							<invokerPackage>si.telekom.dis.server.restExtra.invoke</invokerPackage>
 							<ignoreFileOverride>true</ignoreFileOverride>
 							<apiPackage>si.telekom.dis.server.restExtra.api</apiPackage>
+							<generateSupportingFiles>true</generateSupportingFiles>
+							<generateModels>true</generateModels>
+							<sourceFolder>java</sourceFolder>
+							<interfaceOnly>false</interfaceOnly>
+							<useBeanValidation>true</useBeanValidation>
+							<java8>true</java8>
+							<dateLibrary>java8</dateLibrary>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>generate wopi</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<generatorName>jaxrs-jersey</generatorName>
+							<language>java</language>
+							<library>jersey2</library>
+							<inputSpec>${basedir}/src/main/resources/wopi.yaml</inputSpec>
+							<generateApis>true</generateApis>
+							<modelPackage>si.telekom.dis.server.wopi</modelPackage>
+							<invokerPackage>si.telekom.dis.server.wopi.invoke</invokerPackage>
+							<ignoreFileOverride>true</ignoreFileOverride>
+							<apiPackage>si.telekom.dis.server.wopi.api</apiPackage>
 							<generateSupportingFiles>true</generateSupportingFiles>
 							<generateModels>true</generateModels>
 							<sourceFolder>java</sourceFolder>

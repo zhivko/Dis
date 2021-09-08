@@ -169,7 +169,7 @@ public class ExplorerServlet extends HttpServlet {
 
 				OutlookMessageParser msgp = new OutlookMessageParser();
 				OutlookMessage msg = msgp.parseMsg(msgfile.getAbsolutePath());
-
+				
 				// @formatter:off
 				baOs.write(("<!DOCTYPE html>" + "<html>" + "<head>" + "<title>Mail</title>" + "</head>" + "<body>")
 						.getBytes());
@@ -177,7 +177,7 @@ public class ExplorerServlet extends HttpServlet {
 
 				baOs.write(("<strong>DATE:</strong>" + sdf.format(msg.getCreationDate()) + "<br>\n").getBytes());
 				baOs.write(("<strong>FROM:</strong>" + msg.getFromName() + "(" + msg.getFromEmail() + ")<br>\n").getBytes());
-				baOs.write(("<strong>TO:</strong>" + msg.getToName() + "(" + msg.getToEmail() + ")<br>\n").getBytes());
+				baOs.write(("<strong>TO:</strong>" + msg.getDisplayTo() + "<br>\n").getBytes());
 				baOs.write(("<br>").getBytes());
 				baOs.write(("<strong>SUBJECT:</strong>" + msg.getSubject() + "<br>\n").getBytes());
 
