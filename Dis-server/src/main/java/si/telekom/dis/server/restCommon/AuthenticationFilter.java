@@ -45,7 +45,6 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 	@Override
 	public void filter(ContainerRequestContext requestContext) {
 		Method method = resourceInfo.getResourceMethod();
-
 		// We do allow wadl to be retrieve
 		String path = requestContext.getUriInfo().getPath(true);
 		if (method.getName().equals("getWadl") && (path.equals("application.wadl") || path.equals("application.wadl/xsd0.xsd"))) {
@@ -138,4 +137,6 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
 		return false;
 	}
 
+
+	
 }

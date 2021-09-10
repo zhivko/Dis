@@ -261,21 +261,6 @@ public class WebUi2 implements EntryPoint {
       timer.schedule(1000);
 		}
 		
-		loginService.getServerIp(new AsyncCallback<String>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void onSuccess(String result) {
-				DocumentViewCollabora dv = new DocumentViewCollabora("224234", result);
-				dv.show();
-				
-			}
-		});		
-		
 	}
 
 	private static native String b64encode(String a) /*-{

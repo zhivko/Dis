@@ -108,15 +108,15 @@ components:
     FileInfo:
       type: object
       required:
-      - baseFileName
-      - size
-      - ownerId
-      - version
-      - sha256
-      - allowExternalMarketplace
-      - userCanWrite
-      - supportsUpdate
-      - supportsLock
+      - BaseFileName
+      - Size
+      - OwnerId
+      - Version
+      - Sha256
+      - AllowExternalMarketplace
+      - UserCanWrite
+      - SupportsUpdate
+      - SupportsLock
       properties:
         BaseFileName:
           type: string

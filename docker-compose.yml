@@ -10,7 +10,7 @@ services:
       - username=admin
       - password=admin
       - dictionaries=en_US
-      - domain=share.example.com
+      - domain=10.115.4.149
     cap_add:
       - MKNOD
     ports:

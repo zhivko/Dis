@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
  * @created 24 Feb 2009
  */
 public class GWTCacheControlFilter implements Filter {
+	private static final String ALLOWED_DOMAINS_REGEXP = ".*";
 
 	public void destroy() {
 	}
@@ -32,6 +33,8 @@ public class GWTCacheControlFilter implements Filter {
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		String requestURI = httpRequest.getRequestURI();
 
+		HttpServletResponse resp = (HttpServletResponse) response;
+
 		if (requestURI.contains(".nocache.")) {
 			Date now = new Date();
 			HttpServletResponse httpResponse = (HttpServletResponse) response;
@@ -42,6 +45,33 @@ public class GWTCacheControlFilter implements Filter {
 			httpResponse.setHeader("Cache-control", "no-cache, no-store, must-revalidate");
 		}
 
-		filterChain.doFilter(request, response);
+		String origin = httpRequest.getHeader("Origin");
+		if (origin != null && origin.matches(ALLOWED_DOMAINS_REGEXP)) {
+			resp.addHeader("Access-Control-Allow-Origin", origin);
+			if ("options".equalsIgnoreCase(httpRequest.getMethod())) {
+				resp.setHeader("Allow", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS");
+				if (origin != null) {
+					String headers = httpRequest.getHeader("Access-Control-Request-Headers");
+					String method = httpRequest.getHeader("Access-Control-Request-Method");
+					resp.addHeader("Access-Control-Allow-Methods", method);
+					resp.addHeader("Access-Control-Allow-Headers", headers);
+					// optional, only needed if you want to allow cookies.
+					resp.addHeader("Access-Control-Allow-Credentials", "true");
+					resp.setContentType("text/x-gwt-rpc");
+				}
+				resp.getWriter().flush();
+				return;
+			}
+		}
+
+		// Fix ios6 caching post requests
+		if ("post".equalsIgnoreCase(httpRequest.getMethod())) {
+			resp.addHeader("Cache-Control", "no-cache");
+		}
+
+		if (filterChain != null) {
+			filterChain.doFilter(httpRequest, resp);
+		}
+
 	}
 }

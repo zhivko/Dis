@@ -48,6 +48,8 @@ import org.mandas.docker.client.DockerClient.ListContainersParam;
 import org.mandas.docker.client.builder.jersey.JerseyDockerClientBuilder;
 import org.mandas.docker.client.messages.Container;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.swagger.annotations.Api;
 import si.telekom.dis.server.wopi.FileInfo;
 import si.telekom.dis.server.wopi.api.NotFoundException;
@@ -68,7 +70,7 @@ import si.telekom.dis.server.wopi.api.impl.WopiApiServiceImpl;
 		
 		
 		http://172.17.0.1:9980/loleaflet/dist/admin/admin.html
-		http://172.17.0.2:9980/hosting/discovery
+		http://10.115.4.149:9980/hosting/discovery
 
  */
 
@@ -82,7 +84,7 @@ public class WopiRest extends WopiApiServiceImpl {
 	@Override
 	public Response getCheckFileInfo(String document, String accessToken, SecurityContext securityContext) throws NotFoundException {
 		// formatter:off
-		File file = new File("/home/klemen/Documents/LedPaket.odt");
+		File file = new File("/home/klemen/Documents/LedPaket.odt.wopitest");
 
 		FileInfo info = new FileInfo();
 		
@@ -112,15 +114,14 @@ public class WopiRest extends WopiApiServiceImpl {
                 info.setUserFriendlyName("klemen");
             }
         }
-//        ObjectMapper mapper = new ObjectMapper();
-//        
-//        objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
-//        
-//        String Json =  mapper.writev
+        ObjectMapper mapper = new ObjectMapper();
+        
+        byte[] res = mapper.writeValueAsBytes(info);
+        String result = new String(res);
         
         return Response.status(Response.Status.OK)
         		.header("Content-Type", "application/json")
-        		.entity(info).build();
+        		.entity(result).build();
     } catch (Exception e) {
         e.printStackTrace();
     		return Response.serverError().build();
@@ -129,9 +130,8 @@ public class WopiRest extends WopiApiServiceImpl {
 
 	@Override
 	public Response getWopiDocumentContent(String document, String accessToken, SecurityContext securityContext) throws NotFoundException {
-		File file = new File("/home/klemen/Documents/LedPaket.odt");
+		File file = new File("/home/klemen/Documents/LedPaket.odt.wopitest");
 		
-
     InputStream fis = null;
     OutputStream toClient = null;
     try {
@@ -149,8 +149,9 @@ public class WopiRest extends WopiApiServiceImpl {
         byte[] content = FileUtils.readFileToByteArray(file);  
 //formatter:off        
         return Response.status(Response.Status.OK)
-        		.header("X-WOPI-ItemVersion", 15.1321)
+        		.header("X-WOPI-ItemVersion", file.lastModified())
         		.header("Content-Length", file.length())
+        		.header("Content-Type", "application/json")
         		.header("Content-Disposition", "attachment; filename=" + file.getName())
         		.entity(new ByteArrayInputStream(content)).build();
 //formatter:on
@@ -385,7 +386,6 @@ String dockerStartCmd =
     }
     return value;
 }	
-	
-	
+  
 	
 }

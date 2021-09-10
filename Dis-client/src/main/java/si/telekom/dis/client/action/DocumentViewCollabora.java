@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -21,6 +22,8 @@ import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -28,6 +31,7 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.TextBox;
 
 import si.telekom.dis.client.MainPanel;
 import si.telekom.dis.client.WindowBox;
@@ -39,7 +43,9 @@ import si.telekom.dis.shared.LoginServiceAsync;
 
 public class DocumentViewCollabora extends WindowBox {
 	final ListBox renditions;
+	FormPanel form;
 	Frame frame;
+	FlowPanel fp;
 	String r_object_id;
 	private final static ExplorerServiceAsync explorerService = GWT.create(ExplorerService.class);
 	private final static LoginServiceAsync loginService = GWT.create(LoginService.class);
@@ -47,8 +53,7 @@ public class DocumentViewCollabora extends WindowBox {
 	ScrollPanel sp;
 
 	String serverIp = "";
-	
-	
+
 	public DocumentViewCollabora(String r_object_id_, String serverIp_) {
 		r_object_id = r_object_id_;
 		this.serverIp = serverIp_;
@@ -67,30 +72,6 @@ public class DocumentViewCollabora extends WindowBox {
 				refresh();
 			}
 		});
-
-		////////////////////// colabra test start //////////////////
-
-		String url = getCollabraUrl(r_object_id, "");
-		// MainPanel.log(url);
-
-		frame = new Frame();
-		frame.setWidth(getMaxWidthPx());
-		frame.setHeight(getMaxHeightPx());
-		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-			@Override
-			public void execute() {
-				DocumentViewCollabora.this.center();
-			}
-		});
-
-		frame.setUrl(url);
-		if (sp.getWidget() != null)
-			sp.remove(sp.getWidget());
-		sp.add(frame);
-
-		logger.info("submitting form to: " + frame.getUrl());
-
-		////////////////////// colabra test end //////////////////
 
 		try {
 			explorerService.getRenditions(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, r_object_id_,
@@ -132,13 +113,19 @@ public class DocumentViewCollabora extends WindowBox {
 
 		getContentPanel().add(hp);
 		getContentPanel().add(sp);
-
+		
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {
 				DocumentViewCollabora.this.center();
 			}
 		});
+		
+		
+				
+				
+				
+	
 	}
 
 	private void refresh() {
@@ -151,58 +138,57 @@ public class DocumentViewCollabora extends WindowBox {
 			String url = getCollabraUrl(r_object_id, rendition);
 			MainPanel.log(url);
 
+			/*			
+			<form id="office_form" name="office_form" target="office_frame" action="{{ server }}" method="post">
+				    <input name="access_token" value="{{ access_token }}" type="hidden" />
+				    <input name="access_token_ttl" value="{{ access_token_ttl }}" type="hidden" />
+			</form>			
+			*/
+			FormPanel form = new FormPanel();
+			form.getElement().setAttribute("name", "office_form");
+			form.getElement().setAttribute("id", "office_form");
+			form.getElement().setAttribute("target", "office_frame");
+			form.setMethod("post");
+			form.setAction(url);
+			form.setVisible(false);
+			
+			TextBox access_token = new TextBox();
+			access_token.setValue("access_token");
+			TextBox access_token_ttl = new TextBox();
+			access_token_ttl.setValue("access_token_ttl");
+			
+			form.add(access_token);
+			//form.add(access_token_ttl);
+			
 			frame = new Frame();
+			frame.getElement().setAttribute("name", "office_frame");
+			frame.getElement().setAttribute("id", "office_frame");
+			frame.getElement().setAttribute("name", "office_frame");
+			frame.getElement().setAttribute("id", "office_frame");
+			
+			frame.setTitle("Office Frame");
+			frame.getElement().setAttribute("allowfullscreen", "true");
+			frame.getElement().setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-downloads allow-modals");
+			
 			frame.setWidth(getMaxWidthPx());
 			frame.setHeight(getMaxHeightPx());
+			
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
 				public void execute() {
 					DocumentViewCollabora.this.center();
 				}
 			});
+			
+			fp = new FlowPanel();
+			fp.add(form);
+			fp.add(frame);
 
-			frame.setUrl(url);
 			if (sp.getWidget() != null)
 				sp.remove(sp.getWidget());
-			sp.add(frame);
+			sp.add(fp);
+			form.submit();
 
-			logger.info("submitting form to: " + frame.getUrl());
-
-		} else if (DocumentViewFileTypes.viewerJSFormats.contains(rendition)) {
-			String safeUriDocView2 = GWT.getHostPageBaseURL() + "ViewerJS/index.html?navbar=false&title=" + r_object_id + "#" + safeUriDocView;
-			frame = new Frame();
-			frame.setWidth(getMaxWidthPx());
-			frame.setHeight(getMaxHeightPx());
-			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-				@Override
-				public void execute() {
-					DocumentViewCollabora.this.center();
-				}
-			});
-
-			frame.setUrl(safeUriDocView2);
-			if (sp.getWidget() != null)
-				sp.remove(sp.getWidget());
-			sp.add(frame);
-
-			logger.info("submitting form to: " + frame.getUrl());
-		} else if (DocumentViewFileTypes.odfFormats.contains(rendition)) {
-			frame = new Frame();
-			frame.setWidth(getMaxWidthPx());
-			frame.setHeight(getMaxHeightPx());
-			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-				@Override
-				public void execute() {
-					DocumentViewCollabora.this.center();
-				}
-			});
-			if (MainPanel.getInstance().us.useColaboraOnlineForEdit)
-				frame.setUrl(getCollabraUrl(r_object_id, rendition));
-			else
-				frame.setUrl(getWebOdfUrl(r_object_id, rendition));
-			if (sp.getWidget() != null)
-				sp.remove(sp.getWidget());
-			sp.add(frame);
 			logger.info("submitting form to: " + frame.getUrl());
 		} else if (DocumentViewFileTypes.imageHtmlFormats.contains(rendition)) {
 			sp.setWidth(getMaxWidthPx());
@@ -285,15 +271,15 @@ public class DocumentViewCollabora extends WindowBox {
 		// "WOPISrc=http://localhost:8080/Dis-server/api/wopi/files/090000019265cd63/contents?access_token=aaa";
 		// String wopiUrl =
 		// "http://192.168.178.102:8080/Dis-server/api/wopi/files/090000019265cd63";
-		String wopiUrl = "http://10.115.4.149:8080/Dis-server/api/wopi/files/090000019265cd63?access_token=aaa";
+		//String wopiUrl = "http://10.115.4.149:8080/Dis-server/api/wopi/files/090000019265cd63?access_token=aaa";
 		// String wopiUrl =
 		// "http://192.168.178.102:8080/Dis-server/api/wopi/files/090000019265cd63?access_token=aaa";
 
 		// https://lool2.friprogramvarusyndikatet.se/loleaflet/57485718f/loleaflet.html
-		
-		String wopiSrc = GWT.getHostPageBaseURL() + "api/wopi/files/" + r_object_id2 + "/contents?access_token=<token>";
+
+		String wopiSrc = GWT.getHostPageBaseURL() + "api/wopi/files/" + r_object_id2;
 		wopiSrc = wopiSrc.replaceAll("localhost", serverIp);
-		
+
 		String url = "http://10.115.4.149:9980/loleaflet/d12ab86/loleaflet.html?WOPISrc=" + wopiSrc;
 		GWT.log(url);
 		url = "http://10.115.4.149:9980/loleaflet/d12ab86/loleaflet.html?WOPISrc=" + URL.encodeQueryString(wopiSrc);
