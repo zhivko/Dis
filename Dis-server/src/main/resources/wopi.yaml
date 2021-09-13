@@ -40,6 +40,56 @@ paths:
           description: Not found
         "500":
           description: Server error
+# https://docs.microsoft.com/en-us/microsoft-365/cloud-storage-partner-program/rest/files/lock
+    post:
+      tags:
+        - wopi.v2
+      summary: Lock document
+      operationId: lockDocument
+      parameters:
+        - name: document
+          in: path
+          required: true
+          description: "The document id"
+          schema:
+            type: string
+        - name: access_token
+          in: query
+          required: true
+          description: An access token to access the document
+          schema:
+            type: string
+        - in: header
+          name: X-WOPI-Lock
+          required: true
+          description: A string provided by the WOPI client that the host must use to identify the lock on the file. Required.
+          schema:
+            type: string
+        - in: header
+          name: X-WOPI-Override
+          required: false
+          description: The string UNLOCK. Required.
+          schema:
+            type: string                 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        description: Document content
+      responses:
+        "200":
+          description: Lock was successful
+        "400":
+          description: X-WOPI-Lock was not provided or was empty
+        "401":
+          description: unauthorized - Invalid access token
+        "404":
+          description: Resource not found/user unauthorized      
+        "409":
+          description: Conflict - Lock mismatch/locked by another interface; an X-WOPI-Lock response header containing the value of the current lock on the file must always be included when using this response code          
+        "500":
+          description: Internal server error        
   /wopi/files/{document}/contents:
     get:
       tags:
@@ -86,9 +136,10 @@ paths:
             type: string
       requestBody:
         content:
-          application/json:
+          application/octet-stream:
             schema:
               type: string
+              format: binary
         description: Document content
       responses:
         "200":
@@ -96,8 +147,7 @@ paths:
         "403":
           description: Access denied
         "404":
-          description: Resource does not exists
-          
+          description: Resource does not exists        
 components:
   securitySchemes:
     ApiKeyAuth:

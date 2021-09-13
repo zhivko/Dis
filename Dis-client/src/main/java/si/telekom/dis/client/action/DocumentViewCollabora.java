@@ -1,12 +1,15 @@
+// https://github.com/Champs-Libres/wopi-bundle/blob/master/src/Resources/views/Editor/embedded.html.twig
+
 package si.telekom.dis.client.action;
 
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.gwtbootstrap3.client.ui.html.Div;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -26,6 +29,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -152,13 +156,18 @@ public class DocumentViewCollabora extends WindowBox {
 			form.setAction(url);
 			form.setVisible(false);
 			
-			TextBox access_token = new TextBox();
+			Hidden access_token = new Hidden();
 			access_token.setValue("access_token");
-			TextBox access_token_ttl = new TextBox();
-			access_token_ttl.setValue("access_token_ttl");
+			access_token.getElement().setAttribute("name", "access_token");
+			Hidden access_token_ttl = new Hidden();
+			access_token_ttl.setValue("10000000");
+			access_token_ttl.getElement().setAttribute("name", "access_token_ttl");
 			
-			form.add(access_token);
-			//form.add(access_token_ttl);
+			Div div = new Div();
+			div.add(access_token);
+			div.add(access_token_ttl);
+			
+			form.add(div);
 			
 			frame = new Frame();
 			frame.getElement().setAttribute("name", "office_frame");

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -29,7 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
-import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -77,124 +78,108 @@ import si.telekom.dis.server.wopi.api.impl.WopiApiServiceImpl;
 @Api
 public class WopiRest extends WopiApiServiceImpl {
 
+	File file = new File("/home/klemen/Documents/LedPaket.odt");
+
 	public WopiRest() {
 		super();
 	}
 
 	@Override
 	public Response getCheckFileInfo(String document, String accessToken, SecurityContext securityContext) throws NotFoundException {
-		// formatter:off
-		File file = new File("/home/klemen/Documents/LedPaket.odt.wopitest");
-
 		FileInfo info = new FileInfo();
-		
-    try {
-        if (document != null && document.length() > 0) {
-            Logger.getLogger(this.getClass()).info("------------ get getCheckFileInfo  ------------ "+file.getName());
-            if (file.exists()) {
-                // 取得文件名
-                info.setBaseFileName(file.getName());
-                info.setSize(file.length());
-                info.setOwnerId("admin");
-                info.setUserId("klemen");
-                info.setVersion(file.lastModified());
-                info.setSha256(getHash256(file));
-                info.setAllowExternalMarketplace(true);
-                info.setUserCanWrite(false);
-                info.setSupportsUpdate(false);
-                info.setSupportsLocks(false);
-                
-                Date date = new Date();
-                
-                // 2005-01-01T12:00:00.000000+01:00
-                
-                SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ", Locale.GERMANY);
-                info.setLastModifiedTime(ISO8601DATEFORMAT.format(date));
 
-                info.setUserFriendlyName("klemen");
-            }
-        }
-        ObjectMapper mapper = new ObjectMapper();
-        
-        byte[] res = mapper.writeValueAsBytes(info);
-        String result = new String(res);
-        
-        return Response.status(Response.Status.OK)
-        		.header("Content-Type", "application/json")
-        		.entity(result).build();
-    } catch (Exception e) {
-        e.printStackTrace();
-    		return Response.serverError().build();
-    }
+		try {
+			if (document != null && document.length() > 0) {
+				Logger.getLogger(this.getClass()).info("------------ get getCheckFileInfo  ------------ " + file.getName());
+				if (file.exists()) {
+					// 取得文件名
+					info.setBaseFileName(file.getName());
+					info.setSize(file.length());
+					info.setOwnerId("marko");
+					info.setUserId("marko");
+					info.setVersion(file.lastModified());
+					info.setSha256(getHash256(file));
+					info.setAllowExternalMarketplace(true);
+					info.setUserCanWrite(true);
+					info.setSupportsUpdate(true);
+					info.setSupportsLocks(true);
+
+					Date date = new Date();
+
+					// 2005-01-01T12:00:00.000000+01:00
+
+					SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ", Locale.GERMANY);
+					info.setLastModifiedTime(ISO8601DATEFORMAT.format(date));
+
+					info.setUserFriendlyName("klemen");
+				}
+			}
+			ObjectMapper mapper = new ObjectMapper();
+
+			byte[] res = mapper.writeValueAsBytes(info);
+			String result = new String(res);
+
+			return Response.status(Response.Status.OK).header("Content-Type", "application/json").entity(result).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.serverError().build();
+		}
 	}
 
 	@Override
 	public Response getWopiDocumentContent(String document, String accessToken, SecurityContext securityContext) throws NotFoundException {
-		File file = new File("/home/klemen/Documents/LedPaket.odt.wopitest");
-		
-    InputStream fis = null;
-    OutputStream toClient = null;
-    try {
-        // 文件的路径
-        //String path = filePath + name;
-        //File file = new File(path);
-        // 取得文件名
-        String filename = file.getName();
-        // 以流的形式下载文件
-        fis = new BufferedInputStream(new FileInputStream(file));
-        byte[] buffer = new byte[fis.available()];
-        fis.read(buffer);
-        Logger.getLogger(this.getClass()).info("------------ getContentFile  ------------ "+file.getName());
-        
-        byte[] content = FileUtils.readFileToByteArray(file);  
-//formatter:off        
-        return Response.status(Response.Status.OK)
-        		.header("X-WOPI-ItemVersion", file.lastModified())
-        		.header("Content-Length", file.length())
-        		.header("Content-Type", "application/json")
-        		.header("Content-Disposition", "attachment; filename=" + file.getName())
-        		.entity(new ByteArrayInputStream(content)).build();
-//formatter:on
-    } catch (Exception ex) {
-        ex.printStackTrace();
-    } finally {
-        try {
-            fis.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }		
-    return Response.serverError().build();
-		
+		InputStream fis = null;
+		OutputStream toClient = null;
+		try {
+			// 文件的路径
+			// String path = filePath + name;
+			// File file = new File(path);
+			// 取得文件名
+			String filename = file.getName();
+			// 以流的形式下载文件
+			fis = new BufferedInputStream(new FileInputStream(file));
+			byte[] buffer = new byte[fis.available()];
+			fis.read(buffer);
+			Logger.getLogger(this.getClass()).info("------------ getContentFile  ------------ " + file.getName());
+
+			byte[] content = FileUtils.readFileToByteArray(file);
+//@formatter:off
+			return Response.status(Response.Status.OK)
+					.header("X-WOPI-ItemVersion", file.lastModified())
+					.header("Content-Length", file.length())
+					.header("Content-Type", "application/json")
+					.header("Content-Disposition", "attachment; filename=" + file.getName())
+					.entity(new ByteArrayInputStream(content)).build();
+//@formatter:on
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		} finally {
+			try {
+				fis.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return Response.serverError().build();
+
 	}
 
 	@Override
-	@PermitAll
-	public Response updateWopiDocumentContent(String document, String accessToken, String body, SecurityContext securityContext)
+	public Response updateWopiDocumentContent(String document, String accessToken, File body, SecurityContext securityContext)
 			throws NotFoundException {
-		File file = new File("/home/klemen/Documents/LedPaket1.odt");
-		
-    FileOutputStream fop = null;
-    try {
-        if (!file.exists()) {
-            file.createNewFile();//构建文件
-        }
-        fop = new FileOutputStream(file);
-        fop.write(body.getBytes());
-        fop.flush();
-        System.out.println("------------ save file ------------ ");
-        return Response.ok().build();
-        
-    } catch (IOException e) {
-        e.printStackTrace();
-        return Response.serverError().build();
-    } finally {
-        try {
-            fop.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }		
+		try {
+			Files.copy(body.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Logger.getLogger(this.getClass()).info("------------ save file ------------ ");
+//@formatter:off			
+			return Response.ok()
+					.header("X-WOPI-ItemVersion", file.lastModified())
+					.build();
+//@formatter:on			
+		} catch (Exception e) {
+			Logger.getLogger(this.getClass()).error(e);
+			return Response.serverError().build();
+		} finally {
+		}
 	}
 
 	public static void checkCollaboraDockerIsRunning() {
@@ -302,20 +287,26 @@ String dockerStartCmd =
 				containers = docker.listContainers(params);
 			}
 
-//			Logger.getLogger(WopiRest.class).info("Copying config file to collabora/code container: " + containerName + "...");
-//			String dockerCpCmd = "docker cp /home/klemen/git/Dis/Dis-server/src/main/resources/loolwsd.xml " + containerName + ":/etc/loolwsd/loolwsd.xml";
-//
-//			dockerCpCmd = "docker exec -i " + containerName
-//					+ " sh -c 'cat > /etc/loolwsd/loolwsd.xml' < /home/klemen/git/Dis/Dis-server/src/main/resources/loolwsd.xml";
-//
-//			Logger.getLogger(WopiRest.class).info(dockerCpCmd);
-//			Process p = Runtime.getRuntime().exec(dockerCpCmd.split(" (?=(([^'\\\"]*['\\\"]){2})*[^'\\\"]*$)"));
-//			ByteArrayOutputStream baOsErr = new ByteArrayOutputStream();
-//			PrintStream psErr = new PrintStream(baOsErr);
-//			inheritIO(p.getErrorStream(), psErr);
-//			p.waitFor();
-//			Logger.getLogger(WopiRest.class).info(baOsErr.toString());
-//			Logger.getLogger(WopiRest.class).info("Copying config file to collabora/code container: " + containerName + "...Done.");
+			// Logger.getLogger(WopiRest.class).info("Copying config file to
+			// collabora/code container: " + containerName + "...");
+			// String dockerCpCmd = "docker cp
+			// /home/klemen/git/Dis/Dis-server/src/main/resources/loolwsd.xml " +
+			// containerName + ":/etc/loolwsd/loolwsd.xml";
+			//
+			// dockerCpCmd = "docker exec -i " + containerName
+			// + " sh -c 'cat > /etc/loolwsd/loolwsd.xml' <
+			// /home/klemen/git/Dis/Dis-server/src/main/resources/loolwsd.xml";
+			//
+			// Logger.getLogger(WopiRest.class).info(dockerCpCmd);
+			// Process p = Runtime.getRuntime().exec(dockerCpCmd.split("
+			// (?=(([^'\\\"]*['\\\"]){2})*[^'\\\"]*$)"));
+			// ByteArrayOutputStream baOsErr = new ByteArrayOutputStream();
+			// PrintStream psErr = new PrintStream(baOsErr);
+			// inheritIO(p.getErrorStream(), psErr);
+			// p.waitFor();
+			// Logger.getLogger(WopiRest.class).info(baOsErr.toString());
+			// Logger.getLogger(WopiRest.class).info("Copying config file to
+			// collabora/code container: " + containerName + "...Done.");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		} finally {
@@ -354,38 +345,65 @@ String dockerStartCmd =
 		}
 		return Response.status(Response.Status.OK).entity(new ByteArrayInputStream(content)).build();
 	}
-	
-	
-	
-  public static String getHash256(File file) {
-    String value = "";
-    // 获取hash值
-    try {
-        byte[] buffer = new byte[1024];
-        int numRead;
-        InputStream fis = new FileInputStream(file);
-        //如果想使用SHA-1或SHA-256，则传入SHA-1,SHA-256
-        MessageDigest complete = MessageDigest.getInstance("SHA-256");
-        do {
-            //从文件读到buffer
-            numRead = fis.read(buffer);
-            if (numRead > 0) {
-                //用读到的字节进行MD5的计算，第二个参数是偏移量
-                complete.update(buffer, 0, numRead);
-            }
-        } while (numRead != -1);
 
-        fis.close();
-        value = new String(Base64.getEncoder().encode(complete.digest()));
-    } catch (NoSuchAlgorithmException e) {
-        e.printStackTrace();
-    } catch (FileNotFoundException e) {
-        e.printStackTrace();
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-    return value;
-}	
-  
+	public static String getHash256(File file) {
+		String value = "";
+		// 获取hash值
+		try {
+			byte[] buffer = new byte[1024];
+			int numRead;
+			InputStream fis = new FileInputStream(file);
+			// 如果想使用SHA-1或SHA-256，则传入SHA-1,SHA-256
+			MessageDigest complete = MessageDigest.getInstance("SHA-256");
+			do {
+				// 从文件读到buffer
+				numRead = fis.read(buffer);
+				if (numRead > 0) {
+					// 用读到的字节进行MD5的计算，第二个参数是偏移量
+					complete.update(buffer, 0, numRead);
+				}
+			} while (numRead != -1);
+
+			fis.close();
+			value = new String(Base64.getEncoder().encode(complete.digest()));
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return value;
+	}
+
+	@Override
+	public Response lockDocument(String document, String accessToken, String xWOPILock, String xWOPIOverride, String body,
+			SecurityContext securityContext) throws NotFoundException {
+		try {
+
+			if (xWOPIOverride.equals("UNLOCK")) {
+//@formatter:off			
+				return Response.status(Response.Status.OK)
+						.header("X-WOPI-Lock", "marko")
+						.header("X-WOPI-ItemVersion", file.lastModified())
+						.build();
+//@formatter:on
+			} else {
+//@formatter:off			
+				return Response.status(Response.Status.OK)
+						.header("X-WOPI-Lock", "marko")
+						.header("X-WOPI-ItemVersion", file.lastModified())
+						.build();
+//@formatter:on
+			}
+		} catch (Exception e) {
+//@formatter:off			
+		return Response.status(Response.Status.fromStatusCode(500)).entity("Internal error: " + e.getMessage())
+				.header("X-WOPI-LockFailureReason", e.getMessage())
+				.build();
+//@formatte:on			
+	}
+}
+	
 	
 }

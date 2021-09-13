@@ -6,7 +6,7 @@ services:
 #    restart: unless-stopped
     environment:
       - DONT_GEN_SSL_CERT="True"
-      - extra_params=--o:ssl.enable=false --o:ssl.termination=false
+      - extra_params=--o:ssl.enable=false --o:ssl.termination=false --o:net.proto=IPv4
       - username=admin
       - password=admin
       - dictionaries=en_US
