@@ -56,11 +56,9 @@ public class DocumentViewCollabora extends WindowBox {
 	private final static Logger logger = java.util.logging.Logger.getLogger("mylogger");
 	ScrollPanel sp;
 
-	String serverIp = "";
-
-	public DocumentViewCollabora(String r_object_id_, String serverIp_) {
+	public DocumentViewCollabora(String r_object_id_) {
 		r_object_id = r_object_id_;
-		this.serverIp = serverIp_;
+
 		// setText("Vsebina dokumenta (barkoda: " +
 		// MenuPanel.activeExplorerInstance.selectedDocument.object_name + ")");
 		setText("Vsebina dokumenta (r_object_id: " + r_object_id_ + ")");
@@ -117,19 +115,14 @@ public class DocumentViewCollabora extends WindowBox {
 
 		getContentPanel().add(hp);
 		getContentPanel().add(sp);
-		
+
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {
 				DocumentViewCollabora.this.center();
 			}
 		});
-		
-		
-				
-				
-				
-	
+
 	}
 
 	private void refresh() {
@@ -140,14 +133,15 @@ public class DocumentViewCollabora extends WindowBox {
 
 		if (odfFormats.contains(rendition) && MainPanel.getInstance().us.useColaboraOnlineForEdit) {
 			String url = getCollabraUrl(r_object_id, rendition);
-			MainPanel.log(url);
+			//MainPanel.log(url);
 
-			/*			
-			<form id="office_form" name="office_form" target="office_frame" action="{{ server }}" method="post">
-				    <input name="access_token" value="{{ access_token }}" type="hidden" />
-				    <input name="access_token_ttl" value="{{ access_token_ttl }}" type="hidden" />
-			</form>			
-			*/
+			/*
+			 * <form id="office_form" name="office_form" target="office_frame"
+			 * action="{{ server }}" method="post"> <input name="access_token"
+			 * value="{{ access_token }}" type="hidden" /> <input
+			 * name="access_token_ttl" value="{{ access_token_ttl }}" type="hidden" />
+			 * </form>
+			 */
 			FormPanel form = new FormPanel();
 			form.getElement().setAttribute("name", "office_form");
 			form.getElement().setAttribute("id", "office_form");
@@ -155,40 +149,41 @@ public class DocumentViewCollabora extends WindowBox {
 			form.setMethod("post");
 			form.setAction(url);
 			form.setVisible(false);
-			
+
 			Hidden access_token = new Hidden();
-			access_token.setValue("access_token");
+			access_token.setValue(b64encode(MainPanel.getInstance().loginName + ":" + MainPanel.getInstance().loginPass));
 			access_token.getElement().setAttribute("name", "access_token");
 			Hidden access_token_ttl = new Hidden();
 			access_token_ttl.setValue("10000000");
 			access_token_ttl.getElement().setAttribute("name", "access_token_ttl");
-			
+
 			Div div = new Div();
 			div.add(access_token);
 			div.add(access_token_ttl);
-			
+
 			form.add(div);
-			
+
 			frame = new Frame();
 			frame.getElement().setAttribute("name", "office_frame");
 			frame.getElement().setAttribute("id", "office_frame");
 			frame.getElement().setAttribute("name", "office_frame");
 			frame.getElement().setAttribute("id", "office_frame");
-			
+
 			frame.setTitle("Office Frame");
 			frame.getElement().setAttribute("allowfullscreen", "true");
-			frame.getElement().setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-downloads allow-modals");
-			
+			frame.getElement().setAttribute("sandbox",
+					"allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-downloads allow-modals");
+
 			frame.setWidth(getMaxWidthPx());
 			frame.setHeight(getMaxHeightPx());
-			
+
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
 				public void execute() {
 					DocumentViewCollabora.this.center();
 				}
 			});
-			
+
 			fp = new FlowPanel();
 			fp.add(form);
 			fp.add(frame);
@@ -272,28 +267,11 @@ public class DocumentViewCollabora extends WindowBox {
 	}
 
 	private String getCollabraUrl(String r_object_id2, String rendition) {
-		// https://<WOPI client
-		// URL>:<port>/loleaflet/<hash>/loleaflet.html?WOPISrc=https://<WOPI host
-		// URL>/<...>/wopi/files/<id>/contents?access_token=<token>
-		// http://localhost:9980/loleaflet/57485718f/loleaflet.html?
-		// String wopiUrl =
-		// "WOPISrc=http://localhost:8080/Dis-server/api/wopi/files/090000019265cd63/contents?access_token=aaa";
-		// String wopiUrl =
-		// "http://192.168.178.102:8080/Dis-server/api/wopi/files/090000019265cd63";
-		//String wopiUrl = "http://10.115.4.149:8080/Dis-server/api/wopi/files/090000019265cd63?access_token=aaa";
-		// String wopiUrl =
-		// "http://192.168.178.102:8080/Dis-server/api/wopi/files/090000019265cd63?access_token=aaa";
-
-		// https://lool2.friprogramvarusyndikatet.se/loleaflet/57485718f/loleaflet.html
-
 		String wopiSrc = GWT.getHostPageBaseURL() + "api/wopi/files/" + r_object_id2;
-		wopiSrc = wopiSrc.replaceAll("localhost", serverIp);
-
-		String url = "http://10.115.4.149:9980/loleaflet/d12ab86/loleaflet.html?WOPISrc=" + wopiSrc;
-		GWT.log(url);
-		url = "http://10.115.4.149:9980/loleaflet/d12ab86/loleaflet.html?WOPISrc=" + URL.encodeQueryString(wopiSrc);
-		GWT.log(url);
-
+		wopiSrc = wopiSrc.replaceAll("localhost", MainPanel.getInstance().serverIp);
+		//String url = "https://" + MainPanel.getInstance().serverIp + ":9980/loleaflet/d12ab86/loleaflet.html?WOPISrc=" + URL.encodeQueryString(wopiSrc);
+		String url = MainPanel.getInstance().us.collaboraUrl + URL.encodeQueryString(wopiSrc);
+		//MainPanel.log(url);
 		return url;
 	}
 
@@ -346,4 +324,12 @@ public class DocumentViewCollabora extends WindowBox {
 		});
 	}-*/;
 
+	private static native String b64decode(String a) /*-{
+		return window.atob(a);
+	}-*/;
+
+	private static native String b64encode(String a) /*-{
+	return window.btoa(a);
+}-*/;	
+	
 }

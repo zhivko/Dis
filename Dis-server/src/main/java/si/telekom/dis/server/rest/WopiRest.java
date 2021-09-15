@@ -15,10 +15,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -30,6 +28,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -49,12 +50,25 @@ import org.mandas.docker.client.DockerClient.ListContainersParam;
 import org.mandas.docker.client.builder.jersey.JerseyDockerClientBuilder;
 import org.mandas.docker.client.messages.Container;
 
+import com.documentum.fc.client.DfVersionPolicy;
+import com.documentum.fc.client.IDfPersistentObject;
+import com.documentum.fc.client.IDfSession;
+import com.documentum.fc.client.IDfSysObject;
+import com.documentum.fc.client.IDfVersionPolicy;
+import com.documentum.fc.common.DfId;
+import com.documentum.fc.common.IDfId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.annotations.Api;
+import si.telekom.dis.server.AdminServiceImpl;
+import si.telekom.dis.server.ExplorerServiceImpl;
+import si.telekom.dis.server.UploadServlet;
+import si.telekom.dis.server.rest.UpdateDocumentRequest.VersionEnum;
+import si.telekom.dis.server.restCommon.User;
 import si.telekom.dis.server.wopi.FileInfo;
 import si.telekom.dis.server.wopi.api.NotFoundException;
 import si.telekom.dis.server.wopi.api.impl.WopiApiServiceImpl;
+import si.telekom.dis.shared.ServerException;
 
 // https://<WOPI client URL>:<port>/loleaflet/<hash>/loleaflet.html?WOPISrc=https://<WOPI host URL>/<...>/wopi/files/<id>/contents?access_token=<token>
 
@@ -65,20 +79,26 @@ import si.telekom.dis.server.wopi.api.impl.WopiApiServiceImpl;
     http://localhost:9980/hosting/capabilities
     http://localhost:9980/hosting/discovery
     
+		https://test-dis-dev.apps.okd-test.ts.telekom.si/hosting/discovery
+		https://test-dis-dev.apps.okd-test.ts.telekom.si/hosting/capabilities
 
 
 		https://lool2.friprogramvarusyndikatet.se:9980/hosting/discovery
-		
+		https://github.com/CollaboraOnline/online/blob/master/docker/from-packages/RHEL8
 		
 		http://172.17.0.1:9980/loleaflet/dist/admin/admin.html
 		http://10.115.4.149:9980/hosting/discovery
+		
+		
+		https://collabora-dis-dev.apps.okd-test.ts.telekom.si/hosting/discovery
+		
+		
+		https://erender-test:9980/hosting/capabilities
 
  */
 
 @Api
 public class WopiRest extends WopiApiServiceImpl {
-
-	File file = new File("/home/klemen/Documents/LedPaket.odt");
 
 	public WopiRest() {
 		super();
@@ -88,98 +108,191 @@ public class WopiRest extends WopiApiServiceImpl {
 	public Response getCheckFileInfo(String document, String accessToken, SecurityContext securityContext) throws NotFoundException {
 		FileInfo info = new FileInfo();
 
+		String loginName = getUserFromToken(accessToken);
+		String password = getPassFromToken(accessToken);
+		IDfSession userSession = null;
+
+		BufferedInputStream bIs;
 		try {
-			if (document != null && document.length() > 0) {
-				Logger.getLogger(this.getClass()).info("------------ get getCheckFileInfo  ------------ " + file.getName());
-				if (file.exists()) {
-					// 取得文件名
-					info.setBaseFileName(file.getName());
-					info.setSize(file.length());
-					info.setOwnerId("marko");
-					info.setUserId("marko");
-					info.setVersion(file.lastModified());
-					info.setSha256(getHash256(file));
-					info.setAllowExternalMarketplace(true);
-					info.setUserCanWrite(true);
-					info.setSupportsUpdate(true);
-					info.setSupportsLocks(true);
+			userSession = AdminServiceImpl.getSession(loginName, password);
 
-					Date date = new Date();
+			IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			IDfSysObject sysObject = (IDfSysObject) dfDocument;
+			Logger.getLogger(this.getClass()).info("------------ get getCheckFileInfo  ------------ " + document);
 
-					// 2005-01-01T12:00:00.000000+01:00
+			bIs = new BufferedInputStream(sysObject.getContent());
+			byte[] buffer = new byte[bIs.available()];
+			bIs.read(buffer);
 
-					SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ", Locale.GERMANY);
-					info.setLastModifiedTime(ISO8601DATEFORMAT.format(date));
-
-					info.setUserFriendlyName("klemen");
-				}
-			}
+			info.setBaseFileName(sysObject.getId("r_object_id").toString() + "." + sysObject.getFormat().getDOSExtension());
+			info.setSize(sysObject.getContentSize());
+			info.setOwnerId(sysObject.getOwnerName());
+			info.setUserId(loginName);
+			info.setVersion(sysObject.getModifyDate().getDate().getTime());
+			info.setSha256(getHash256(bIs));
+			info.setAllowExternalMarketplace(true);
+			info.setUserCanWrite(true);
+			info.setSupportsUpdate(true);
+			info.setSupportsLocks(true);
+			info.setLastModifiedTime(formatTime(sysObject.getModifyDate().getDate()));
+			info.setUserFriendlyName("klemen");
 			ObjectMapper mapper = new ObjectMapper();
 
 			byte[] res = mapper.writeValueAsBytes(info);
 			String result = new String(res);
 
+			bIs.close();
+
 			return Response.status(Response.Status.OK).header("Content-Type", "application/json").entity(result).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.serverError().build();
+		} finally {
+			if (userSession != null && userSession.isConnected()) {
+				userSession.getSessionManager().release(userSession);
+			}
 		}
 	}
 
 	@Override
 	public Response getWopiDocumentContent(String document, String accessToken, SecurityContext securityContext) throws NotFoundException {
 		InputStream fis = null;
-		OutputStream toClient = null;
+		String loginName = getUserFromToken(accessToken);
+		String password = getPassFromToken(accessToken);
+		IDfSession userSession = null;
 		try {
-			// 文件的路径
-			// String path = filePath + name;
-			// File file = new File(path);
-			// 取得文件名
-			String filename = file.getName();
-			// 以流的形式下载文件
-			fis = new BufferedInputStream(new FileInputStream(file));
+			userSession = AdminServiceImpl.getSession(loginName, password);
+			IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			IDfSysObject sysObject = (IDfSysObject) dfDocument;
+			fis = new BufferedInputStream(sysObject.getContent());
 			byte[] buffer = new byte[fis.available()];
 			fis.read(buffer);
-			Logger.getLogger(this.getClass()).info("------------ getContentFile  ------------ " + file.getName());
-
-			byte[] content = FileUtils.readFileToByteArray(file);
+			Logger.getLogger(this.getClass()).info("------------ getContentFile  ------------ " + document);
 //@formatter:off
 			return Response.status(Response.Status.OK)
-					.header("X-WOPI-ItemVersion", file.lastModified())
-					.header("Content-Length", file.length())
+					.header("X-WOPI-ItemVersion", sysObject.getModifyDate().getDate().getTime())
+					.header("Content-Length", sysObject.getContentSize())
 					.header("Content-Type", "application/json")
-					.header("Content-Disposition", "attachment; filename=" + file.getName())
-					.entity(new ByteArrayInputStream(content)).build();
+					.header("Content-Disposition", "attachment; filename=" + sysObject.getId("r_object_id").toString() + "." + sysObject.getFormat().getDOSExtension())
+					.entity(new ByteArrayInputStream(buffer)).build();
 //@formatter:on
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			Logger.getLogger(this.getClass()).error(ex);
+//@formatter:off
+			return Response.status(Response.Status.fromStatusCode(500)).entity("Internal error: " + ex.getMessage())
+					.header("X-WOPI-LockFailureReason", ex.getMessage())
+					.build();
+//@formatter:on
 		} finally {
 			try {
 				fis.close();
+				if (userSession != null && userSession.isConnected())
+					userSession.getSessionManager().release(userSession);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		return Response.serverError().build();
 
 	}
 
 	@Override
 	public Response updateWopiDocumentContent(String document, String accessToken, File body, SecurityContext securityContext)
 			throws NotFoundException {
+
+		String loginName = getUserFromToken(accessToken);
+		String password = getPassFromToken(accessToken);
+		IDfSession userSession = null;
+
 		try {
-			Files.copy(body.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			userSession = AdminServiceImpl.getSession(loginName, password);
+			IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			IDfSysObject sysObj = (IDfSysObject) dfDocument;
+
+			if (!sysObj.isCheckedOut())
+				sysObj.checkout();
+			sysObj.setFile(body.getAbsolutePath());
+
+			String prevVersLabels = "";
+			Pattern p = Pattern.compile("^\\d+(\\.\\d+)+$");
+			String allVersions = sysObj.getAllRepeatingStrings("r_version_label", ",");
+			for (String ver : allVersions.split(",")) {
+				Matcher m = p.matcher(ver);
+				if (!ver.equals("CURRENT") && !m.find())
+					prevVersLabels = prevVersLabels + ver + ",";
+			}
+			if (prevVersLabels.length() > 0)
+				prevVersLabels = prevVersLabels.substring(0, prevVersLabels.length() - 1);
+
+			sysObj.fetch("dm_document");
+			boolean latest = ((IDfSysObject) sysObj).getLatestFlag();
+			IDfVersionPolicy vp = sysObj.getVersionPolicy();
+			boolean canVersionMinor = ((DfVersionPolicy) vp).canVersion(DfVersionPolicy.DF_NEXT_MINOR);
+			boolean canVersionMajor = ((DfVersionPolicy) vp).canVersion(DfVersionPolicy.DF_NEXT_MAJOR);
+			String msg1 = "objectname: " + sysObj.getObjectName() + " Latest? " + latest + " Immutable? " + sysObj.isImmutable() + " Frozen? "
+					+ sysObj.isFrozen() + " permit: " + sysObj.getPermit() + " canVersionMinor: " + canVersionMinor + " canVersionMajor: " + canVersionMajor;
+			Logger.getLogger(UploadServlet.class).info(msg1);
+
+			if (!latest) {
+				throw new ServerException("Not latest version");
+			}
+
+			String toAddVersions;
+			IDfId dfnewid = null;
+
+			VersionEnum versionToRaise = VersionEnum.MINOR;
+
+			if (versionToRaise.equals(VersionEnum.MINOR)) {
+				toAddVersions = vp.getNextMinorLabel() + ",CURRENT," + prevVersLabels;
+				dfnewid = sysObj.checkin(false, toAddVersions);
+			} else if (versionToRaise.equals(VersionEnum.MAJOR)) {
+				toAddVersions = vp.getNextMajorLabel() + ",CURRENT," + prevVersLabels;
+				dfnewid = sysObj.checkin(false, toAddVersions);
+			} else {
+				dfnewid = sysObj.checkin(false, "");
+			}
+			IDfSysObject newSysObject = (IDfSysObject) userSession.getObject(dfnewid);
+
+			// Files.copy(body.toPath(), file.toPath(),
+			// StandardCopyOption.REPLACE_EXISTING);
 			Logger.getLogger(this.getClass()).info("------------ save file ------------ ");
+
+			FileInfo info = new FileInfo();
+			info.setBaseFileName(newSysObject.getId("r_object_id").toString() + "." + newSysObject.getFormat().getDOSExtension());
+			info.setSize(newSysObject.getContentSize());
+			info.setOwnerId(newSysObject.getOwnerName());
+			info.setUserId(loginName);
+			info.setVersion(newSysObject.getModifyDate().getDate().getTime());
+			info.setSha256(getHash256(body));
+			info.setAllowExternalMarketplace(true);
+			info.setUserCanWrite(true);
+			info.setSupportsUpdate(true);
+			info.setSupportsLocks(true);
+			info.setLastModifiedTime(formatTime(newSysObject.getModifyDate().getDate()));
+			info.setUserFriendlyName(loginName);
+
+			ObjectMapper mapper = new ObjectMapper();
+			byte[] res = mapper.writeValueAsBytes(info);
+			String result = new String(res);
+
 //@formatter:off			
 			return Response.ok()
-					.header("X-WOPI-ItemVersion", file.lastModified())
-					.build();
+					.header("X-WOPI-ItemVersion", newSysObject.getModifyDate().getDate().getTime())
+					.header("Content-Type", "application/json").entity(result).build();
 //@formatter:on			
 		} catch (Exception e) {
 			Logger.getLogger(this.getClass()).error(e);
 			return Response.serverError().build();
 		} finally {
+			if (userSession != null && userSession.isConnected())
+				userSession.getSessionManager().release(userSession);
 		}
+	}
+
+	private String formatTime(Date date) {
+		SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.GERMANY);
+		ISO8601DATEFORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+		String formattedTime = ISO8601DATEFORMAT.format(new Date()) + "Z";
+		return formattedTime;
 	}
 
 	public static void checkCollaboraDockerIsRunning() {
@@ -346,25 +459,35 @@ String dockerStartCmd =
 		return Response.status(Response.Status.OK).entity(new ByteArrayInputStream(content)).build();
 	}
 
-	public static String getHash256(File file) {
+	public static String getHash256(File f) {
+		FileInputStream fs = null;
+		try {
+			fs = new FileInputStream(f);
+			return getHash256(fs);
+		} catch (Exception e) {
+			Logger.getLogger(WopiRest.class).error(e);
+		} finally {
+			try {
+				fs.close();
+			} catch (IOException e) {
+				Logger.getLogger(WopiRest.class).error(e);
+			}
+		}
+		return null;
+	}
+
+	public static String getHash256(InputStream is) {
 		String value = "";
-		// 获取hash值
 		try {
 			byte[] buffer = new byte[1024];
 			int numRead;
-			InputStream fis = new FileInputStream(file);
-			// 如果想使用SHA-1或SHA-256，则传入SHA-1,SHA-256
 			MessageDigest complete = MessageDigest.getInstance("SHA-256");
 			do {
-				// 从文件读到buffer
-				numRead = fis.read(buffer);
+				numRead = is.read(buffer);
 				if (numRead > 0) {
-					// 用读到的字节进行MD5的计算，第二个参数是偏移量
 					complete.update(buffer, 0, numRead);
 				}
 			} while (numRead != -1);
-
-			fis.close();
 			value = new String(Base64.getEncoder().encode(complete.digest()));
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
@@ -379,20 +502,30 @@ String dockerStartCmd =
 	@Override
 	public Response lockDocument(String document, String accessToken, String xWOPILock, String xWOPIOverride, String body,
 			SecurityContext securityContext) throws NotFoundException {
+
+		String loginName = getUserFromToken(accessToken);
+		String password = getPassFromToken(accessToken);
+		IDfSession userSession = null;
+
 		try {
+			userSession = AdminServiceImpl.getSession(loginName, password);
+			IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			IDfSysObject sysObj = (IDfSysObject) dfDocument;
 
 			if (xWOPIOverride.equals("UNLOCK")) {
+				ExplorerServiceImpl.getInstance().unlock(loginName, password, document);
 //@formatter:off			
 				return Response.status(Response.Status.OK)
-						.header("X-WOPI-Lock", "marko")
-						.header("X-WOPI-ItemVersion", file.lastModified())
+						.header("X-WOPI-Lock", loginName)
+						.header("X-WOPI-ItemVersion", sysObj.getModifyDate().getDate().getTime())
 						.build();
 //@formatter:on
 			} else {
+				sysObj.checkout();
 //@formatter:off			
 				return Response.status(Response.Status.OK)
-						.header("X-WOPI-Lock", "marko")
-						.header("X-WOPI-ItemVersion", file.lastModified())
+						.header("X-WOPI-Lock", loginName)
+						.header("X-WOPI-ItemVersion", sysObj.getModifyDate().getDate().getTime())
 						.build();
 //@formatter:on
 			}
@@ -401,9 +534,26 @@ String dockerStartCmd =
 		return Response.status(Response.Status.fromStatusCode(500)).entity("Internal error: " + e.getMessage())
 				.header("X-WOPI-LockFailureReason", e.getMessage())
 				.build();
-//@formatte:on			
+//@formatter:on			
+		} finally {
+			if (userSession != null && userSession.isConnected())
+				userSession.getSessionManager().release(userSession);
+		}
 	}
-}
+
 	
+	public String getUserFromToken(String token)
+	{
+		String decodedToken=new String(Base64.getDecoder().decode(token));
+		String user = decodedToken.split(":")[0];
+		return user;
+	}
+	
+	public String getPassFromToken(String token)
+	{
+		String decodedToken=new String(Base64.getDecoder().decode(token));
+		String pass = decodedToken.split(":")[1];
+		return pass;
+	}	
 	
 }

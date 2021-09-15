@@ -59,6 +59,7 @@ import si.telekom.dis.client.action.DocumentRemoveRendition;
 import si.telekom.dis.client.action.DocumentRemoveVersionLabel;
 import si.telekom.dis.client.action.DocumentVersions;
 import si.telekom.dis.client.action.DocumentView;
+import si.telekom.dis.client.action.DocumentViewCollabora;
 import si.telekom.dis.client.action.EditColIds;
 import si.telekom.dis.client.action.FolderUseForAiTraining;
 import si.telekom.dis.client.action.ImportDocument;
@@ -308,7 +309,10 @@ public class ExplorerPanel extends Composite {
 		logger.info("Running action " + actionId + " for object: " + r_object_id);
 		adb = null;
 		if (actionId.equals("document.view")) {
-			adb = new DocumentView(r_object_id);
+			if (MainPanel.getInstance().us.useColaboraOnlineForEdit)
+				adb = new DocumentViewCollabora(r_object_id);
+			else
+				adb = new DocumentView(r_object_id);
 		} else if (actionId.equals("document.edit")) {
 			String url = DocumentView.getUrl(r_object_id, "") + "&download=true";
 			String safeUriDocView = UriUtils.fromString(url).asString();
@@ -434,12 +438,10 @@ public class ExplorerPanel extends Composite {
 			});
 		else if (actionId.equals("document.classifyDoc")) {
 			adb = new ClassifyDocument(r_object_id);
-		}
-		else if (actionId.equals("document.decryptZipFile")) {
+		} else if (actionId.equals("document.decryptZipFile")) {
 			adb = new DecryptZipFile(r_object_id);
 		}
-		
-		
+
 		if (adb != null) {
 			// <- popup content changes here
 			adb.show();

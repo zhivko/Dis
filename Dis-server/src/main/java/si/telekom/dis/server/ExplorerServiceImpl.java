@@ -3034,7 +3034,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			query.setDQL("update dm_document object set r_lock_owner='', set r_lock_machine='', set r_lock_date=date('nulldate') where r_object_id='"
 					+ r_object_id + "'");
-			query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+			IDfCollection col = query.execute(userSession, IDfQuery.DF_EXEC_QUERY);
+			col.close();
 
 			Logger.getLogger(this.getClass()).info("Unlock for " + loginName + " for: " + r_object_id + " completed.");
 		} catch (Exception ex) {

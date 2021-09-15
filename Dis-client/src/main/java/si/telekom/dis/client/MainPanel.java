@@ -77,6 +77,7 @@ public class MainPanel extends Composite {
 	Label lbRepository;
 	Label lbContServVersion;
 	Label lbServerTime;
+	public String serverIp; 
 
 	public static AbsolutePanel getPanel() {
 		return instance.mainPanel;
@@ -278,20 +279,33 @@ public class MainPanel extends Composite {
 		 * // TODO Auto-generated catch block MainPanel.log(e.getMessage()); }
 		 */
 
+//		loginService.getServerIp(new AsyncCallback<String>() {
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				// TODO Auto-generated method stub
+//
+//			}
+//
+//			@Override
+//			public void onSuccess(String result) {
+//				DocumentViewCollabora dv = new DocumentViewCollabora("09000001927172ff", result);
+//				dv.show();
+//
+//			}
+//		});
+		
 		loginService.getServerIp(new AsyncCallback<String>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
-
+				MainPanel.log("Could not get server IP: " + caught.getMessage());
 			}
 
 			@Override
 			public void onSuccess(String result) {
-				DocumentViewCollabora dv = new DocumentViewCollabora("09000001927172ff", result);
-				dv.show();
-
+				MainPanel.getInstance().serverIp = result;
 			}
 		});
+		
 
 		initWidget(splitLayoutPanel);
 

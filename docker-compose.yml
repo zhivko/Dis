@@ -3,21 +3,29 @@ version: "3.5"
 services:
   collabora:
     image: collabora/code
-#    restart: unless-stopped
+    restart: unless-stopped
     environment:
-      - DONT_GEN_SSL_CERT="True"
-      - extra_params=--o:ssl.enable=false --o:ssl.termination=false --o:net.proto=IPv4
+#      - DONT_GEN_SSL_CERT="false"
+#      - extra_params=--o:ssl.enable=false --o:ssl.termination=false --o:net.proto=IPv4
+      - extra_params=--o:net.proto=IPv4
       - username=admin
       - password=admin
       - dictionaries=en_US
-      - domain=10.115.4.149
+      - domain=erender-test.ts.telekom.si
+      - server_name=collabora.ts.telekom.si
+      - cert_domain=collabora.ts.telekom.si
+#      - domain=erender-test.ts.telekom.si
     cap_add:
       - MKNOD
     ports:
       - "9980:9980"
     container_name: collabora
+#    volumes:
+#      - ${PWD}/src/main/resources/docker:/etc/loolwsd/certs
+#      - ${PWD}/src/main/resources/docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml
     privileged: true
 
   wopivalidator:
     image: tylerbutler/wopi-validator
 #    restart: unless-stopped
+

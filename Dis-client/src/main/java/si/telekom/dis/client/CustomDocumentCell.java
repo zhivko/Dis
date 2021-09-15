@@ -117,7 +117,7 @@ public class CustomDocumentCell extends AbstractCell<Document> {
 				if (value.isClassified)
 					sb.appendHtmlConstant("<strong>" + value.state_id + "</strong>");
 				else
-					sb.appendHtmlConstant("<strong>unclassified</strong>");
+					sb.appendHtmlConstant("<strong>no_profile_asigned</strong>");
 
 			// details
 			if (value.details != null) {

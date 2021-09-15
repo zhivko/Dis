@@ -351,6 +351,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+                
+  /profiles/{profileId}/attributes:
+    get:
+      tags:
+      - provisioning
+      summary: get properties of a document
+      operationId: getProfileAttributes
+      description: retrieve properties and renditions of a document in Dis platform
+      security:
+      - BasicAuth: []
+      parameters:
+      - in: header
+        name: X-Transaction-Id
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - in: path
+        name: profileId
+        description: id of profile
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: wizard
+        description: type of wizard to retrieve attributes for
+        required: false
+        example: newdoc, import, classify
+        schema:
+          type: string          
+      - in: query
+        name: roleId
+        description: roleId for which attributes is requested
+        required: false
+        example: coordinator, user, administrator, etc.
+        schema:
+          type: string          
+      - in: query
+        name: stateId
+        description: stateId for which attributes is requested
+        required: false
+        example: draft, effective, archive, etc.
+        schema:
+          type: string          
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileAttributesResponse'
+        '404':
+          description: document not found        
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'                
+                
 components:
   securitySchemes:
     BasicAuth:
@@ -570,3 +629,28 @@ components:
           description: (optional) Text that provides more details and corrective actions related to the error.
         referenceError:
           $ref: '#/components/schemas/Error'
+    ProfileAttribute:
+      type: object
+      properties:
+        name:
+          type: string
+          description: attribute name
+          example: title
+        values:
+          type: string
+          description: values of atribute
+          example: value1, value2
+        mandatory:
+          type: boolean
+          description: is attribute mandatory
+          example: true, false
+                      
+    ProfileAttributesResponse:
+      type: object
+      description: Array of attributes
+      properties:
+        attributes:
+          type: array
+          description: A list of attributes to be set on document
+          items:
+            $ref: '#/components/schemas/ProfileAttribute'          

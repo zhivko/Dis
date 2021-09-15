@@ -39,6 +39,10 @@
 			<param-value>si.telekom.dis.server.rest.DisRest</param-value>
 		</init-param>
 		<init-param>
+			<param-name>ProfilesApi.implementation</param-name>
+			<param-value>si.telekom.dis.server.rest.DisProfileServiceRest</param-value>
+		</init-param>
+		<init-param>
 			<param-name>WopiApi.implementation</param-name>
 			<param-value>si.telekom.dis.server.rest.WopiRest</param-value>
 		</init-param>

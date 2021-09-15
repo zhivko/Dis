@@ -33,7 +33,6 @@ import org.glassfish.jersey.grizzly2.servlet.GrizzlyWebContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.test.JerseyTest;
-import org.glassfish.jersey.test.TestProperties;
 import org.glassfish.jersey.uri.UriComponent;
 import org.junit.After;
 import org.junit.Before;
@@ -47,6 +46,8 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import si.telekom.dis.server.rest.Attribute;
 import si.telekom.dis.server.rest.Document;
 import si.telekom.dis.server.rest.DocumentContent;
+import si.telekom.dis.server.rest.ProfileAttribute;
+import si.telekom.dis.server.rest.ProfileAttributesResponse;
 import si.telekom.dis.server.rest.QueryDocumentsResponse;
 import si.telekom.dis.server.rest.UpdateDocumentRequest;
 import si.telekom.dis.server.rest.UpdateDocumentRequest.VersionEnum;
@@ -93,6 +94,7 @@ public class RestTest extends JerseyTest {
 			initParams.put(ServerProperties.PROVIDER_PACKAGES, value1);
 			initParams.put(ServerProperties.PROVIDER_CLASSNAMES, value2);
 			initParams.put("DocumentsApi.implementation", "si.telekom.dis.server.rest.DisRest");
+			initParams.put("ProfilesApi.implementation", "si.telekom.dis.server.rest.DisProfileServiceRest");
 
 			HashMap<String, String> contextInitParams = new HashMap<>();
 
@@ -127,7 +129,10 @@ public class RestTest extends JerseyTest {
 			// webappContext.setInitParameter(paramName, paramValue);
 			// }
 
-			File f = new File("./src/main/filters/prod.properties");
+			
+			// make sure that before testing you run mvn package with apropriate profile: test
+			// mvn package -P test -DskipTests -Dgwt.skipCompilation=true
+			File f = new File("./src/main/filters/test.properties");
 			Scanner input = new Scanner(f);
 			while (input.hasNextLine()) {
 				String line = input.nextLine();
@@ -746,4 +751,49 @@ public class RestTest extends JerseyTest {
 		return false;
 	}
 
+	
+	@Test
+	public void testProfileAttributes() throws InterruptedException {
+
+		while (!AdminServiceImpl.started)
+			Thread.currentThread().sleep(500);
+
+		HttpAuthenticationFeature feature = getFeature();
+		Client client = ClientBuilder.newClient();
+		client.property(ClientProperties.CONNECT_TIMEOUT, 10000000);
+		client.property(ClientProperties.READ_TIMEOUT, 10000000);
+
+		client.register(feature);
+
+		String X_Transaction_Id = String.valueOf(System.currentTimeMillis());
+		
+		String profileId = "mob_subscriber_document";
+		
+		Response response = client.target(baseUri.toString() + "profiles/" + profileId + "/attributes")
+				.queryParam("wizard", "newdoc").request().get();
+		
+		String json = response.readEntity(String.class);
+		System.out.println(json);
+		ObjectMapper objectMapper = new ObjectMapper();
+		try {
+			ProfileAttributesResponse profAttResponse = objectMapper.readValue(json.getBytes(), ProfileAttributesResponse.class);
+			for (ProfileAttribute pa : profAttResponse.getAttributes()) {
+				System.out.println(pa.toString());
+			}
+			
+			
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+		
+	}
+	
 }
