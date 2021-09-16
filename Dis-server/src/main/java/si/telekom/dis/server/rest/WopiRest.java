@@ -18,8 +18,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -50,11 +50,13 @@ import org.mandas.docker.client.DockerClient.ListContainersParam;
 import org.mandas.docker.client.builder.jersey.JerseyDockerClientBuilder;
 import org.mandas.docker.client.messages.Container;
 
+import com.documentum.fc.client.DfAuthenticationException;
 import com.documentum.fc.client.DfVersionPolicy;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.client.IDfVersionPolicy;
+import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfId;
 import com.documentum.fc.common.IDfId;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,7 +66,6 @@ import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
 import si.telekom.dis.server.UploadServlet;
 import si.telekom.dis.server.rest.UpdateDocumentRequest.VersionEnum;
-import si.telekom.dis.server.restCommon.User;
 import si.telekom.dis.server.wopi.FileInfo;
 import si.telekom.dis.server.wopi.api.NotFoundException;
 import si.telekom.dis.server.wopi.api.impl.WopiApiServiceImpl;
@@ -94,6 +95,9 @@ import si.telekom.dis.shared.ServerException;
 		
 		
 		https://erender-test:9980/hosting/capabilities
+		https://localhost/hosting/discovery
+
+		https://klemen-hp-elitebook-850-g7-notebook-pc.ts.telekom.si:9980/hosting/discovery
 
  */
 
@@ -104,12 +108,19 @@ public class WopiRest extends WopiApiServiceImpl {
 		super();
 	}
 
+	/**
+	 * https://www.collaboraoffice.com/libreoffice-online-api/
+	 */
 	@Override
 	public Response getCheckFileInfo(String document, String accessToken, SecurityContext securityContext) throws NotFoundException {
 		FileInfo info = new FileInfo();
 
 		String loginName = getUserFromToken(accessToken);
 		String password = getPassFromToken(accessToken);
+		String action = getActionFromToken(accessToken);
+
+		Logger.getLogger(this.getClass()).info("-----  getCheckFileInfo user:" + loginName + " action: " + action);
+
 		IDfSession userSession = null;
 
 		BufferedInputStream bIs;
@@ -118,7 +129,6 @@ public class WopiRest extends WopiApiServiceImpl {
 
 			IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
 			IDfSysObject sysObject = (IDfSysObject) dfDocument;
-			Logger.getLogger(this.getClass()).info("------------ get getCheckFileInfo  ------------ " + document);
 
 			bIs = new BufferedInputStream(sysObject.getContent());
 			byte[] buffer = new byte[bIs.available()];
@@ -131,11 +141,12 @@ public class WopiRest extends WopiApiServiceImpl {
 			info.setVersion(sysObject.getModifyDate().getDate().getTime());
 			info.setSha256(getHash256(bIs));
 			info.setAllowExternalMarketplace(true);
-			info.setUserCanWrite(true);
-			info.setSupportsUpdate(true);
-			info.setSupportsLocks(true);
+			info.setUserCanWrite(action.equals("edit") ? true : false);
+			info.setSupportsUpdate(action.equals("edit") ? true : false);
+			info.setSupportsLocks(action.equals("edit") ? true : false);
 			info.setLastModifiedTime(formatTime(sysObject.getModifyDate().getDate()));
-			info.setUserFriendlyName("klemen");
+			info.setUserFriendlyName(loginName);
+
 			ObjectMapper mapper = new ObjectMapper();
 
 			byte[] res = mapper.writeValueAsBytes(info);
@@ -159,15 +170,21 @@ public class WopiRest extends WopiApiServiceImpl {
 		InputStream fis = null;
 		String loginName = getUserFromToken(accessToken);
 		String password = getPassFromToken(accessToken);
+		String action = getActionFromToken(accessToken);
 		IDfSession userSession = null;
+
+		Logger.getLogger(this.getClass()).info("----- getWopiDocumentContent user:" + loginName + " action: " + action);
+
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			//IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			IDfPersistentObject dfDocument = userSession.getObjectByQualification(
+					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + document + "')");
+			
 			IDfSysObject sysObject = (IDfSysObject) dfDocument;
 			fis = new BufferedInputStream(sysObject.getContent());
 			byte[] buffer = new byte[fis.available()];
 			fis.read(buffer);
-			Logger.getLogger(this.getClass()).info("------------ getContentFile  ------------ " + document);
 //@formatter:off
 			return Response.status(Response.Status.OK)
 					.header("X-WOPI-ItemVersion", sysObject.getModifyDate().getDate().getTime())
@@ -201,15 +218,30 @@ public class WopiRest extends WopiApiServiceImpl {
 
 		String loginName = getUserFromToken(accessToken);
 		String password = getPassFromToken(accessToken);
+		String action = getActionFromToken(accessToken);
 		IDfSession userSession = null;
+
+		Logger.getLogger(this.getClass()).info("----- updateWopiDocumentContent user:" + loginName + " action: " + action);
 
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			// IDfPersistentObject dfDocument = userSession.getObject(new
+			// DfId(document));
+			IDfPersistentObject dfDocument = userSession.getObjectByQualification(
+					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + document + "')");
 			IDfSysObject sysObj = (IDfSysObject) dfDocument;
 
-			if (!sysObj.isCheckedOut())
+			if (sysObj == null) {
+				String msg = "Such document doesn't exist or you dont have permission to view or edit.";
+				Logger.getLogger(this.getClass()).warn(msg);
+				return Response.status(Response.Status.valueOf("404")).entity(msg).build();
+			}
+
+			if (!sysObj.isCheckedOut()) {
+				Logger.getLogger(this.getClass()).warn("Document is not checked out - checkout()");
 				sysObj.checkout();
+				Logger.getLogger(this.getClass()).warn("Document is not checked out - checkout() done.");
+			}
 			sysObj.setFile(body.getAbsolutePath());
 
 			String prevVersLabels = "";
@@ -251,10 +283,7 @@ public class WopiRest extends WopiApiServiceImpl {
 				dfnewid = sysObj.checkin(false, "");
 			}
 			IDfSysObject newSysObject = (IDfSysObject) userSession.getObject(dfnewid);
-
-			// Files.copy(body.toPath(), file.toPath(),
-			// StandardCopyOption.REPLACE_EXISTING);
-			Logger.getLogger(this.getClass()).info("------------ save file ------------ ");
+			newSysObject.fetch(null);
 
 			FileInfo info = new FileInfo();
 			info.setBaseFileName(newSysObject.getId("r_object_id").toString() + "." + newSysObject.getFormat().getDOSExtension());
@@ -264,9 +293,9 @@ public class WopiRest extends WopiApiServiceImpl {
 			info.setVersion(newSysObject.getModifyDate().getDate().getTime());
 			info.setSha256(getHash256(body));
 			info.setAllowExternalMarketplace(true);
-			info.setUserCanWrite(true);
-			info.setSupportsUpdate(true);
-			info.setSupportsLocks(true);
+			info.setUserCanWrite(action.equals("edit") ? true : false);
+			info.setSupportsUpdate(action.equals("edit") ? true : false);
+			info.setSupportsLocks(action.equals("edit") ? true : false);
 			info.setLastModifiedTime(formatTime(newSysObject.getModifyDate().getDate()));
 			info.setUserFriendlyName(loginName);
 
@@ -279,8 +308,17 @@ public class WopiRest extends WopiApiServiceImpl {
 					.header("X-WOPI-ItemVersion", newSysObject.getModifyDate().getDate().getTime())
 					.header("Content-Type", "application/json").entity(result).build();
 //@formatter:on			
-		} catch (Exception e) {
+		} catch (DfAuthenticationException e) {
 			Logger.getLogger(this.getClass()).error(e);
+			return Response.status(Response.Status.valueOf("401")).entity(e.getMessage()).build();
+		} catch (Exception e) {
+
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			String sStackTrace = sw.toString(); // stack trace as a string
+
+			Logger.getLogger(this.getClass()).error(sStackTrace);
 			return Response.serverError().build();
 		} finally {
 			if (userSession != null && userSession.isConnected())
@@ -505,23 +543,42 @@ String dockerStartCmd =
 
 		String loginName = getUserFromToken(accessToken);
 		String password = getPassFromToken(accessToken);
+		String action = getActionFromToken(accessToken);
+
 		IDfSession userSession = null;
+
+		Logger.getLogger(this.getClass()).info("----- lockDocument user:" + loginName + " action: " + action);
 
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			//IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			IDfPersistentObject dfDocument = userSession.getObjectByQualification(
+					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + document + "')");
+			
 			IDfSysObject sysObj = (IDfSysObject) dfDocument;
 
 			if (xWOPIOverride.equals("UNLOCK")) {
-				ExplorerServiceImpl.getInstance().unlock(loginName, password, document);
+				Logger.getLogger(this.getClass()).info("unlock lockOwner:" + sysObj.getLockOwner() + " user: " + loginName);
+				if (!sysObj.getLockOwner().equals("") && !sysObj.getLockOwner().equals(loginName)) {
+					// try unlock
+					ExplorerServiceImpl.getInstance().unlock(loginName, password, document);
+				}
 //@formatter:off			
 				return Response.status(Response.Status.OK)
-						.header("X-WOPI-Lock", loginName)
 						.header("X-WOPI-ItemVersion", sysObj.getModifyDate().getDate().getTime())
 						.build();
 //@formatter:on
 			} else {
-				sysObj.checkout();
+				try {
+					sysObj.checkout();
+				} catch (DfException ex1) {
+//@formatter:off			
+					return Response.status(Response.Status.fromStatusCode(409))
+							.entity("Internal error: " + ex1.getMessage())
+							.header("X-WOPI-LockFailureReason", ex1.getMessage()).build();
+//@formatter:on			
+
+				}
 //@formatter:off			
 				return Response.status(Response.Status.OK)
 						.header("X-WOPI-Lock", loginName)
@@ -541,19 +598,22 @@ String dockerStartCmd =
 		}
 	}
 
-	
-	public String getUserFromToken(String token)
-	{
-		String decodedToken=new String(Base64.getDecoder().decode(token));
+	public String getActionFromToken(String token) {
+		String decodedToken = new String(Base64.getDecoder().decode(token));
+		String action = decodedToken.split(":")[2];
+		return action;
+	}
+
+	public String getUserFromToken(String token) {
+		String decodedToken = new String(Base64.getDecoder().decode(token));
 		String user = decodedToken.split(":")[0];
 		return user;
 	}
-	
-	public String getPassFromToken(String token)
-	{
-		String decodedToken=new String(Base64.getDecoder().decode(token));
+
+	public String getPassFromToken(String token) {
+		String decodedToken = new String(Base64.getDecoder().decode(token));
 		String pass = decodedToken.split(":")[1];
 		return pass;
-	}	
-	
+	}
+
 }

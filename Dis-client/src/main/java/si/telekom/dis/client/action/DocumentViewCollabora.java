@@ -55,13 +55,18 @@ public class DocumentViewCollabora extends WindowBox {
 	private final static LoginServiceAsync loginService = GWT.create(LoginService.class);
 	private final static Logger logger = java.util.logging.Logger.getLogger("mylogger");
 	ScrollPanel sp;
+	String action;
 
-	public DocumentViewCollabora(String r_object_id_) {
+	public DocumentViewCollabora(String r_object_id_, String action_) {
 		r_object_id = r_object_id_;
+		this.action = action_;
 
 		// setText("Vsebina dokumenta (barkoda: " +
 		// MenuPanel.activeExplorerInstance.selectedDocument.object_name + ")");
-		setText("Vsebina dokumenta (r_object_id: " + r_object_id_ + ")");
+		if(action.equals("edit"))
+			setText("Urejanje dokumenta (r_object_id: " + r_object_id_ + ")");
+		else
+			setText("Prikaz vsebine dokumenta (r_object_id: " + r_object_id_ + ")");
 
 		setGlassEnabled(true);
 
@@ -151,7 +156,7 @@ public class DocumentViewCollabora extends WindowBox {
 			form.setVisible(false);
 
 			Hidden access_token = new Hidden();
-			access_token.setValue(b64encode(MainPanel.getInstance().loginName + ":" + MainPanel.getInstance().loginPass));
+			access_token.setValue(b64encode(MainPanel.getInstance().loginName + ":" + MainPanel.getInstance().loginPass + ":" + action));
 			access_token.getElement().setAttribute("name", "access_token");
 			Hidden access_token_ttl = new Hidden();
 			access_token_ttl.setValue("10000000");

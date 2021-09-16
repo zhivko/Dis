@@ -12,20 +12,19 @@ services:
       - password=admin
       - dictionaries=en_US
       - domain=erender-test.ts.telekom.si
-      - server_name=collabora.ts.telekom.si
-      - cert_domain=collabora.ts.telekom.si
-#      - domain=erender-test.ts.telekom.si
+      - server_name=klemen-HP-EliteBook-850-G7-Notebook-PC.ts.telekom.si
+      - domain=ts.telekom.si
     cap_add:
       - MKNOD
     ports:
       - "9980:9980"
     container_name: collabora
-#    volumes:
-#      - ${PWD}/src/main/resources/docker:/etc/loolwsd/certs
-#      - ${PWD}/src/main/resources/docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml
+    volumes:
+      - ${PWD}/src/main/resources/docker:/etc/loolwsd/certs
+      - ${PWD}/src/main/resources/docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml
     privileged: true
 
   wopivalidator:
     image: tylerbutler/wopi-validator
-#    restart: unless-stopped
+    restart: unless-stopped
 

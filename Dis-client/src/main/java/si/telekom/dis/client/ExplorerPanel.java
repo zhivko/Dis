@@ -310,13 +310,19 @@ public class ExplorerPanel extends Composite {
 		adb = null;
 		if (actionId.equals("document.view")) {
 			if (MainPanel.getInstance().us.useColaboraOnlineForEdit)
-				adb = new DocumentViewCollabora(r_object_id);
+				adb = new DocumentViewCollabora(r_object_id, "view");
 			else
 				adb = new DocumentView(r_object_id);
 		} else if (actionId.equals("document.edit")) {
-			String url = DocumentView.getUrl(r_object_id, "") + "&download=true";
-			String safeUriDocView = UriUtils.fromString(url).asString();
-			Window.open(URL.encode(safeUriDocView), "_blank", "enabled");
+			if (MainPanel.getInstance().us.useColaboraOnlineForEdit)
+				adb = new DocumentViewCollabora(r_object_id, "edit");
+			else
+			{
+				String url = DocumentView.getUrl(r_object_id, "") + "&download=true";
+				String safeUriDocView = UriUtils.fromString(url).asString();
+				Window.open(URL.encode(safeUriDocView), "_blank", "enabled");
+			}
+
 		} else if (actionId.equals("document.properties")) {
 			adb = new DocumentProperties(r_object_id);
 		} else if (actionId.equals("document.delete")) {

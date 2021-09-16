@@ -144,10 +144,21 @@ paths:
       responses:
         "200":
           description: Operation was successful
+        "401":
+          description: Unautorized
         "403":
           description: Access denied
         "404":
-          description: Resource does not exists        
+          description: Not found        
+        "409":
+          description: Conflict - Lock mismatch/locked by another interface; an X-WOPI-Lock response header containing the value of the current lock on the file must always be included when using this response code
+        "413":
+          description: Request entity too large - File is too large; the maximum file size is host-specific        
+        "500":
+          description: Server error        
+        "501":
+          description: Not implemented        
+                  
 components:
   securitySchemes:
     ApiKeyAuth:

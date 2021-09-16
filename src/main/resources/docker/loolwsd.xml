@@ -108,6 +108,7 @@
         <host desc="The IPv6 loopback (localhost) address.">::1</host>
         <host desc="The IPv4 private 172.17.0.0/16 subnet (Docker).">172\.17\.[0-9]{1,3}\.[0-9]{1,3}</host>
         <host desc="Ditto, but as IPv4-mapped IPv6 addresses">::ffff:172\.17\.[0-9]{1,3}\.[0-9]{1,3}</host>
+        <host desc="My domain">ts\.telekom\.si</host>
       </post_allow>
       <frame_ancestors desc="Specify who is allowed to embed the LO Online iframe (loolwsd and WOPI host are always allowed). Separate multiple hosts by space."></frame_ancestors>
       <connection_timeout_secs desc="Specifies the connection, send, recv timeout in seconds for connections initiated by loolwsd (such as WOPI connections)." type="int" default="30"></connection_timeout_secs>
@@ -120,9 +121,9 @@
         <!-- <cert_file_path desc="Path to the cert file" relative="false">/etc/loolwsd/cert.pem</cert_file_path> -->
         <!-- <key_file_path desc="Path to the key file" relative="false">/etc/loolwsd/key.pem</key_file_path> -->
         <!-- <ca_file_path desc="Path to the ca file" relative="false">/etc/loolwsd/ca-chain.cert.pem</ca_file_path> -->
-        <cert_file_path desc="Path to the cert file" relative="false">/etc/loolwsd/certs/erender_test.ts.telekom.si.cer</cert_file_path>
-        <key_file_path desc="Path to the key file" relative="false">/etc/loolwsd/certs/erender_test.ts.telekom.si.key</key_file_path>
-        <ca_file_path desc="Path to the ca file" relative="false">/etc/loolwsd/certs/erender_test.ts.telekom.si-chain.cer</ca_file_path>
+        <cert_file_path desc="Path to the cert file" relative="false">/etc/loolwsd/certs/mydomain.cer</cert_file_path>
+        <key_file_path desc="Path to the key file" relative="false">/etc/loolwsd/certs/mydomain.key</key_file_path>
+        <ca_file_path desc="Path to the ca file" relative="false">/etc/loolwsd/certs/mydomain-chain.cer</ca_file_path>
         
         
         <cipher_list desc="List of OpenSSL ciphers to accept" default="ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"></cipher_list>
@@ -139,8 +140,8 @@
       <seccomp desc="Should we use the seccomp system call filtering." type="bool" default="true">true</seccomp>
       <capabilities desc="Should we require capabilities to isolate processes into chroot jails" type="bool" default="true">true</capabilities>
       <jwt_expiry_secs desc="Time in seconds before the Admin Console's JWT token expires" type="int" default="1800">1800</jwt_expiry_secs>
-      <enable_macros_execution desc="Specifies whether the macro execution is enabled in general. This will enable Basic, Beanshell, Javascript and Python scripts. If it is set to false, the macro_security_level is ignored. If it is set to true, the mentioned entry specified the level of macro security." type="bool" default="false">false</enable_macros_execution>
-      <macro_security_level desc="Level of Macro security. 1 (Medium) Confirmation required before executing macros from untrusted sources. 0 (Low, not recommended) All macros will be executed without confirmation." type="int" default="1">1</macro_security_level>
+      <enable_macros_execution desc="Specifies whether the macro execution is enabled in general. This will enable Basic, Beanshell, Javascript and Python scripts. If it is set to false, the macro_security_level is ignored. If it is set to true, the mentioned entry specified the level of macro security." type="bool" default="false">true</enable_macros_execution>
+      <macro_security_level desc="Level of Macro security. 1 (Medium) Confirmation required before executing macros from untrusted sources. 0 (Low, not recommended) All macros will be executed without confirmation." type="int" default="1">0</macro_security_level>
     </security>
 
     <watermark>
@@ -149,13 +150,13 @@
     </watermark>
 
     <welcome>
-      <enable type="bool" desc="Controls whether the welcome screen should be shown to the users on new install and updates." default="true">true</enable>
+      <enable type="bool" desc="Controls whether the welcome screen should be shown to the users on new install and updates." default="true">false</enable>
       <enable_button type="bool" desc="Controls whether the welcome screen should have an explanatory button instead of an X button to close the dialog." default="false">false</enable_button>
       <path desc="Path to 'welcome-$lang.html' files served on first start or when the version changes. When empty, defaults to the Release notes." type="path" relative="true" default="loleaflet/welcome"></path>
     </welcome>
 
     <user_interface>
-      <mode type="string" desc="Controls the user interface style (classic|notebookbar)" default="classic">classic</mode>
+      <mode type="string" desc="Controls the user interface style (classic|notebookbar)" default="classic">notebookbar</mode>
     </user_interface>
 
     <storage desc="Backend storage">
@@ -168,6 +169,7 @@
             <host desc="Regex pattern of hostname to allow or deny." allow="true">172\.3[01]\.[0-9]{1,3}\.[0-9]{1,3}</host>
             <host desc="Regex pattern of hostname to allow or deny." allow="true">192\.168\.[0-9]{1,3}\.[0-9]{1,3}</host>
             <host desc="Regex pattern of hostname to allow or deny." allow="false">192\.168\.1\.1</host>
+            <host desc="Regex pattern of hostname to allow or deny." allow="false">klemen-HP-EliteBook-850-G7-Notebook-PC\.ts\.telekom\.si</host>
             <max_file_size desc="Maximum document size in bytes to load. 0 for unlimited." type="uint">0</max_file_size>
             <reuse_cookies desc="When enabled, cookies from the browser will be captured and set on WOPI requests." type="bool" default="false">false</reuse_cookies>
             <locking desc="Locking settings">

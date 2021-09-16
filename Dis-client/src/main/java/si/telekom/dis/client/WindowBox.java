@@ -44,6 +44,9 @@ public class WindowBox extends PopupPanel implements SupportsShow {
 
 		contentPanel = new VerticalPanel();
 		vp.add(contentPanel);
+		
+		vp.setSize("100%", "100%");
+		contentPanel.setWidth("100%");
 
 		hp = new HorizontalPanel();
 		okButton = new Button("OK");
@@ -110,14 +113,14 @@ public class WindowBox extends PopupPanel implements SupportsShow {
 
 	protected int getMaxWidth()
 	{
-		return (int) Window.getClientWidth() * 3 / 4;
+		return (int) Window.getClientWidth() * 7 / 8;
 	}
 	
 	protected String getMaxWidthPx() {
 		return (String.valueOf(getMaxWidth()) + "px");
 	}
 	protected String getMaxHeightPx() {
-		return String.valueOf(((int) Window.getClientHeight() * 3 / 4)) + "px";
+		return String.valueOf(((int) Window.getClientHeight() * 7 / 8)) + "px";
 	}
 
 	public ExplorerServiceAsync getExplorerService() {

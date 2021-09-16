@@ -32,6 +32,9 @@ public class MyTxtBox extends Composite implements MyHasValue<String> {
 		p.add(textBox);
 		p.add(caption);
 		p.add(space);
+		
+		textBox.setWidth("100%");
+		caption.setWidth("100%");
 
 		caption.setStyleName("MyTxtBox.label");
 
