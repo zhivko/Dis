@@ -52,6 +52,7 @@ import org.mandas.docker.client.messages.Container;
 
 import com.documentum.fc.client.DfAuthenticationException;
 import com.documentum.fc.client.DfVersionPolicy;
+import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
@@ -65,6 +66,7 @@ import io.swagger.annotations.Api;
 import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
 import si.telekom.dis.server.UploadServlet;
+import si.telekom.dis.server.WsServer;
 import si.telekom.dis.server.rest.UpdateDocumentRequest.VersionEnum;
 import si.telekom.dis.server.wopi.FileInfo;
 import si.telekom.dis.server.wopi.api.NotFoundException;
@@ -119,6 +121,13 @@ public class WopiRest extends WopiApiServiceImpl {
 		String password = getPassFromToken(accessToken);
 		String action = getActionFromToken(accessToken);
 
+		if (document.split("~").length != 2) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).header("Content-Type", "application/json").entity("Rendition not passed.")
+					.build();
+		}
+		String r_object_id = document.split("~")[0];
+		String rendition = document.split("~")[1];
+
 		Logger.getLogger(this.getClass()).info("-----  getCheckFileInfo user:" + loginName + " action: " + action);
 
 		IDfSession userSession = null;
@@ -127,24 +136,36 @@ public class WopiRest extends WopiApiServiceImpl {
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
 
-			IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			IDfPersistentObject dfDocument = userSession.getObject(new DfId(r_object_id));
 			IDfSysObject sysObject = (IDfSysObject) dfDocument;
 
-			bIs = new BufferedInputStream(sysObject.getContent());
+			IDfCollection colRendition = sysObject.getRenditions("full_format, content_size, set_time");
+			Long contentSize = null;
+			Date time = null;
+			while (colRendition.next()) {
+				if (colRendition.getString("full_format").equals(rendition)) {
+					contentSize = colRendition.getLong("content_size");
+					time = colRendition.getTime("set_time").getDate();
+					break;
+				}
+			}
+			colRendition.close();
+
+			bIs = new BufferedInputStream(sysObject.getContentEx(rendition, 0));
 			byte[] buffer = new byte[bIs.available()];
 			bIs.read(buffer);
 
-			info.setBaseFileName(sysObject.getId("r_object_id").toString() + "." + sysObject.getFormat().getDOSExtension());
-			info.setSize(sysObject.getContentSize());
+			info.setBaseFileName(sysObject.getId("r_object_id").toString() + "." + rendition);
+			info.setSize(contentSize);
 			info.setOwnerId(sysObject.getOwnerName());
 			info.setUserId(loginName);
-			info.setVersion(sysObject.getModifyDate().getDate().getTime());
+			info.setVersion(String.valueOf(sysObject.getModifyDate().getDate().getTime()));
 			info.setSha256(getHash256(bIs));
 			info.setAllowExternalMarketplace(true);
 			info.setUserCanWrite(action.equals("edit") ? true : false);
 			info.setSupportsUpdate(action.equals("edit") ? true : false);
 			info.setSupportsLocks(action.equals("edit") ? true : false);
-			info.setLastModifiedTime(formatTime(sysObject.getModifyDate().getDate()));
+			info.setLastModifiedTime(formatTime(time));
 			info.setUserFriendlyName(loginName);
 
 			ObjectMapper mapper = new ObjectMapper();
@@ -167,7 +188,7 @@ public class WopiRest extends WopiApiServiceImpl {
 
 	@Override
 	public Response getWopiDocumentContent(String document, String accessToken, SecurityContext securityContext) throws NotFoundException {
-		InputStream fis = null;
+		InputStream bIs = null;
 		String loginName = getUserFromToken(accessToken);
 		String password = getPassFromToken(accessToken);
 		String action = getActionFromToken(accessToken);
@@ -175,16 +196,24 @@ public class WopiRest extends WopiApiServiceImpl {
 
 		Logger.getLogger(this.getClass()).info("----- getWopiDocumentContent user:" + loginName + " action: " + action);
 
+		if (document.split("~").length != 2) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).header("Content-Type", "application/json").entity("Rendition not passed.")
+					.build();
+		}
+		String r_object_id = document.split("~")[0];
+		String rendition = document.split("~")[1];
+
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			//IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			// IDfPersistentObject dfDocument = userSession.getObject(new
+			// DfId(document));
 			IDfPersistentObject dfDocument = userSession.getObjectByQualification(
-					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + document + "')");
-			
+					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + r_object_id + "')");
 			IDfSysObject sysObject = (IDfSysObject) dfDocument;
-			fis = new BufferedInputStream(sysObject.getContent());
-			byte[] buffer = new byte[fis.available()];
-			fis.read(buffer);
+
+			bIs = new BufferedInputStream(sysObject.getContentEx(rendition, 0));
+			byte[] buffer = new byte[bIs.available()];
+			bIs.read(buffer);
 //@formatter:off
 			return Response.status(Response.Status.OK)
 					.header("X-WOPI-ItemVersion", sysObject.getModifyDate().getDate().getTime())
@@ -202,7 +231,8 @@ public class WopiRest extends WopiApiServiceImpl {
 //@formatter:on
 		} finally {
 			try {
-				fis.close();
+				if (bIs != null)
+					bIs.close();
 				if (userSession != null && userSession.isConnected())
 					userSession.getSessionManager().release(userSession);
 			} catch (IOException e) {
@@ -213,12 +243,15 @@ public class WopiRest extends WopiApiServiceImpl {
 	}
 
 	@Override
-	public Response updateWopiDocumentContent(String document, String accessToken, File body, SecurityContext securityContext)
-			throws NotFoundException {
-
+	public Response updateWopiDocumentContent(String document, String accessToken, Boolean xLOOLWOPIIsModifiedByUser, Boolean xLOOLWOPIIsAutosave,
+			Boolean xLOOLWOPIIsExitSave, String xLOOLWOPITimestamp, File body, SecurityContext securityContext) throws NotFoundException {
 		String loginName = getUserFromToken(accessToken);
 		String password = getPassFromToken(accessToken);
 		String action = getActionFromToken(accessToken);
+
+		String r_object_id = document.split("~")[0];
+		String rendition = document.split("~")[1];
+
 		IDfSession userSession = null;
 
 		Logger.getLogger(this.getClass()).info("----- updateWopiDocumentContent user:" + loginName + " action: " + action);
@@ -228,7 +261,7 @@ public class WopiRest extends WopiApiServiceImpl {
 			// IDfPersistentObject dfDocument = userSession.getObject(new
 			// DfId(document));
 			IDfPersistentObject dfDocument = userSession.getObjectByQualification(
-					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + document + "')");
+					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + r_object_id + "')");
 			IDfSysObject sysObj = (IDfSysObject) dfDocument;
 
 			if (sysObj == null) {
@@ -237,66 +270,98 @@ public class WopiRest extends WopiApiServiceImpl {
 				return Response.status(Response.Status.valueOf("404")).entity(msg).build();
 			}
 
-			if (!sysObj.isCheckedOut()) {
-				Logger.getLogger(this.getClass()).warn("Document is not checked out - checkout()");
-				sysObj.checkout();
-				Logger.getLogger(this.getClass()).warn("Document is not checked out - checkout() done.");
-			}
-			sysObj.setFile(body.getAbsolutePath());
-
-			String prevVersLabels = "";
-			Pattern p = Pattern.compile("^\\d+(\\.\\d+)+$");
-			String allVersions = sysObj.getAllRepeatingStrings("r_version_label", ",");
-			for (String ver : allVersions.split(",")) {
-				Matcher m = p.matcher(ver);
-				if (!ver.equals("CURRENT") && !m.find())
-					prevVersLabels = prevVersLabels + ver + ",";
-			}
-			if (prevVersLabels.length() > 0)
-				prevVersLabels = prevVersLabels.substring(0, prevVersLabels.length() - 1);
-
-			sysObj.fetch("dm_document");
-			boolean latest = ((IDfSysObject) sysObj).getLatestFlag();
-			IDfVersionPolicy vp = sysObj.getVersionPolicy();
-			boolean canVersionMinor = ((DfVersionPolicy) vp).canVersion(DfVersionPolicy.DF_NEXT_MINOR);
-			boolean canVersionMajor = ((DfVersionPolicy) vp).canVersion(DfVersionPolicy.DF_NEXT_MAJOR);
-			String msg1 = "objectname: " + sysObj.getObjectName() + " Latest? " + latest + " Immutable? " + sysObj.isImmutable() + " Frozen? "
-					+ sysObj.isFrozen() + " permit: " + sysObj.getPermit() + " canVersionMinor: " + canVersionMinor + " canVersionMajor: " + canVersionMajor;
-			Logger.getLogger(UploadServlet.class).info(msg1);
-
-			if (!latest) {
-				throw new ServerException("Not latest version");
+			String timeInDocumentum = formatTime(new Date(sysObj.getModifyDate().getDate().getTime()));
+			if (xLOOLWOPITimestamp != null && !xLOOLWOPITimestamp.equals(timeInDocumentum)) {
+				// document being edited is not the one that is present in the storage.
+				// Hosts should not save the file to storage in such cases and respond
+				// with HTTP 409 along with Collabora Online specific status code 409 in
+				// json
+				// 409 Conflict - Lock mismatch/locked by another interface; an
+				// X-WOPI-Lock response header containing the value of the current lock
+				// on the file must always be included when using this response code
+				//
+				// documentum offset from UTC select r_normal_tz from dm_docbase_config
+//@formatter:off
+				Logger.getLogger(this.getClass()).warn("Document being edited                         ("+xLOOLWOPITimestamp+")"); 
+				Logger.getLogger(this.getClass()).warn("is not the one that is present in the storage ("+timeInDocumentum+")");
+				
+				WsServer.log(loginName, "Document beeing edited:  " + xLOOLWOPITimestamp);
+				WsServer.log(loginName, "Document beeing in dcmt: " + timeInDocumentum);
+				
+				String json = "{'LOOLStatusCode':1010}";
+				return Response.status(Response.Status.fromStatusCode(409)).entity(json)
+						.header("X-WOPI-Lock", sysObj.getModifier())
+						.build();
+//@formatter:on			
 			}
 
-			String toAddVersions;
-			IDfId dfnewid = null;
+			if (!xLOOLWOPIIsExitSave && !xLOOLWOPIIsAutosave && xLOOLWOPIIsModifiedByUser) {
 
-			VersionEnum versionToRaise = VersionEnum.MINOR;
+				if (!sysObj.isCheckedOut()) {
+					Logger.getLogger(this.getClass()).warn("Document is not checked out - checkout()");
+					sysObj.checkout();
+					Logger.getLogger(this.getClass()).warn("Document is not checked out - checkout() done.");
+				}
+				sysObj.setFile(body.getAbsolutePath());
 
-			if (versionToRaise.equals(VersionEnum.MINOR)) {
-				toAddVersions = vp.getNextMinorLabel() + ",CURRENT," + prevVersLabels;
-				dfnewid = sysObj.checkin(false, toAddVersions);
-			} else if (versionToRaise.equals(VersionEnum.MAJOR)) {
-				toAddVersions = vp.getNextMajorLabel() + ",CURRENT," + prevVersLabels;
-				dfnewid = sysObj.checkin(false, toAddVersions);
-			} else {
-				dfnewid = sysObj.checkin(false, "");
+				String prevVersLabels = "";
+				Pattern p = Pattern.compile("^\\d+(\\.\\d+)+$");
+				String allVersions = sysObj.getAllRepeatingStrings("r_version_label", ",");
+				for (String ver : allVersions.split(",")) {
+					Matcher m = p.matcher(ver);
+					if (!ver.equals("CURRENT") && !m.find())
+						prevVersLabels = prevVersLabels + ver + ",";
+				}
+				if (prevVersLabels.length() > 0)
+					prevVersLabels = prevVersLabels.substring(0, prevVersLabels.length() - 1);
+
+				sysObj.fetch("dm_document");
+				boolean latest = ((IDfSysObject) sysObj).getLatestFlag();
+				IDfVersionPolicy vp = sysObj.getVersionPolicy();
+				boolean canVersionMinor = ((DfVersionPolicy) vp).canVersion(DfVersionPolicy.DF_NEXT_MINOR);
+				boolean canVersionMajor = ((DfVersionPolicy) vp).canVersion(DfVersionPolicy.DF_NEXT_MAJOR);
+				String msg1 = "objectname: " + sysObj.getObjectName() + " Latest? " + latest + " Immutable? " + sysObj.isImmutable() + " Frozen? "
+						+ sysObj.isFrozen() + " permit: " + sysObj.getPermit() + " canVersionMinor: " + canVersionMinor + " canVersionMajor: " + canVersionMajor;
+				Logger.getLogger(UploadServlet.class).info(msg1);
+
+				if (!latest) {
+					throw new ServerException("Not latest version");
+				}
+
+				String toAddVersions;
+				IDfId dfnewid = null;
+
+				VersionEnum versionToRaise = VersionEnum.MINOR;
+
+				if (versionToRaise.equals(VersionEnum.MINOR)) {
+					toAddVersions = vp.getNextMinorLabel() + ",CURRENT," + prevVersLabels;
+					dfnewid = sysObj.checkin(false, toAddVersions);
+				} else if (versionToRaise.equals(VersionEnum.MAJOR)) {
+					toAddVersions = vp.getNextMajorLabel() + ",CURRENT," + prevVersLabels;
+					dfnewid = sysObj.checkin(false, toAddVersions);
+				} else {
+					dfnewid = sysObj.checkin(false, "");
+				}
+				IDfSysObject newSysObject = (IDfSysObject) userSession.getObject(dfnewid);
+				newSysObject.fetch(null);
+
+				sysObj = newSysObject;
+				WsServer.logAll("refreshDocumentWithRObjectId:" + sysObj.getId("r_object_id").toString());
+
 			}
-			IDfSysObject newSysObject = (IDfSysObject) userSession.getObject(dfnewid);
-			newSysObject.fetch(null);
 
 			FileInfo info = new FileInfo();
-			info.setBaseFileName(newSysObject.getId("r_object_id").toString() + "." + newSysObject.getFormat().getDOSExtension());
-			info.setSize(newSysObject.getContentSize());
-			info.setOwnerId(newSysObject.getOwnerName());
+			info.setBaseFileName(sysObj.getId("r_object_id").toString() + "." + rendition);
+			info.setSize(sysObj.getContentSize());
+			info.setOwnerId(sysObj.getOwnerName());
 			info.setUserId(loginName);
-			info.setVersion(newSysObject.getModifyDate().getDate().getTime());
+			info.setVersion(String.valueOf(sysObj.getModifyDate().getDate().getTime()));
 			info.setSha256(getHash256(body));
 			info.setAllowExternalMarketplace(true);
 			info.setUserCanWrite(action.equals("edit") ? true : false);
 			info.setSupportsUpdate(action.equals("edit") ? true : false);
 			info.setSupportsLocks(action.equals("edit") ? true : false);
-			info.setLastModifiedTime(formatTime(newSysObject.getModifyDate().getDate()));
+			info.setLastModifiedTime(formatTime(sysObj.getModifyDate().getDate()));
 			info.setUserFriendlyName(loginName);
 
 			ObjectMapper mapper = new ObjectMapper();
@@ -305,9 +370,10 @@ public class WopiRest extends WopiApiServiceImpl {
 
 //@formatter:off			
 			return Response.ok()
-					.header("X-WOPI-ItemVersion", newSysObject.getModifyDate().getDate().getTime())
+					.header("X-WOPI-ItemVersion", sysObj.getModifyDate().getDate().getTime())
 					.header("Content-Type", "application/json").entity(result).build();
-//@formatter:on			
+//@formatter:on
+
 		} catch (DfAuthenticationException e) {
 			Logger.getLogger(this.getClass()).error(e);
 			return Response.status(Response.Status.valueOf("401")).entity(e.getMessage()).build();
@@ -328,7 +394,7 @@ public class WopiRest extends WopiApiServiceImpl {
 
 	private String formatTime(Date date) {
 		SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.GERMANY);
-		ISO8601DATEFORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+		ISO8601DATEFORMAT.setTimeZone(TimeZone.getTimeZone("CET"));
 		String formattedTime = ISO8601DATEFORMAT.format(new Date()) + "Z";
 		return formattedTime;
 	}
@@ -545,16 +611,24 @@ String dockerStartCmd =
 		String password = getPassFromToken(accessToken);
 		String action = getActionFromToken(accessToken);
 
+		if (document.split("~").length != 2) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).header("Content-Type", "application/json").entity("Rendition not passed.")
+					.build();
+		}
+		String r_object_id = document.split("~")[0];
+		String rendition = document.split("~")[1];
+
 		IDfSession userSession = null;
 
 		Logger.getLogger(this.getClass()).info("----- lockDocument user:" + loginName + " action: " + action);
 
 		try {
 			userSession = AdminServiceImpl.getSession(loginName, password);
-			//IDfPersistentObject dfDocument = userSession.getObject(new DfId(document));
+			// IDfPersistentObject dfDocument = userSession.getObject(new
+			// DfId(document));
 			IDfPersistentObject dfDocument = userSession.getObjectByQualification(
-					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + document + "')");
-			
+					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + r_object_id + "')");
+
 			IDfSysObject sysObj = (IDfSysObject) dfDocument;
 
 			if (xWOPIOverride.equals("UNLOCK")) {

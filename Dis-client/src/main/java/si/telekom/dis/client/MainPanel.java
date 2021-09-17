@@ -182,7 +182,10 @@ public class MainPanel extends Composite {
 				progressBar.setText(progr);
 			} else if (e.data.asString().startsWith("logout")) {
 				logout();
-				// Window.open(loginPageUrl, "_self", "");
+			} else if (e.data.asString().startsWith("refreshDocumentWithRObjectId")) {
+				String rObjectId = e.data.asString().split(":")[1];
+				MainPanel.log("rObjectId: " + rObjectId);
+				ExplorerPanel.getExplorerInstance().model.refreshDocument(rObjectId);
 			} else {
 				MainPanel.log(e.data.asString());
 			}

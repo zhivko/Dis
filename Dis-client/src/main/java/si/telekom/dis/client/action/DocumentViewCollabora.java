@@ -63,7 +63,7 @@ public class DocumentViewCollabora extends WindowBox {
 
 		// setText("Vsebina dokumenta (barkoda: " +
 		// MenuPanel.activeExplorerInstance.selectedDocument.object_name + ")");
-		if(action.equals("edit"))
+		if (action.equals("edit"))
 			setText("Urejanje dokumenta (r_object_id: " + r_object_id_ + ")");
 		else
 			setText("Prikaz vsebine dokumenta (r_object_id: " + r_object_id_ + ")");
@@ -136,157 +136,165 @@ public class DocumentViewCollabora extends WindowBox {
 
 		List<String> odfFormats = DocumentViewFileTypes.odfFormats;
 
-		if (odfFormats.contains(rendition) && MainPanel.getInstance().us.useColaboraOnlineForEdit) {
-			String url = getCollabraUrl(r_object_id, rendition);
-			//MainPanel.log(url);
+		explorerService.collaboraUrl(rendition, action, new AsyncCallback<String>() {
+			@Override
+			public void onSuccess(String result) {
+				// TODO Auto-generated method stub
+				if(result!=null)
+				{
+					String url = getCollabraUrl(r_object_id, rendition, result);
 
-			/*
-			 * <form id="office_form" name="office_form" target="office_frame"
-			 * action="{{ server }}" method="post"> <input name="access_token"
-			 * value="{{ access_token }}" type="hidden" /> <input
-			 * name="access_token_ttl" value="{{ access_token_ttl }}" type="hidden" />
-			 * </form>
-			 */
-			FormPanel form = new FormPanel();
-			form.getElement().setAttribute("name", "office_form");
-			form.getElement().setAttribute("id", "office_form");
-			form.getElement().setAttribute("target", "office_frame");
-			form.setMethod("post");
-			form.setAction(url);
-			form.setVisible(false);
+					MainPanel.log("CollaboraUrl: " + url);
+					
+					FormPanel form = new FormPanel();
+					form.getElement().setAttribute("name", "office_form");
+					form.getElement().setAttribute("id", "office_form");
+					form.getElement().setAttribute("target", "office_frame");
+					form.setMethod("post");
+					form.setAction(url);
+					form.setVisible(false);
 
-			Hidden access_token = new Hidden();
-			access_token.setValue(b64encode(MainPanel.getInstance().loginName + ":" + MainPanel.getInstance().loginPass + ":" + action));
-			access_token.getElement().setAttribute("name", "access_token");
-			Hidden access_token_ttl = new Hidden();
-			access_token_ttl.setValue("10000000");
-			access_token_ttl.getElement().setAttribute("name", "access_token_ttl");
+					Hidden access_token = new Hidden();
+					access_token.setValue(b64encode(MainPanel.getInstance().loginName + ":" + MainPanel.getInstance().loginPass + ":" + action));
+					access_token.getElement().setAttribute("name", "access_token");
+					Hidden access_token_ttl = new Hidden();
+					access_token_ttl.setValue("10000000");
+					access_token_ttl.getElement().setAttribute("name", "access_token_ttl");
 
-			Div div = new Div();
-			div.add(access_token);
-			div.add(access_token_ttl);
+					Div div = new Div();
+					div.add(access_token);
+					div.add(access_token_ttl);
 
-			form.add(div);
+					form.add(div);
 
-			frame = new Frame();
-			frame.getElement().setAttribute("name", "office_frame");
-			frame.getElement().setAttribute("id", "office_frame");
-			frame.getElement().setAttribute("name", "office_frame");
-			frame.getElement().setAttribute("id", "office_frame");
+					frame = new Frame();
+					frame.getElement().setAttribute("name", "office_frame");
+					frame.getElement().setAttribute("id", "office_frame");
+					frame.getElement().setAttribute("name", "office_frame");
+					frame.getElement().setAttribute("id", "office_frame");
 
-			frame.setTitle("Office Frame");
-			frame.getElement().setAttribute("allowfullscreen", "true");
-			frame.getElement().setAttribute("sandbox",
-					"allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-downloads allow-modals");
+					frame.setTitle("Office Frame");
+					frame.getElement().setAttribute("allowfullscreen", "true");
+					frame.getElement().setAttribute("sandbox",
+							"allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-downloads allow-modals");
 
-			frame.setWidth(getMaxWidthPx());
-			frame.setHeight(getMaxHeightPx());
+					frame.setWidth(getMaxWidthPx());
+					frame.setHeight(getMaxHeightPx());
 
-			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-				@Override
-				public void execute() {
-					DocumentViewCollabora.this.center();
-				}
-			});
-
-			fp = new FlowPanel();
-			fp.add(form);
-			fp.add(frame);
-
-			if (sp.getWidget() != null)
-				sp.remove(sp.getWidget());
-			sp.add(fp);
-			form.submit();
-
-			logger.info("submitting form to: " + frame.getUrl());
-		} else if (DocumentViewFileTypes.imageHtmlFormats.contains(rendition)) {
-			sp.setWidth(getMaxWidthPx());
-			sp.setHeight(getMaxHeightPx());
-
-			Image image = new Image();
-
-			image.addLoadHandler(new LoadHandler() {
-				@Override
-				public void onLoad(LoadEvent event) {
-					if (image.getWidth() > getMaxWidth()) {
-						image.setWidth("100%");
-					}
-					MainPanel.log("Image loaded.");
-					DocumentViewCollabora.this.center();
-				}
-			});
-			image.prefetch(safeUriDocView);
-			image.setUrl(safeUriDocView);
-			sp.add(image);
-			MainPanel.log("Image loading...");
-			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-				@Override
-				public void execute() {
-					DocumentViewCollabora.this.center();
-				}
-			});
-		} else if (DocumentViewFileTypes.downloadFormats.contains(rendition)) {
-			// Window.open(URL.encode(safeUriDocView), "_blank",
-			// "status=0,toolbar=0,menubar=0,location=0");
-		} else {
-			RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, URL.encode(safeUriDocView));
-			try {
-				String data = "";
-				try {
-					builder.sendRequest(data, new RequestCallback() {
-						public void onError(Request request, Throwable exception) {
-							MainPanel.log("error: " + exception.getMessage());
-						}
-
-						public void onResponseReceived(Request request, Response response) {
-							if (200 == response.getStatusCode()) {
-								// Process the response in response.getText()
-								// Window.open(url, "_blank", "");
-								sp.setWidth(getMaxWidthPx());
-								sp.setHeight(getMaxHeightPx());
-
-								if (sp.getWidget() != null)
-									sp.remove(sp.getWidget());
-
-								// HTML html = new HTML(new
-								// SafeHtmlBuilder().appendEscapedLines(response.getText()).toSafeHtml());
-
-								HTML html = new HTML(response.getText());
-								sp.add(html);
-								DocumentViewCollabora.this.center();
-							} else {
-								MainPanel.log("StatusCode=" + response.getStatusCode());
-							}
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							DocumentViewCollabora.this.center();
 						}
 					});
-				} catch (com.google.gwt.http.client.RequestException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+
+					fp = new FlowPanel();
+					fp.add(form);
+					fp.add(frame);
+
+					if (sp.getWidget() != null)
+						sp.remove(sp.getWidget());
+					sp.add(fp);
+					form.submit();
+
+					logger.info("submitting form to: " + frame.getUrl());
 				}
-			} catch (Exception e) {
-				logger.info(e.getMessage());
-				MainPanel.log(e.getMessage());
+				else
+				{
+					if (DocumentViewFileTypes.imageHtmlFormats.contains(rendition)) {
+						sp.setWidth(getMaxWidthPx());
+						sp.setHeight(getMaxHeightPx());
+
+						Image image = new Image();
+
+						image.addLoadHandler(new LoadHandler() {
+							@Override
+							public void onLoad(LoadEvent event) {
+								if (image.getWidth() > getMaxWidth()) {
+									image.setWidth("100%");
+								}
+								MainPanel.log("Image loaded.");
+								DocumentViewCollabora.this.center();
+							}
+						});
+						image.prefetch(safeUriDocView);
+						image.setUrl(safeUriDocView);
+						sp.add(image);
+						MainPanel.log("Image loading...");
+						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+							@Override
+							public void execute() {
+								DocumentViewCollabora.this.center();
+							}
+						});
+					} else if (DocumentViewFileTypes.downloadFormats.contains(rendition)) {
+						// Window.open(URL.encode(safeUriDocView), "_blank",
+						// "status=0,toolbar=0,menubar=0,location=0");
+					} else {
+						RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, URL.encode(safeUriDocView));
+						try {
+							String data = "";
+							try {
+								builder.sendRequest(data, new RequestCallback() {
+									public void onError(Request request, Throwable exception) {
+										MainPanel.log("error: " + exception.getMessage());
+									}
+
+									public void onResponseReceived(Request request, Response response) {
+										if (200 == response.getStatusCode()) {
+											// Process the response in response.getText()
+											// Window.open(url, "_blank", "");
+											sp.setWidth(getMaxWidthPx());
+											sp.setHeight(getMaxHeightPx());
+
+											if (sp.getWidget() != null)
+												sp.remove(sp.getWidget());
+
+											// HTML html = new HTML(new
+											// SafeHtmlBuilder().appendEscapedLines(response.getText()).toSafeHtml());
+
+											HTML html = new HTML(response.getText());
+											sp.add(html);
+											DocumentViewCollabora.this.center();
+										} else {
+											MainPanel.log("StatusCode=" + response.getStatusCode());
+										}
+									}
+								});
+							} catch (com.google.gwt.http.client.RequestException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						} catch (Exception e) {
+							logger.info(e.getMessage());
+							MainPanel.log(e.getMessage());
+						}
+					}					
+				}
 			}
+
+			public void onFailure(Throwable caught) {
+				MainPanel.log(caught.getMessage());
+			};
+		});
+
+		if (odfFormats.contains(rendition) && MainPanel.getInstance().us.useColaboraOnlineForEdit) {
 		}
 
 	}
 
-	private String getCollabraUrl(String r_object_id2, String rendition) {
-		String wopiSrc = GWT.getHostPageBaseURL() + "api/wopi/files/" + r_object_id2;
+	private String getCollabraUrl(String r_object_id2, String rendition, String collaboraUrl) {
+		String wopiSrc = GWT.getHostPageBaseURL() + "api/wopi/files/" + r_object_id2 + "~" + rendition;
 		wopiSrc = wopiSrc.replaceAll("localhost", MainPanel.getInstance().serverIp);
-		//String url = "https://" + MainPanel.getInstance().serverIp + ":9980/loleaflet/d12ab86/loleaflet.html?WOPISrc=" + URL.encodeQueryString(wopiSrc);
-		String url = MainPanel.getInstance().us.collaboraUrl + URL.encodeQueryString(wopiSrc);
-		//MainPanel.log(url);
+		// String url = "https://" + MainPanel.getInstance().serverIp +
+		// ":9980/loleaflet/d12ab86/loleaflet.html?WOPISrc=" +
+		// URL.encodeQueryString(wopiSrc);
+		String url = collaboraUrl + "WOPISrc=" + URL.encodeQueryString(wopiSrc);
+		// MainPanel.log(url);
 		return url;
 	}
 
 	public static String getUrl(String r_object_id, String rendition) {
-		// TODO Auto-generated method stub
-		return GWT.getHostPageBaseURL() + "WebUi2/explorerServ?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
-				+ MainPanel.getInstance().loginPass + "&r_object_id=" + r_object_id + "&rendition=" + rendition;
-	}
-
-	public static String getWebOdfUrl(String r_object_id, String rendition) {
 		// TODO Auto-generated method stub
 		return GWT.getHostPageBaseURL() + "WebUi2/explorerServ?loginName=" + MainPanel.getInstance().loginName + "&loginPassword="
 				+ MainPanel.getInstance().loginPass + "&r_object_id=" + r_object_id + "&rendition=" + rendition;
@@ -334,7 +342,7 @@ public class DocumentViewCollabora extends WindowBox {
 	}-*/;
 
 	private static native String b64encode(String a) /*-{
-	return window.btoa(a);
-}-*/;	
-	
+		return window.btoa(a);
+	}-*/;
+
 }

@@ -21,7 +21,6 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -84,6 +83,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -98,7 +99,6 @@ import org.apache.log4j.Logger;
 import org.apache.poi.hsmf.MAPIMessage;
 import org.apache.poi.hsmf.datatypes.AttachmentChunks;
 import org.apache.poi.hsmf.datatypes.Chunks;
-import org.apache.tika.Tika;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -109,6 +109,8 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.json.JSONArray;
 import org.logicalcobwebs.proxool.ProxoolException;
 import org.logicalcobwebs.proxool.ProxoolFacade;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.documentum.com.DfClientX;
 import com.documentum.com.IDfClientX;
@@ -146,6 +148,7 @@ import com.documentum.operations.IDfOperationError;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.itextpdf.text.pdf.PdfReader;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSet;
+import com.rsa.cryptoj.o.nl;
 
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGenerator;
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGeneratorImplService;
@@ -178,8 +181,47 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 	static ExplorerServiceImpl instance;
 	static Parser parser = new AutoDetectParser();
+	HashMap<String, String> collaboraUrls = null;
 
 	SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+
+	static {
+		try {
+
+			/* Start of Fix */
+			TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+					return null;
+				}
+
+				public void checkClientTrusted(X509Certificate[] certs, String authType) {
+				}
+
+				public void checkServerTrusted(X509Certificate[] certs, String authType) {
+				}
+
+			} };
+
+			SSLContext sc = SSLContext.getInstance("SSL");
+			sc.init(null, trustAllCerts, new java.security.SecureRandom());
+			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+			// Create all-trusting host name verifier
+			HostnameVerifier allHostsValid = new HostnameVerifier() {
+				public boolean verify(String hostname, SSLSession session) {
+					return true;
+				}
+			};
+			// Install the all-trusting host verifier
+			HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+			/* End of the fix */
+
+			getInstance().collaboraUrl("odt", "edit");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	public static ExplorerServiceImpl getInstance() {
 		if (instance == null) {
@@ -310,7 +352,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 									if (filename.toLowerCase().endsWith("pdf")) {
 										baOs.write(("<embed src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
 									} else {
-										baOs.write(("<img alt=\"" + filename + "\" src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
+										baOs.write(
+												("<img alt=\"" + filename + "\" src=\"data:" + att.getAttachMimeTag() + ";base64," + encodedStr + "\">").getBytes("UTF-8"));
 									}
 								}
 								baOs.write(("<br>").getBytes(encoding));
@@ -2363,22 +2406,6 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			String stUrl = URLEncoder.encode(strUrl, StandardCharsets.UTF_8.toString());
 			// partOfProcessMilisetoneName
 			if (this.getThreadLocalRequest().isSecure()) {
-
-				TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-						return null;
-					}
-
-					public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-					}
-
-					public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-					}
-				} };
-
-				SSLContext sc = SSLContext.getInstance("SSL");
-				sc.init(null, trustAllCerts, new java.security.SecureRandom());
-				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
 				conn = (HttpsURLConnection) url.openConnection();
 				((HttpsURLConnection) conn).setHostnameVerifier(new HostnameVerifier() {
@@ -4537,17 +4564,19 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			// parser.parse(stream, handler, metadata);
 			// handler.toString();
 			// }
-			
+
 			Path path = tempFile.toPath();
-	    String filetype = Files.probeContentType(path);
-			
-//			ClassLoader classloader = org.apache.poi.poifs.filesystem.POIFSFileSystem.class.getClassLoader();
-//			URL res = classloader.getResource("org/apache/poi/util/XMLHelper.class");
-//			String path = res.getPath();
-//			System.out.println("Core POI came from " + path);
-//
-//			Tika tika = new Tika();
-//			String filetype = tika.detect(tis);
+			String filetype = Files.probeContentType(path);
+
+			// ClassLoader classloader =
+			// org.apache.poi.poifs.filesystem.POIFSFileSystem.class.getClassLoader();
+			// URL res =
+			// classloader.getResource("org/apache/poi/util/XMLHelper.class");
+			// String path = res.getPath();
+			// System.out.println("Core POI came from " + path);
+			//
+			// Tika tika = new Tika();
+			// String filetype = tika.detect(tis);
 
 			if (filetype.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") || filetype.equals("application/zip")) {
 				sess = AdminServiceImpl.getAdminSession();
@@ -5380,4 +5409,63 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			fos.write(buffer, 0, len);
 		}
 	}
+
+	@Override
+	public String collaboraUrl(String format, String action) throws ServerException {
+		String ret = "";
+		String collaboraUrl = "https://klemen-hp-elitebook-850-g7-notebook-pc.ts.telekom.si:9980/hosting/discovery";
+
+		try {
+			if (collaboraUrls == null) {
+
+				collaboraUrls = new HashMap<String, String>();
+				URL url = new URL(collaboraUrl);
+				
+				
+				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+				DocumentBuilder db = dbf.newDocumentBuilder();
+				org.w3c.dom.Document doc = db.parse(url.openStream());
+				
+				NodeList nl = doc.getElementsByTagName("action");
+				for(int i=0;i<nl.getLength();i++)
+				{
+					Element elAction = (Element)nl.item(i);
+					String fmt = elAction.getAttribute("ext");
+					String act = elAction.getAttribute("name");
+					String uri = elAction.getAttribute("urlsrc");
+					collaboraUrls.put(fmt + ":" + act, uri);
+				}
+
+				// Close the input stream
+				ret = collaboraUrls.get(format + ":" + action);
+				if(ret==null)
+				{
+					for (String key : collaboraUrls.keySet()) {
+						if(key.startsWith(format))
+						{
+							ret = collaboraUrls.get(key);
+							break;
+						}
+					}
+				}
+			} else {
+				ret = collaboraUrls.get(format + ":" + action);
+				if(ret==null)
+				{
+					for (String key : collaboraUrls.keySet()) {
+						if(key.startsWith(format))
+						{
+							ret = collaboraUrls.get(key);
+							break;
+						}
+					}
+				}				
+			}
+		} catch (Exception ex) {
+			throw new ServerException(ex.getMessage());
+		}
+
+		return ret;
+	}
+
 }

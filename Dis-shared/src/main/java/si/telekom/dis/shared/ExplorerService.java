@@ -66,4 +66,6 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 		Void configureERender(String loginName, String password, String xml) throws ServerException;
 		
 		List<String> decryptZip(String loginName, String password, String r_object_id, String rObjectIdOfCertWithPK) throws ServerException;
+		
+		String collaboraUrl(String format, String action) throws ServerException;
 	}
