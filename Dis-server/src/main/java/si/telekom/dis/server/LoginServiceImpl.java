@@ -369,10 +369,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 				us.explorerReturnResultCount = 30;
 				us.searchReturnResultCount = 30;
 				us.auditTrailPerPageCount = 100;
-				us.useColaboraOnlineForEdit = false;
+				us.useColaboraOnlineForEdit = true;
 
-				us.collaboraUrl = "https://erender-test.ts.telekom.si:9980/loleaflet/d12ab86/loleaflet.html?WOPISrc=";
-				
 				Marshaller m = context.createMarshaller();
 				m.marshal(us, writer);
 

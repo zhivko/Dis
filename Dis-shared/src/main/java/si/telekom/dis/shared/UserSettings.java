@@ -38,7 +38,4 @@ public class UserSettings implements Serializable {
 	@XmlElement(name="useColaboraOnlineForEdit")
 	public boolean useColaboraOnlineForEdit;
 	
-	@XmlElement(name="collaboraUrl")
-	public String collaboraUrl;	
-	
 }

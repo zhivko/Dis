@@ -185,6 +185,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 	SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
+	public static String collaboraUrl = "https://klemen-hp-elitebook-850-g7-notebook-pc.ts.telekom.si:9980/hosting/discovery";
+	
 	static {
 		try {
 
@@ -5413,9 +5415,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	@Override
 	public String collaboraUrl(String format, String action) throws ServerException {
 		String ret = "";
-		String collaboraUrl = "https://klemen-hp-elitebook-850-g7-notebook-pc.ts.telekom.si:9980/hosting/discovery";
-
 		try {
+			String dosExtension = AdminServiceImpl.getAdminSession().getFormat(format).getDOSExtension();
 			if (collaboraUrls == null) {
 
 				collaboraUrls = new HashMap<String, String>();
@@ -5437,11 +5438,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				}
 
 				// Close the input stream
-				ret = collaboraUrls.get(format + ":" + action);
+				ret = collaboraUrls.get(dosExtension + ":" + action);
 				if(ret==null)
 				{
 					for (String key : collaboraUrls.keySet()) {
-						if(key.startsWith(format))
+						if(key.startsWith(dosExtension))
 						{
 							ret = collaboraUrls.get(key);
 							break;
@@ -5449,11 +5450,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					}
 				}
 			} else {
-				ret = collaboraUrls.get(format + ":" + action);
+				ret = collaboraUrls.get(dosExtension + ":" + action);
 				if(ret==null)
 				{
 					for (String key : collaboraUrls.keySet()) {
-						if(key.startsWith(format))
+						if(key.startsWith(dosExtension))
 						{
 							ret = collaboraUrls.get(key);
 							break;

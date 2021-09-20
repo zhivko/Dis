@@ -31,9 +31,6 @@ public class ExplorerSettings extends WindowBox {
 		MyTxtBox explorerResultSize = new MyTxtBox("Explorer result size");
 		explorerResultSize.setValue(String.valueOf(MainPanel.getInstance().us.explorerReturnResultCount));
 		
-		MyTxtBox collaboraUrl = new MyTxtBox("Collabora url (ends with WOPIsrc=)");
-		collaboraUrl.setValue(String.valueOf(MainPanel.getInstance().us.collaboraUrl));
-		
 		MyTxtBox searchResultSize = new MyTxtBox("Search result size");
 		searchResultSize.setValue(String.valueOf(MainPanel.getInstance().us.searchReturnResultCount));
 		
@@ -47,10 +44,8 @@ public class ExplorerSettings extends WindowBox {
 		getContentPanel().add(searchResultSize);
 		getContentPanel().add(auditTrailPerPageCount);
 		getContentPanel().add(checkBox);
-		getContentPanel().add(collaboraUrl);
-		collaboraUrl.setWidth("100%");
 		
-		this.setSize("600px", "400px");
+		this.setSize("400px", "400px");
 		
 		this.getOkButton().addClickHandler(new ClickHandler() {
 
@@ -60,7 +55,6 @@ public class ExplorerSettings extends WindowBox {
 				MainPanel.getInstance().us.searchReturnResultCount = Integer.valueOf(searchResultSize.getValue());
 				MainPanel.getInstance().us.auditTrailPerPageCount = Integer.valueOf(auditTrailPerPageCount.getValue());
 				MainPanel.getInstance().us.useColaboraOnlineForEdit = Boolean.valueOf(checkBox.getValue());
-				MainPanel.getInstance().us.collaboraUrl = collaboraUrl.getValue()!=null ? collaboraUrl.getValue() : "https://klemen-hp-elitebook-850-g7-notebook-pc.ts.telekom.si:9980/loleaflet/d12ab86/loleaflet.html?WOPISrc=" ;
 				try {
 					loginService.saveUserSettings(MainPanel.getInstance().loginName, MainPanel.getInstance().loginPass, MainPanel.getInstance().us,
 							new AsyncCallback<Void>() {

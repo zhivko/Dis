@@ -144,7 +144,7 @@ public class DocumentViewCollabora extends WindowBox {
 				{
 					String url = getCollabraUrl(r_object_id, rendition, result);
 
-					MainPanel.log("CollaboraUrl: " + url);
+					//MainPanel.log("CollaboraUrl: " + url);
 					
 					FormPanel form = new FormPanel();
 					form.getElement().setAttribute("name", "office_form");

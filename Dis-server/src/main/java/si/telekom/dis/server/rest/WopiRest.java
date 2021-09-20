@@ -65,6 +65,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import si.telekom.dis.server.AdminServiceImpl;
 import si.telekom.dis.server.ExplorerServiceImpl;
+import si.telekom.dis.server.ExplorerServlet;
 import si.telekom.dis.server.UploadServlet;
 import si.telekom.dis.server.WsServer;
 import si.telekom.dis.server.rest.UpdateDocumentRequest.VersionEnum;
@@ -128,7 +129,7 @@ public class WopiRest extends WopiApiServiceImpl {
 		String r_object_id = document.split("~")[0];
 		String rendition = document.split("~")[1];
 
-		Logger.getLogger(this.getClass()).info("-----  getCheckFileInfo user:" + loginName + " action: " + action);
+		Logger.getLogger(this.getClass()).info("-----  getCheckFileInfo doc: " + r_object_id + "user:" + loginName + " action: " + action);
 
 		IDfSession userSession = null;
 
@@ -155,10 +156,10 @@ public class WopiRest extends WopiApiServiceImpl {
 			byte[] buffer = new byte[bIs.available()];
 			bIs.read(buffer);
 
-			info.setBaseFileName(sysObject.getId("r_object_id").toString() + "." + rendition);
+			info.setBaseFileName(sysObject.getId("r_object_id").toString() + "." + sysObject.getFormat().getDOSExtension());
 			info.setSize(contentSize);
 			info.setOwnerId(sysObject.getOwnerName());
-			info.setUserId(loginName);
+			info.setUserId(userSession.getLoginUserName());
 			info.setVersion(String.valueOf(sysObject.getModifyDate().getDate().getTime()));
 			info.setSha256(getHash256(bIs));
 			info.setAllowExternalMarketplace(true);
@@ -166,7 +167,7 @@ public class WopiRest extends WopiApiServiceImpl {
 			info.setSupportsUpdate(action.equals("edit") ? true : false);
 			info.setSupportsLocks(action.equals("edit") ? true : false);
 			info.setLastModifiedTime(formatTime(time));
-			info.setUserFriendlyName(loginName);
+			info.setUserFriendlyName(userSession.getUser(userSession.getLoginUserName()).getDescription());
 
 			ObjectMapper mapper = new ObjectMapper();
 
@@ -211,7 +212,14 @@ public class WopiRest extends WopiApiServiceImpl {
 					"dm_document where i_chronicle_id = (select i_chronicle_id from dm_document(all) where r_object_id='" + r_object_id + "')");
 			IDfSysObject sysObject = (IDfSysObject) dfDocument;
 
-			bIs = new BufferedInputStream(sysObject.getContentEx(rendition, 0));
+			if (sysObject.getType().getName().equals("mob_form_template") && sysObject.hasAttr("mob_template_id")) {
+				Logger.getLogger("Object is mob_form_template filling properties with col_id.");
+				ByteArrayInputStream baIs = sysObject.getContentEx(rendition, 0);
+				int id = Integer.valueOf(sysObject.getString("mob_template_id")).intValue();
+				bIs = new BufferedInputStream(ExplorerServlet.makeSureAllFieldsExist(baIs, id));
+			} else {
+				bIs = new BufferedInputStream(sysObject.getContentEx(rendition, 0));
+			}
 			byte[] buffer = new byte[bIs.available()];
 			bIs.read(buffer);
 //@formatter:off
@@ -280,15 +288,20 @@ public class WopiRest extends WopiApiServiceImpl {
 				// X-WOPI-Lock response header containing the value of the current lock
 				// on the file must always be included when using this response code
 				//
-				// documentum offset from UTC select r_normal_tz from dm_docbase_config
-//@formatter:off
-				Logger.getLogger(this.getClass()).warn("Document being edited                         ("+xLOOLWOPITimestamp+")"); 
-				Logger.getLogger(this.getClass()).warn("is not the one that is present in the storage ("+timeInDocumentum+")");
-				
+				// documentum offset from UTC: select r_tz_aware, r_normal_tz from
+				// dm_docbase_config -> 1, 3600
+				// select DATETOSTRING_LOCAL(date(now),'dd.MM.yyyy hh:mm:ss') from
+				// dm_docbase_config
+
+				// https://msroth.wordpress.com/2011/05/15/the-content-server-and-time-zones/
+				Logger.getLogger(this.getClass()).warn("Document being edited                         (" + xLOOLWOPITimestamp + ")");
+				Logger.getLogger(this.getClass()).warn("is not the one that is present in the storage (" + timeInDocumentum + ")");
+
 				WsServer.log(loginName, "Document beeing edited:  " + xLOOLWOPITimestamp);
 				WsServer.log(loginName, "Document beeing in dcmt: " + timeInDocumentum);
-				
+
 				String json = "{'LOOLStatusCode':1010}";
+//@formatter:off
 				return Response.status(Response.Status.fromStatusCode(409)).entity(json)
 						.header("X-WOPI-Lock", sysObj.getModifier())
 						.build();
@@ -350,11 +363,17 @@ public class WopiRest extends WopiApiServiceImpl {
 
 			}
 
+			if (xLOOLWOPIIsExitSave) {
+				if (sysObj.isCheckedOut()) {
+					sysObj.cancelCheckout();
+				}
+			}
+
 			FileInfo info = new FileInfo();
-			info.setBaseFileName(sysObj.getId("r_object_id").toString() + "." + rendition);
+			info.setBaseFileName(sysObj.getId("r_object_id").toString() + "." + sysObj.getFormat().getDOSExtension());
 			info.setSize(sysObj.getContentSize());
 			info.setOwnerId(sysObj.getOwnerName());
-			info.setUserId(loginName);
+			info.setUserId(userSession.getLoginUserName());
 			info.setVersion(String.valueOf(sysObj.getModifyDate().getDate().getTime()));
 			info.setSha256(getHash256(body));
 			info.setAllowExternalMarketplace(true);
@@ -362,7 +381,7 @@ public class WopiRest extends WopiApiServiceImpl {
 			info.setSupportsUpdate(action.equals("edit") ? true : false);
 			info.setSupportsLocks(action.equals("edit") ? true : false);
 			info.setLastModifiedTime(formatTime(sysObj.getModifyDate().getDate()));
-			info.setUserFriendlyName(loginName);
+			info.setUserFriendlyName(userSession.getUser(userSession.getLoginUserName()).getDescription());
 
 			ObjectMapper mapper = new ObjectMapper();
 			byte[] res = mapper.writeValueAsBytes(info);
@@ -393,9 +412,13 @@ public class WopiRest extends WopiApiServiceImpl {
 	}
 
 	private String formatTime(Date date) {
+
 		SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.GERMANY);
 		ISO8601DATEFORMAT.setTimeZone(TimeZone.getTimeZone("CET"));
-		String formattedTime = ISO8601DATEFORMAT.format(new Date()) + "Z";
+		String formattedTime = ISO8601DATEFORMAT.format(date) + "Z";
+
+		Logger.getLogger(this.getClass()).info("--- formatTime (" + date.toString() + "): " + formattedTime);
+
 		return formattedTime;
 	}
 
@@ -632,10 +655,10 @@ String dockerStartCmd =
 			IDfSysObject sysObj = (IDfSysObject) dfDocument;
 
 			if (xWOPIOverride.equals("UNLOCK")) {
-				Logger.getLogger(this.getClass()).info("unlock lockOwner:" + sysObj.getLockOwner() + " user: " + loginName);
-				if (!sysObj.getLockOwner().equals("") && !sysObj.getLockOwner().equals(loginName)) {
+				Logger.getLogger(this.getClass()).info("unlock lockOwner:" + sysObj.getLockOwner() + " user: " + userSession.getLoginUserName());
+				if (!sysObj.getLockOwner().equals("") && !sysObj.getLockOwner().equals(userSession.getLoginUserName())) {
 					// try unlock
-					ExplorerServiceImpl.getInstance().unlock(loginName, password, document);
+					ExplorerServiceImpl.getInstance().unlock(loginName, password, r_object_id);
 				}
 //@formatter:off			
 				return Response.status(Response.Status.OK)
@@ -644,7 +667,8 @@ String dockerStartCmd =
 //@formatter:on
 			} else {
 				try {
-					sysObj.checkout();
+					if (!sysObj.getLockOwner().equals(userSession.getLoginUserName()))
+						sysObj.checkout();
 				} catch (DfException ex1) {
 //@formatter:off			
 					return Response.status(Response.Status.fromStatusCode(409))
@@ -655,7 +679,7 @@ String dockerStartCmd =
 				}
 //@formatter:off			
 				return Response.status(Response.Status.OK)
-						.header("X-WOPI-Lock", loginName)
+						.header("X-WOPI-Lock", sysObj.getLockOwner())
 						.header("X-WOPI-ItemVersion", sysObj.getModifyDate().getDate().getTime())
 						.build();
 //@formatter:on
