@@ -9,6 +9,14 @@ cache:
     - .m2/repository/
     - target/
 
+build-code-job:
+  stage: build
+  script:
+    - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage build-code-job"
+    - ln -s /src/main/filters /Dis-shared/src/main/filters
+    - ln -s /src/main/filters /Dis-client/src/main/filters
+    - ln -s /src/main/filters /Dis-server/src/main/filters
+
 build:
   stage: build
   script:
