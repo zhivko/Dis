@@ -66,7 +66,7 @@ public class DocumentDelete extends WindowBox {
 								@Override
 								public void onSuccess(Void result) {
 									MainPanel.log("Delete succesfull <strong>" + r_object_id_ + "</strong> deleted sucesfully.");
-									MenuPanel.activeExplorerInstance.refreshLastSelectedNodeByChronicleId();;
+									MenuPanel.activeExplorerInstance.refreshLastSelectedNode();
 									DocumentDelete.this.hide();
 								}
 

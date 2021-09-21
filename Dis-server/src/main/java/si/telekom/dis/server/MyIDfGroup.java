@@ -19,7 +19,9 @@ public class MyIDfGroup implements java.io.Serializable {
 	{
 		MyIDfGroup gr = new MyIDfGroup();
 		for (int i=0; i<group.getAllUsersNamesCount(); i++) {
-			gr.users.add(group.getAllUsersNames(i));
+			String userName = group.getAllUsersNames(i);
+			MyIDfUser user = AdminServiceImpl.allUsers.get(userName);
+			gr.users.add(userName);
 		}
 		for (int i=0; i<group.getGroupsNamesCount(); i++) {
 			gr.groups.add(group.getGroupsNames(i));

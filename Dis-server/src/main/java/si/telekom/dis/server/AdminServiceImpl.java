@@ -23,7 +23,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -79,6 +78,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.logicalcobwebs.proxool.ProxoolException;
 import org.logicalcobwebs.proxool.ProxoolFacade;
@@ -108,6 +108,7 @@ import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSessionManager;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.client.IDfTypedObject;
+import com.documentum.fc.client.IDfUser;
 import com.documentum.fc.client.IDfVersionPolicy;
 import com.documentum.fc.client.content.IDfStore;
 import com.documentum.fc.common.DfException;
@@ -203,6 +204,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 */
 	protected static String retentionAddUnit;
 	public static HashMap<String, MyIDfGroup> allGroups = new HashMap<String, MyIDfGroup>();
+	public static HashMap<String, MyIDfUser> allUsers = new HashMap<String, MyIDfUser>();
+	public static HashMap<String, MyIDfUser> allUsersByUserName = new HashMap<String, MyIDfUser>();
 
 	static {
 
@@ -384,39 +387,80 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 						input.close();
 						buffer.close();
 					}
+					File serFileUsers = new File((f.getAbsolutePath() + File.separator + "users.ser"));
+					if (serFileUsers.exists()) {
+						InputStream file = new FileInputStream(serFileUsers.getAbsolutePath());
+						InputStream buffer = new BufferedInputStream(file);
+						ObjectInput input = new ObjectInputStream(buffer);
+						allUsers = (HashMap<String, MyIDfUser>) input.readObject();
+						Logger.getLogger(AdminServiceImpl.class).info("Deserialized users.");
+						input.close();
+						buffer.close();
+					}
 
-					if (allGroups.size() != 0)
+					if (allGroups.size() != 0 && allUsers.size() != 0)
 						// 1 hour
 						Thread.sleep(1 * 60 * 60 * 1000);
 
 					while (true) {
-						Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...");
 						adminSession = getAdminSession();
-						IDfQuery qry = new DfQuery("select r_object_id, group_name from dm_group");
-						IDfCollection coll = qry.execute(adminSession, IDfQuery.DF_READ_QUERY);
-						while (coll.next()) {
-							String groupName = coll.getString("group_name");
-							IDfGroup group = adminSession.getGroup(groupName);
+						synchronized (allGroups) {
+							Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...");
 
-							MyIDfGroup myGroup = MyIDfGroup.convertFromIDFGroup(group);
-							allGroups.put(groupName, myGroup);
+							IDfQuery qry = new DfQuery("select r_object_id, group_name from dm_group");
+							IDfCollection coll = qry.execute(adminSession, IDfQuery.DF_READ_QUERY);
+							while (coll.next()) {
+								String groupName = coll.getString("group_name");
+								IDfGroup group = adminSession.getGroup(groupName);
+
+								MyIDfGroup myGroup = MyIDfGroup.convertFromIDFGroup(group);
+								allGroups.put(groupName, myGroup);
+								if(allGroups.size() % 50 == 0)
+									Logger.getLogger(this.getClass()).info("Synchronized: " + allGroups.size() + " groups.");
+							}
+							coll.close();
+
+							FileOutputStream fout = new FileOutputStream(serFile.getAbsolutePath());
+							ObjectOutputStream oos = new ObjectOutputStream(fout);
+							oos.writeObject(allGroups);
+							fout.close();
+							oos.close();
+							Logger.getLogger(AdminServiceImpl.class).info("Serialized " + serFile.getAbsolutePath());
+							Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...end.");
 						}
-						coll.close();
+						
+						synchronized (allUsers) {
+							Logger.getLogger(AdminServiceImpl.class).info("Syncing users...");
+							IDfQuery qry = new DfQuery("select r_object_id, user_name from dm_user where r_is_group=0");
+							IDfCollection coll = qry.execute(adminSession, IDfQuery.DF_READ_QUERY);
+							while (coll.next()) {
+								String userName = coll.getString("user_name");
+								IDfUser user = adminSession.getUser(userName);
 
-						FileOutputStream fout = new FileOutputStream(serFile.getAbsolutePath());
-						ObjectOutputStream oos = new ObjectOutputStream(fout);
-						oos.writeObject(allGroups);
-						fout.close();
-						oos.close();
-						Logger.getLogger(AdminServiceImpl.class).info("Serialized " + serFile.getAbsolutePath());
+								MyIDfUser myUser = MyIDfUser.convertFromIDFUser(user);
+								allUsers.put(myUser.loginName, myUser);
+								
+								if(allUsers.size() % 50 == 0)
+									Logger.getLogger(this.getClass()).info("Synchronized: " + allUsers.size() + " users.");
+							}
+							coll.close();
 
-						Logger.getLogger(AdminServiceImpl.class).info("Syncing groups...end.");
-
+							FileOutputStream fout = new FileOutputStream(serFileUsers.getAbsolutePath());
+							ObjectOutputStream oos = new ObjectOutputStream(fout);
+							oos.writeObject(allUsers);
+							fout.close();
+							oos.close();
+							Logger.getLogger(AdminServiceImpl.class).info("Serialized " + serFileUsers.getAbsolutePath());
+							Logger.getLogger(AdminServiceImpl.class).info("Syncing users...end.");
+						}
+						adminSession.getSessionManager().release(adminSession);
+						
 						// 1 hour
 						Thread.sleep(1 * 60 * 60 * 1000);
 					}
 				} catch (Exception e) {
-					Logger.getLogger(AdminServiceImpl.class).error(e);
+					String stacktrace = ExceptionUtils.getStackTrace(e);
+					Logger.getLogger(AdminServiceImpl.class).error(stacktrace);
 				} finally {
 					if (adminSession != null)
 						adminSession.getSessionManager().release(adminSession);
@@ -2306,7 +2350,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		String saKind = "";
 		try {
-
+			
 			IDfQuery query = new DfQuery();
 			query.setDQL(
 					"select profile_id, object_name, current_state_id from dm_dbo.T_DOCMAN_S where r_object_id='" + persObject.getObjectId().getId() + "'");
@@ -4669,6 +4713,19 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			Logger.getLogger(this.getClass()).error(ex.getMessage());
 			WsServer.log(loginName, ex.getMessage());
 		} finally {
+		}
+	}
+	
+	public static MyIDfUser getUserByUserName(String userName)
+	{
+		if(allUsersByUserName.containsKey(userName))
+			return allUsersByUserName.get(userName);
+		else
+		{
+			for (String usLoginName : allUsers.keySet()) {
+				allUsersByUserName.put(allUsers.get(usLoginName).userName, allUsers.get(usLoginName));
+			}
+			return allUsersByUserName.get(userName);
 		}
 	}
 }

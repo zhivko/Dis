@@ -189,13 +189,13 @@ public class WopiRest extends WopiApiServiceImpl {
 
 	@Override
 	public Response getWopiDocumentContent(String document, String accessToken, SecurityContext securityContext) throws NotFoundException {
-		InputStream bIs = null;
+		ByteArrayInputStream baIs = null;
 		String loginName = getUserFromToken(accessToken);
 		String password = getPassFromToken(accessToken);
 		String action = getActionFromToken(accessToken);
 		IDfSession userSession = null;
 
-		Logger.getLogger(this.getClass()).info("----- getWopiDocumentContent user:" + loginName + " action: " + action);
+		Logger.getLogger(this.getClass()).info("----- getWopiDocumentContent user:" + loginName + " action: " + action + " document: " + document);
 
 		if (document.split("~").length != 2) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).header("Content-Type", "application/json").entity("Rendition not passed.")
@@ -214,21 +214,23 @@ public class WopiRest extends WopiApiServiceImpl {
 
 			if (sysObject.getType().getName().equals("mob_form_template") && sysObject.hasAttr("mob_template_id")) {
 				Logger.getLogger("Object is mob_form_template filling properties with col_id.");
-				ByteArrayInputStream baIs = sysObject.getContentEx(rendition, 0);
+				baIs = sysObject.getContentEx(rendition, 0);
 				int id = Integer.valueOf(sysObject.getString("mob_template_id")).intValue();
-				bIs = new BufferedInputStream(ExplorerServlet.makeSureAllFieldsExist(baIs, id));
+				baIs = ExplorerServlet.makeSureAllFieldsExist(baIs, id);
 			} else {
-				bIs = new BufferedInputStream(sysObject.getContentEx(rendition, 0));
+				baIs = sysObject.getContentEx(rendition, 0);
 			}
-			byte[] buffer = new byte[bIs.available()];
-			bIs.read(buffer);
+			
+			byte[] buffer = new byte[baIs.available()];
+			baIs.read(buffer);
+			
 //@formatter:off
 			return Response.status(Response.Status.OK)
 					.header("X-WOPI-ItemVersion", sysObject.getModifyDate().getDate().getTime())
-					.header("Content-Length", sysObject.getContentSize())
+					.header("Content-Length", buffer.length)
 					.header("Content-Type", "application/json")
 					.header("Content-Disposition", "attachment; filename=" + sysObject.getId("r_object_id").toString() + "." + sysObject.getFormat().getDOSExtension())
-					.entity(new ByteArrayInputStream(buffer)).build();
+					.entity(buffer).build();
 //@formatter:on
 		} catch (Exception ex) {
 			Logger.getLogger(this.getClass()).error(ex);
@@ -239,8 +241,8 @@ public class WopiRest extends WopiApiServiceImpl {
 //@formatter:on
 		} finally {
 			try {
-				if (bIs != null)
-					bIs.close();
+				if (baIs != null)
+					baIs.close();
 				if (userSession != null && userSession.isConnected())
 					userSession.getSessionManager().release(userSession);
 			} catch (IOException e) {

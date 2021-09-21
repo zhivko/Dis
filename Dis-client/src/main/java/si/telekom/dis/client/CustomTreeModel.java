@@ -258,7 +258,7 @@ public class CustomTreeModel implements TreeViewModel {
 						@Override
 						public void onFailure(Throwable caught) {
 							// pd.hideit();
-							logger.info("Error: " + caught.getMessage());
+							MainPanel.log("Error: " + caught.getMessage());
 						}
 					});
 

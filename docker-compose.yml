@@ -24,7 +24,7 @@ services:
       - ${PWD}/src/main/resources/docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml
     privileged: true
 
-  wopivalidator:
-    image: tylerbutler/wopi-validator
-    restart: unless-stopped
+#  wopivalidator:
+#    image: tylerbutler/wopi-validator
+#    restart: unless-stopped
 

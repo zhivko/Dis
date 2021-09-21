@@ -186,7 +186,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 	public static String collaboraUrl = "https://klemen-hp-elitebook-850-g7-notebook-pc.ts.telekom.si:9980/hosting/discovery";
-	
+
 	static {
 		try {
 
@@ -905,40 +905,45 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			// get user role
 			query2.setDQL("select role_id, user_group_name from dm_dbo.T_DOCMAN_R where r_object_id='" + persObj.getObjectId().getId() + "'");
-			IDfCollection collection2 = query2.execute(userSession, IDfQuery.DF_READ_QUERY);
+			try {
+				IDfCollection collection2 = query2.execute(userSession, IDfQuery.DF_READ_QUERY);
 
-			boolean hasNext = collection2.next();
-			// check for versioned objects
-			if (collection2.getState() == IDfCollection.DF_NO_MORE_ROWS_STATE) {
-				Logger.getLogger("No profile found for persObject.getObjectId().getId() - trying search for barcode.");
+				boolean hasNext = collection2.next();
+				// check for versioned objects
+				if (collection2.getState() == IDfCollection.DF_NO_MORE_ROWS_STATE) {
+					Logger.getLogger("No profile found for persObject.getObjectId().getId() - trying search for barcode.");
+					collection2.close();
+					query2
+							.setDQL("select role_id, user_group_name from dm_dbo.T_DOCMAN_R where object_name='" + ((IDfSysObject) persObj).getObjectName() + "'");
+					collection2 = query2.execute(userSession, IDfQuery.DF_READ_QUERY);
+					hasNext = collection2.next();
+				}
+
+				if (!hasNext) {
+					Logger.getLogger(this.getClass()).warn("No records in T_DOCMAN_R - but records in T_DOCMAN_S exist ... no data for users and roles...");
+				}
+
+				while (hasNext) { // (collection2.getState() ==
+					// IDfCollection.DF_READY_STATE) {
+					String roleId = collection2.getString("role_id");
+					String userGroupNames = collection2.getString("user_group_name");
+					if (!roleUserGroups.containsKey(roleId)) {
+						roleUserGroups.put(roleId, new ArrayList<String>());
+					}
+					if (!roleUserGroups.get(roleId).contains(userGroupNames)) {
+						roleUserGroups.get(roleId).add(userGroupNames);
+					}
+
+					String roleToAdd = setRolesOfUser(userGroupNames, roleId, userSession, forUserOrGroup);
+					if (roleToAdd != null && !rolesOfUser.contains(roleToAdd))
+						rolesOfUser.add(roleToAdd);
+
+					hasNext = collection2.next();
+				}
 				collection2.close();
-				query2.setDQL("select role_id, user_group_name from dm_dbo.T_DOCMAN_R where object_name='" + ((IDfSysObject) persObj).getObjectName() + "'");
-				collection2 = query2.execute(userSession, IDfQuery.DF_READ_QUERY);
-				hasNext = collection2.next();
+			} catch (Exception ex) {
+				Logger.getLogger(this.getClass()).error(ex);
 			}
-
-			if (!hasNext) {
-				Logger.getLogger(this.getClass()).warn("No records in T_DOCMAN_R - but records in T_DOCMAN_S exist ... no data for users and roles...");
-			}
-
-			while (hasNext) { // (collection2.getState() ==
-				// IDfCollection.DF_READY_STATE) {
-				String roleId = collection2.getString("role_id");
-				String userGroupNames = collection2.getString("user_group_name");
-				if (!roleUserGroups.containsKey(roleId)) {
-					roleUserGroups.put(roleId, new ArrayList<String>());
-				}
-				if (!roleUserGroups.get(roleId).contains(userGroupNames)) {
-					roleUserGroups.get(roleId).add(userGroupNames);
-				}
-
-				String roleToAdd = setRolesOfUser(userGroupNames, roleId, userSession, forUserOrGroup);
-				if (roleToAdd != null && !rolesOfUser.contains(roleToAdd))
-					rolesOfUser.add(roleToAdd);
-
-				hasNext = collection2.next();
-			}
-			collection2.close();
 		}
 		collection.close();
 
@@ -976,33 +981,28 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 			MyIDfGroup group = AdminServiceImpl.allGroups.get(userGroupNames);
 
 			if (group != null) {
-				// IDfGroup group = (IDfGroup)objGroup;
-				// ldap query template
-				// ldap query:
-				// {0} is the nested group, it should be a Distinguished name
-				// DN=CN={groupName},OU=FIM-Managed Groups,DC=ts,DC=telekom,DC=si
-				// {1} is the user sAMAccountName you want (you could use any other
-				// user property than sAMAccountName within (sAMAccountName={1}))
 
-				// group search base: DC=ts,DC=telekom,DC=si
-				// (&(memberOf:1.2.840.113556.1.4.1941:=CN=Procesi,OU=FIM-Managed
-				// Groups,DC=ts,DC=telekom,DC=si)(objectCategory=group))
-				String groupDn = "CN=" + userGroupNames + ",OU=FIM-Managed Groups,DC=ts,DC=telekom,DC=si";
-				String ldapQuery = "(&(memberOf:1.2.840.113556.1.4.1941:={0})(objectCategory=person)(objectClass=user)(sAMAccountName={1}))";
-				ldapQuery = ldapQuery.replaceAll("\\{0\\}", groupDn);
-				ldapQuery = ldapQuery.replaceAll("\\{1\\}", forUserOrGroup);
+				/*
+				 * // --- start LdapQuery for nesting lookup of user that is part of
+				 * groups within groups --- String groupDn = "CN=" + userGroupNames +
+				 * ",OU=FIM-Managed Groups,DC=ts,DC=telekom,DC=si"; String ldapQuery =
+				 * "(&(memberOf:1.2.840.113556.1.4.1941:={0})(objectCategory=person)(objectClass=user)(sAMAccountName={1}))";
+				 * ldapQuery = ldapQuery.replaceAll("\\{0\\}", groupDn); ldapQuery =
+				 * ldapQuery.replaceAll("\\{1\\}", forUserOrGroup);
+				 * 
+				 * Logger.getLogger(this.getClass()).debug("Member ldap query: " +
+				 * ldapQuery);
+				 * 
+				 * long t4 = System.currentTimeMillis(); boolean isMember =
+				 * AdminServiceImpl.getInstance().isMember(forUserOrGroup,
+				 * userGroupNames); long t5 = System.currentTimeMillis(); if (t5 - t4 >
+				 * 1000) { String msg = "Warning: ldap query: " + ldapQuery + " took " +
+				 * (t5 - t4) + "ms."; WsServer.log(userSession.getLoginUserName(), msg);
+				 * Logger.getLogger(this.getClass()).warn(msg); } // --- end LdapQuery
+				 * for nesting lookup of user that is part of groups within groups ---
+				 */
 
-				Logger.getLogger(this.getClass()).debug("Member ldap query: " + ldapQuery);
-
-				long t4 = System.currentTimeMillis();
-				boolean isMember = AdminServiceImpl.getInstance().isMember(forUserOrGroup, userGroupNames);
-				long t5 = System.currentTimeMillis();
-				if (t5 - t4 > 1000) {
-					String msg = "Warning: ldap query: " + ldapQuery + " took " + (t5 - t4) + "ms.";
-					WsServer.log(userSession.getLoginUserName(), msg);
-					Logger.getLogger(this.getClass()).warn(msg);
-				}
-				// if (!rolesOfUser.contains(roleId))
+				boolean isMember = isPartOf(userGroupNames, forUserOrGroup);
 				if (isMember || forUserOrGroup.toLowerCase().equals(userGroupNames.toLowerCase())) {
 					return roleId;
 				}
@@ -1017,15 +1017,31 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 			} else {
 				// try user
-				IDfUser user = userSession.getUser(userGroupNames);
+				// IDfUser user = userSession.getUser(userGroupNames);
+				MyIDfUser user = AdminServiceImpl.allUsers.get(userGroupNames);
 				if (user != null) {
-					if (user.getUserLoginName().equalsIgnoreCase(forUserOrGroup)) {
-						return roleId;
-					}
+					// if (user.getUserLoginName().equalsIgnoreCase(forUserOrGroup)) {
+					return roleId;
+					// }
 				}
 			}
 		}
 		return null;
+	}
+
+	private boolean isPartOf(String groupName, String forUserOrGroup) {
+		// TODO Auto-generated method stub
+		MyIDfGroup group = AdminServiceImpl.allGroups.get(groupName);
+		MyIDfUser user = AdminServiceImpl.allUsers.get(forUserOrGroup);
+		if (user == null)
+			user = AdminServiceImpl.getUserByUserName(forUserOrGroup);
+		if (group.users.contains(user.userName)) {
+			return true;
+		}
+		for (String oneGroupName : group.groups) {
+			return isPartOf(oneGroupName, forUserOrGroup);
+		}
+		return false;
 	}
 
 	public void checkDocmanSExist(IDfPersistentObject persObject, IDfSession userSession, Profile prof) throws Exception {
@@ -5415,22 +5431,22 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 	@Override
 	public String collaboraUrl(String format, String action) throws ServerException {
 		String ret = "";
+		IDfSession adminSession = null;
 		try {
-			String dosExtension = AdminServiceImpl.getAdminSession().getFormat(format).getDOSExtension();
+			adminSession = AdminServiceImpl.getAdminSession();
+			String dosExtension = adminSession.getFormat(format).getDOSExtension();
 			if (collaboraUrls == null) {
 
 				collaboraUrls = new HashMap<String, String>();
 				URL url = new URL(collaboraUrl);
-				
-				
+
 				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 				DocumentBuilder db = dbf.newDocumentBuilder();
 				org.w3c.dom.Document doc = db.parse(url.openStream());
-				
+
 				NodeList nl = doc.getElementsByTagName("action");
-				for(int i=0;i<nl.getLength();i++)
-				{
-					Element elAction = (Element)nl.item(i);
+				for (int i = 0; i < nl.getLength(); i++) {
+					Element elAction = (Element) nl.item(i);
 					String fmt = elAction.getAttribute("ext");
 					String act = elAction.getAttribute("name");
 					String uri = elAction.getAttribute("urlsrc");
@@ -5439,11 +5455,9 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 
 				// Close the input stream
 				ret = collaboraUrls.get(dosExtension + ":" + action);
-				if(ret==null)
-				{
+				if (ret == null) {
 					for (String key : collaboraUrls.keySet()) {
-						if(key.startsWith(dosExtension))
-						{
+						if (key.startsWith(dosExtension)) {
 							ret = collaboraUrls.get(key);
 							break;
 						}
@@ -5451,19 +5465,20 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				}
 			} else {
 				ret = collaboraUrls.get(dosExtension + ":" + action);
-				if(ret==null)
-				{
+				if (ret == null) {
 					for (String key : collaboraUrls.keySet()) {
-						if(key.startsWith(dosExtension))
-						{
+						if (key.startsWith(dosExtension)) {
 							ret = collaboraUrls.get(key);
 							break;
 						}
 					}
-				}				
+				}
 			}
 		} catch (Exception ex) {
 			throw new ServerException(ex.getMessage());
+		} finally {
+			if (adminSession != null && adminSession.isConnected())
+				adminSession.getSessionManager().release(adminSession);
 		}
 
 		return ret;
