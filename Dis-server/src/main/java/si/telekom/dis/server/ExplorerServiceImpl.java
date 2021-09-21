@@ -964,9 +964,11 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 					// Logger.getLogger(this.getClass().getName()).info("Role: " +
 					// role.getId() + " defaultUser: " + groupOrUser.getId());
 
-					String roleToAdd = setRolesOfUser(groupOrUser.getId(), role.getId(), userSession, forUserOrGroup);
-					if (roleToAdd != null && !rolesOfUser.contains(roleToAdd))
-						rolesOfUser.add(roleToAdd);
+					if (AdminServiceImpl.allUsers.containsKey(forUserOrGroup)) {
+						String roleToAdd = setRolesOfUser(groupOrUser.getId(), role.getId(), userSession, forUserOrGroup);
+						if (roleToAdd != null && !rolesOfUser.contains(roleToAdd))
+							rolesOfUser.add(roleToAdd);
+					}
 				}
 			}
 
@@ -1002,7 +1004,10 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				 * for nesting lookup of user that is part of groups within groups ---
 				 */
 
-				boolean isMember = isPartOf(userGroupNames, forUserOrGroup);
+				boolean isMember=false;
+				if (AdminServiceImpl.allUsers.containsValue(forUserOrGroup)) {
+					isMember = isPartOf(userGroupNames, forUserOrGroup);
+				}
 				if (isMember || forUserOrGroup.toLowerCase().equals(userGroupNames.toLowerCase())) {
 					return roleId;
 				}
@@ -1035,6 +1040,8 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 		MyIDfUser user = AdminServiceImpl.allUsers.get(forUserOrGroup);
 		if (user == null)
 			user = AdminServiceImpl.getUserByUserName(forUserOrGroup);
+		if (user == null)
+			Logger.getLogger(this.getClass()).error("OOPS");
 		if (group.users.contains(user.userName)) {
 			return true;
 		}
