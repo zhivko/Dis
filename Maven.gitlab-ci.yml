@@ -33,10 +33,14 @@ cache:
 
 # For merge requests do not `deploy` but only run `verify`.
 # See https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
+
+#mvn clean package -P prod -DskipTests -Dgwt.skipCompilation=false -U
+
+
 .verify: &verify
   stage: test
   script:
-    - 'mvn $MAVEN_CLI_OPTS verify'
+    - 'mvn clean test -P prod -Dgwt.skipCompilation=true'
   except:
     variables:
       - $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
