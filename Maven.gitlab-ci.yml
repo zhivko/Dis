@@ -12,12 +12,13 @@ cache:
 build:
   stage: build
   script:
-    - mvn $MAVEN_CLI_OPTS compile
+    - ln -s /src/main/filters/test.properties /Dis-shared/src/main/filters/test.properties
+    - mvn $MAVEN_CLI_OPTS compile -P test -Dgwt.skipCompilation=true
 
 test:
   stage: test
   script:
-    - mvn $MAVEN_CLI_OPTS test
+    - mvn $MAVEN_CLI_OPTS test -P test -Dgwt.skipCompilation=true
 
 deploy:
   stage: deploy
