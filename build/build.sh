@@ -10,5 +10,3 @@ ln -s /src/main/filters/test.properties /Dis-server/src/main/filters/test.proper
 ln -s /src/main/filters/dev.properties /Dis-server/src/main/filters/dev.properties
 ln -s /src/main/filters/prod.properties /Dis-server/src/main/filters/prod.properties
 
-mvn clean package -P test -Dgwt.skipCompilation=true
-
