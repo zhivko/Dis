@@ -1,4 +1,4 @@
-image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3.8.2-openjdk-8
+image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
 
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
