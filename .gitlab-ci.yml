@@ -4,7 +4,7 @@ stages:
   - deploy
 
 variables:
-  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
+  MAVEN_CLI_OPTS: "-s .m2/settings.xml"
   TRUSTSTORE_PASSWORD: $TRUSTSTORE_PASSWORD
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Xmx512m -Djavax.net.ssl.trustStore=.m2/maven.truststore -Djavax.net.ssl.trustStorePassword=$TRUSTSTORE_PASSWORD"
 
