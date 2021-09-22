@@ -46,7 +46,6 @@ build:
 test:
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
   stage: test
-  needs: build
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage test"
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
