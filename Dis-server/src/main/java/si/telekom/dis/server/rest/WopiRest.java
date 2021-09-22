@@ -78,6 +78,8 @@ import si.telekom.dis.shared.ServerException;
 
 /*
 
+		https://sdk.collaboraonline.com/docs/How_to_integrate.html
+
     http://admin:admin@localhost:9980/loleaflet/dist/admin/admin.html
     https://admin:admin@localhost:9980/lool/getMetrics
     http://localhost:9980/hosting/capabilities
@@ -101,7 +103,7 @@ import si.telekom.dis.shared.ServerException;
 		https://localhost/hosting/discovery
 
 		https://klemen-hp-elitebook-850-g7-notebook-pc.ts.telekom.si:9980/hosting/discovery
-
+		
  */
 
 @Api
@@ -166,6 +168,15 @@ public class WopiRest extends WopiApiServiceImpl {
 			info.setUserCanWrite(action.equals("edit") ? true : false);
 			info.setSupportsUpdate(action.equals("edit") ? true : false);
 			info.setSupportsLocks(action.equals("edit") ? true : false);
+			
+			info.setHidePrintOption(action.equals("edit") ? true : false);
+			info.setDisablePrint(action.equals("edit") ? false : true);
+			info.setHideSaveOption(action.equals("edit") ? false : true);
+			info.setHideExportOption(action.equals("edit") ? false : true);
+			info.setDisableExport(action.equals("edit") ? false : true);
+			info.setDisableCopy(false);
+			info.setEnableOwnerTermination(true);
+			
 			info.setLastModifiedTime(formatTime(time));
 			info.setUserFriendlyName(userSession.getUser(userSession.getLoginUserName()).getDescription());
 
@@ -382,6 +393,15 @@ public class WopiRest extends WopiApiServiceImpl {
 			info.setUserCanWrite(action.equals("edit") ? true : false);
 			info.setSupportsUpdate(action.equals("edit") ? true : false);
 			info.setSupportsLocks(action.equals("edit") ? true : false);
+			
+			info.setHidePrintOption(action.equals("edit") ? true : false);
+			info.setDisablePrint(action.equals("edit") ? false : true);
+			info.setHideSaveOption(action.equals("edit") ? false : true);
+			info.setHideExportOption(action.equals("edit") ? false : true);
+			info.setDisableExport(action.equals("edit") ? false : true);
+			info.setDisableCopy(false);
+			info.setEnableOwnerTermination(true);			
+			
 			info.setLastModifiedTime(formatTime(sysObj.getModifyDate().getDate()));
 			info.setUserFriendlyName(userSession.getUser(userSession.getLoginUserName()).getDescription());
 
