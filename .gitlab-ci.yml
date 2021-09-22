@@ -31,10 +31,9 @@ build:
     - mkdir -p /builds/erenderwebui/dis/Dis-shared/src/main
     - mkdir -p /builds/erenderwebui/dis/Dis-server/src/main
     - mkdir -p /builds/erenderwebui/dis/Dis-client/src/main
-    - ln -s ./src/main/filters /builds/erenderwebui/dis/Dis-shared/src/main/filters
-    - ls -li ./Dis-shared/src/main/filters
-    - ln -s ./src/main/filters /builds/erenderwebui/dis/Dis-client/src/main/filters
-    - ln -s ./src/main/filters /builds/erenderwebui/dis/Dis-server/src/main/filters
+    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-shared/src/main/filters
+    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-client/src/main/filters
+    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-server/src/main/filters
     - echo "---SHOW FILES ----"
     - ls -all /builds/erenderwebui/dis/Dis-shared/src/main/filters/*.*
     - mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true -e -X
@@ -49,9 +48,9 @@ test:
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage test"
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
-    - ln -s ./src/main/filters ./Dis-shared/src/main/filters
-    - ln -s ./src/main/filters ./Dis-client/src/main/filters
-    - ln -s ./src/main/filters ./Dis-server/src/main/filters
+    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-shared/src/main/filters
+    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-client/src/main/filters
+    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-server/src/main/filters
     - mvn $MAVEN_CLI_OPTS test -P test -Dgwt.skipCompilation=true
   artifacts:
     paths:
@@ -63,9 +62,9 @@ deploy:
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage deploy"
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
-    - ln -s ./src/main/filters ./Dis-shared/src/main/filters
-    - ln -s ./src/main/filters ./Dis-client/src/main/filters
-    - ln -s ./src/main/filters ./Dis-server/src/main/filters
+    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-shared/src/main/filters
+    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-client/src/main/filters
+    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-server/src/main/filters
     - mvn $MAVEN_CLI_OPTS deploy
   only:
     - master
