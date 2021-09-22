@@ -10,7 +10,7 @@ variables:
 
 secret_detection:
   variables:
-    SECRET_DETECTION_HISTORIC_SCAN: "true"
+    SECRET_DETECTION_HISTORIC_SCAN: "false"
 
 
 cache:
