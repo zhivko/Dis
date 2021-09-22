@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
@@ -4653,6 +4654,14 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				tempFile.delete();
 			}
 		}
+		
+		al.sort(new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				// TODO Auto-generated method stub
+				return o1.compareTo(o2);
+			}
+		});
 
 		return al;
 	}
