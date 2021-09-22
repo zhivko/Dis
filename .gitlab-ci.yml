@@ -8,6 +8,13 @@ variables:
   TRUSTSTORE_PASSWORD: $TRUSTSTORE_PASSWORD
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Xmx512m -Djavax.net.ssl.trustStore=.m2/maven.truststore -Djavax.net.ssl.trustStorePassword=$TRUSTSTORE_PASSWORD"
 
+include:
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+secret_detection:
+  variables:
+    SECRET_DETECTION_HISTORIC_SCAN: "true"
+
 cache:
   paths:
     - .m2/repository/
