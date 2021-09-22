@@ -30,12 +30,18 @@ test:
   stage: test
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage test"
+    - ln -s /src/main/filters /Dis-shared/src/main/filters
+    - ln -s /src/main/filters /Dis-client/src/main/filters
+    - ln -s /src/main/filters /Dis-server/src/main/filters
     - mvn $MAVEN_CLI_OPTS test -P test -Dgwt.skipCompilation=true
 
 deploy:
   stage: deploy
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage deploy"
+    - ln -s /src/main/filters /Dis-shared/src/main/filters
+    - ln -s /src/main/filters /Dis-client/src/main/filters
+    - ln -s /src/main/filters /Dis-server/src/main/filters
     - mvn $MAVEN_CLI_OPTS deploy
   only:
     - master
