@@ -6,7 +6,7 @@ stages:
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml"
   TRUSTSTORE_PASSWORD: $TRUSTSTORE_PASSWORD
-  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Xmx512m -Djavax.net.ssl.trustStore=.m2/maven.truststore -Djavax.net.ssl.trustStorePassword=$TRUSTSTORE_PASSWORD"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Xmx512m -Djavax.net.ssl.trustStore=.m2/maven.truststore -Djavax.net.ssl.trustStorePassword=$TRUSTSTORE_PASSWORD -Dsettings.security=.m2/security-settings.xml"
 
 include:
   - template: Security/Secret-Detection.gitlab-ci.yml
@@ -36,7 +36,7 @@ build:
     - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-server/src/main/filters
     - echo "---SHOW FILES ----"
     - ls -all /builds/erenderwebui/dis/Dis-shared/src/main/filters/*.*
-    - mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true -e -X
+    - mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true
   artifacts:
     paths:
       - ./target
