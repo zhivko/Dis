@@ -30,7 +30,7 @@ build:
     - ln -s ./src/main/filters ./Dis-client/src/main/filters
     - ln -s ./src/main/filters ./Dis-server/src/main/filters
     - echo "---SHOW FILES ----"
-    - ls -all /builds/erenderwebui/dis/Dis-shared/src/main/filters
+    - ls -all /builds/erenderwebui/dis/Dis-shared/src/main/filters/*.*
     - mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true -e -X
   artifacts:
     paths:
