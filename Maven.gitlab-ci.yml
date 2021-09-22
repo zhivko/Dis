@@ -23,6 +23,7 @@ build:
   stage: build
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage build"
+    - echo MAVEN_OPTS
     - ln -s ./src/main/filters ./Dis-shared/src/main/filters
     - ln -s ./src/main/filters ./Dis-client/src/main/filters
     - ln -s ./src/main/filters ./Dis-server/src/main/filters
