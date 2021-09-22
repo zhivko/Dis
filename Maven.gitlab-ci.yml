@@ -1,4 +1,7 @@
-image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
+stages:
+  - build
+  - test
+  - deploy
 
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
@@ -9,15 +12,8 @@ cache:
     - .m2/repository/
     - target/
 
-build-code-job:
-  stage: build
-  script:
-    - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage build-code-job"
-    - ln -s ./src/main/filters ./Dis-shared/src/main/filters
-    - ln -s ./src/main/filters ./Dis-client/src/main/filters
-    - ln -s ./src/main/filters ./Dis-server/src/main/filters
-
 build:
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
   stage: build
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage build"
@@ -27,6 +23,7 @@ build:
     - mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true
 
 test:
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
   stage: test
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage test"
@@ -40,6 +37,7 @@ test:
       - ./target
 
 deploy:
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
   stage: deploy
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage deploy"
