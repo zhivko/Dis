@@ -5,7 +5,13 @@ stages:
 
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
-  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  TRUSTSTORE_PASSWORD: $TRUSTSTORE_PASSWORD
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Xmx512m -Djavax.net.ssl.trustStore=.m2/maven.truststore -Djavax.net.ssl.trustStorePassword=$TRUSTSTORE_PASSWORD"
+
+secret_detection:
+  variables:
+    SECRET_DETECTION_HISTORIC_SCAN: "true"
+
 
 cache:
   paths:
@@ -24,6 +30,8 @@ build:
   artifacts:
     paths:
       - ./target
+
+
 
 test:
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
