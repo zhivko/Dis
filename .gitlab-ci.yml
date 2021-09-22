@@ -8,11 +8,6 @@ variables:
   TRUSTSTORE_PASSWORD: $TRUSTSTORE_PASSWORD
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Xmx512m -Djavax.net.ssl.trustStore=.m2/maven.truststore -Djavax.net.ssl.trustStorePassword=$TRUSTSTORE_PASSWORD"
 
-secret_detection:
-  variables:
-    SECRET_DETECTION_HISTORIC_SCAN: "false"
-
-
 cache:
   paths:
     - .m2/repository/
