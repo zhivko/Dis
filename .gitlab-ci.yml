@@ -26,6 +26,7 @@ build:
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage build"
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
+    - pwd
     - ls -all ./src/main/filters
     - mkdir -p /builds/erenderwebui/dis/Dis-shared/src/main
     - mkdir -p /builds/erenderwebui/dis/Dis-server/src/main
