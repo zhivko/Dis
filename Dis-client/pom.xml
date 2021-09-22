@@ -60,10 +60,6 @@
 		</dependency>
 
 
-
-
-
-
 	</dependencies>
 
 	<build>
@@ -71,6 +67,7 @@
 			<plugin>
 				<groupId>net.ltgt.gwt.maven</groupId>
 				<artifactId>gwt-maven-plugin</artifactId>
+				<version>HEAD-SNAPSHOT</version>
 				<configuration>
 					<moduleName>si.telekom.dis.WebUi2</moduleName>
 					<moduleShortName>WebUi2</moduleShortName>
