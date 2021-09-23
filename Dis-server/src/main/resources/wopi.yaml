@@ -183,11 +183,6 @@ paths:
         "501":
           description: Not implemented        
 components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
   schemas:
     FileInfo:
       type: object
