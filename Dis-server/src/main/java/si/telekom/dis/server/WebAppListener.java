@@ -12,10 +12,8 @@ import javax.servlet.ServletContextListener;
 import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import si.telekom.dis.server.jobs.MoveMobFormTemplateToEffective;
-import si.telekom.dis.server.rest.WopiRest;
 
 public final class WebAppListener implements ServletContextAttributeListener, ServletContextListener {
 
@@ -76,7 +74,7 @@ public final class WebAppListener implements ServletContextAttributeListener, Se
 		
 		try {
 			WebappContext.init(event.getServletContext());
-			SLF4JBridgeHandler.install();
+			//SLF4JBridgeHandler.install();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -160,10 +160,14 @@ public class DocumentViewCollabora extends WindowBox {
 					Hidden access_token_ttl = new Hidden();
 					access_token_ttl.setValue("10000000");
 					access_token_ttl.getElement().setAttribute("name", "access_token_ttl");
-
+					Hidden uiMode = new Hidden();
+					uiMode.setValue("notebookbar;TextRuler=false;PresentationStatusbar=false;SpreadsheetSidebar=false;WriterStatusbar=false");
+					uiMode.getElement().setAttribute("name", "UIMode");
+					
 					Div div = new Div();
 					div.add(access_token);
 					div.add(access_token_ttl);
+					div.add(uiMode);
 
 					form.add(div);
 

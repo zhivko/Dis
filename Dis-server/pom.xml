@@ -133,11 +133,8 @@
 			<version>7.3.0090.0047</version>
 			<classifier>centos</classifier>
 		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>2.3.0-b170127.1453</version>
-		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+
 
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -492,11 +489,11 @@
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.slf4j/jul-to-slf4j -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jul-to-slf4j</artifactId>
-			<version>1.7.5</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.slf4j</groupId> -->
+<!-- 			<artifactId>jul-to-slf4j</artifactId> -->
+<!-- 			<version>1.7.5</version> -->
+<!-- 		</dependency> -->
 
 		<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
 		<dependency>
@@ -541,6 +538,17 @@
 		<!-- <version>3.0.2</version> -->
 		<!-- </dependency> -->
 
+		<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-core -->
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-core</artifactId>
+			<version>2.2.7</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>2.2.7</version>
+		</dependency>
 
 
 

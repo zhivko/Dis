@@ -157,7 +157,8 @@ public class ExplorerServlet extends HttpServlet {
 
 			mimeType = format.getMIMEType().toString();
 			dosExtension = format.getDOSExtension();
-			fileName = (title != null ? title : sysObj.getObjectName()) + "." + dosExtension;
+			//fileName = (title != null ? title : sysObj.getObjectName()) + "." + dosExtension;
+			fileName = sysObj.getObjectName() + "." + dosExtension;
 
 			ByteArrayInputStream bacontentStreamIs = sysObj.getContentEx(rendition, 0);
 			SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
@@ -373,7 +374,7 @@ public class ExplorerServlet extends HttpServlet {
 				resp.setHeader("fileName", "\"" + fileName + "." + dosExtension + "\"");
 			} else {
 				resp.setContentType("application/x-download");
-				resp.setHeader("Content-Disposition", "attachment; filename=" + "\"" + fileName + "." + dosExtension + "\"");
+				resp.setHeader("Content-Disposition", "attachment; filename=" + "\"" + fileName + "\"");
 			}
 
 			ServletOutputStream out = resp.getOutputStream();
