@@ -55,8 +55,7 @@ build:
 test:
   image: gitlab.telekom.si:4567/erenderwebui/dis:latest
   stage: test
-  before_script:
-#    - docker login -u gitlab-ci-token -p $DOCKER_ACCESS gitlab.telekom.si
+  needs: ["build"]
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage test"
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
@@ -72,6 +71,7 @@ test:
 deploy:
   image: gitlab.telekom.si:4567/erenderwebui/dis:latest
   stage: deploy
+  needs: ["test"]
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage deploy"
 # https://console-openshift-console.apps.okd-test.ts.telekom.si/k8s/ns/dis-dev/pods/dis-5454fc4484-9jjjm/terminal
