@@ -51,9 +51,9 @@ build:
 
 test:
   image: erenderwebui/dis:latest
-
-  services:
   stage: test
+  before_script:
+    - docker login -u gitlab-ci-token -p LFGPzKs8SNNR9eCKsQ5f gitlab.telekom.si
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage test"
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
