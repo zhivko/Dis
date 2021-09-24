@@ -9,7 +9,7 @@ variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Xmx512m -Djavax.net.ssl.trustStore=.m2/maven.truststore -Djavax.net.ssl.trustStorePassword=$TRUSTSTORE_PASSWORD -Dsettings.security=.m2/security-settings.xml"
   OC_NAMESPACESLUG: dis-dev
   OC_URL_DEV: https://api.okd-test.ts.telekom.si:6443
-  OC_URL_STG: https://api.ocp-test.ts.telekom.si:6443
+  OC_URL_TEST: https://api.ocp-test.ts.telekom.si:6443
   OC_URL_PROD: https://api.ocp-prod.ts.telekom.si:6443
 
 include:
@@ -65,36 +65,13 @@ deploy:
   stage: deploy
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage deploy"
-    - echo "MAVEN_OPTS:" $MAVEN_OPTS
-    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-shared/src/main/filters
-    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-client/src/main/filters
-    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-server/src/main/filters
-    - mvn $MAVEN_CLI_OPTS deploy
+# https://console-openshift-console.apps.okd-test.ts.telekom.si/k8s/ns/dis-dev/pods/dis-5454fc4484-9jjjm/terminal
+    - oc login $OC_URL_TEST --token=$OC_TOKEN_TEST
+    - oc status
   only:
     - master
   artifacts:
     paths:
       - ./target
 
-.openshift_job:
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/widerin/openshift-cli:latest
-  before_script:
-    - oc login $OC_URL --token=$OC_TOKEN --insecure-skip-tls-verify
-    - oc project $OC_NAMESPACE
 
-"Deploy Application on OCP-TEST":
-  extends: .openshift_job
-  stage: deploy
-  variables:
-    OC_NAMESPACE: $OC_NAMESPACESLUG
-    OC_URL: $OC_URL_STG
-    OC_TOKEN: $OC_TOKEN_STG
-  script:
-    - wget https://storage.googleapis.com/knative-nightly/client/latest/kn-linux-amd64
-    - chmod 770 kn-linux-amd64 && mv kn-linux-amd64 /usr/local/bin/kn
-    - kn service update testrunner-api --image image-registry.openshift-image-registry.svc:5000/auttestbss-stg/testrunner-api:latest
-  environment:
-    name: Staging
-    url: $APP_URL_STG
-  rules:
-    - if: '$CI_COMMIT_REF_NAME == "master" && $CI_PIPELINE_SOURCE != "merge_request_event"'
