@@ -56,7 +56,7 @@ test:
     - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-client/src/main/filters
     - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-server/src/main/filters
     - sudo apt-get install net-tools
-		- sudo netstat –tulnp
+    - sudo netstat –tulnp
     - mvn $MAVEN_CLI_OPTS test -P test -Dgwt.skipCompilation=true
   artifacts:
     paths:
