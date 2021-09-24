@@ -28,7 +28,7 @@ cache:
 #  - docker info
 
 build:
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
+  image: erenderwebui/dis:latest
   stage: build
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage build"
