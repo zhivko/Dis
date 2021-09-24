@@ -24,6 +24,9 @@ cache:
     - .m2/repository/
     - target/
 
+before_script:
+  - docker info
+
 build:
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
   stage: build
@@ -48,7 +51,12 @@ build:
 
 
 test:
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
+#  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
+  image:
+    repository: gitlab.telekom.si/erenderwebui/dis:latest
+    tag: latest
+
+  services:
   stage: test
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage test"
