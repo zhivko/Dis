@@ -30,6 +30,7 @@ build:
   before_script:
     - docker login -u gitlab-ci-token -p $DOCKER_ACCESS gitlab.telekom.si
     - ls --all /usr/local/bin
+    - echo MAVEN_HOME
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage build"
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
@@ -43,7 +44,7 @@ build:
     - ln -s $(pwd)/src/main/filters $(pwd)/Dis-server/src/main/filters
     - echo "---SHOW FILES ----"
     - ls -all $(pwd)/Dis-shared/src/main/filters/*.*
-    - mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true
+    - $MAVEN_HOME/bin/mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true
   artifacts:
     paths:
       - /builds/erenderwebui/dis/target
