@@ -57,7 +57,7 @@ test:
     - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-client/src/main/filters
     - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-server/src/main/filters
 
-    - echo "deb  http://deb.debian.org/debian  stretch main" | sudo tee -a /etc/apt/sources.list
+    - echo "deb  http://deb.debian.org/debian  stretch main" | tee -a /etc/apt/sources.list
     - apt-get install net-tools
     - netstat –tulnp
     - mvn $MAVEN_CLI_OPTS test -P test -Dgwt.skipCompilation=true
