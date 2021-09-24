@@ -26,7 +26,7 @@ cache:
     - target/
 
 build:
-  image: erenderwebui/dis:latest
+  image: gitlab.telekom.si:4567/erenderwebui/dis:latest
   stage: build
   before_script:
     - docker login -u gitlab-ci-token -p $DOCKER_ACCESS gitlab.telekom.si
@@ -53,7 +53,7 @@ build:
 
 
 test:
-  image: erenderwebui/dis:latest
+  image: gitlab.telekom.si:4567/erenderwebui/dis:latest
   stage: test
   before_script:
     - docker login -u gitlab-ci-token -p $DOCKER_ACCESS gitlab.telekom.si
@@ -70,7 +70,7 @@ test:
       - /builds/erenderwebui/dis/Dis-server/target
 
 deploy:
-  image: erenderwebui/dis:latest
+  image: gitlab.telekom.si:4567/erenderwebui/dis:latest
   stage: deploy
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage deploy"
