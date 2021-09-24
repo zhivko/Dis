@@ -146,7 +146,6 @@ public class RestTest extends JerseyTest {
 
 			System.out.println("documentum superuser domain: " + AdminServiceImpl.getInstance().superUserDomain);
 			System.out.println("documentum superuser user: " + AdminServiceImpl.getInstance().superUserName);
-			System.out.println("documentum superuser password: " + AdminServiceImpl.getInstance().superUserPassword);
 
 			while (!AdminServiceImpl.started)
 				Thread.currentThread().sleep(5000);
