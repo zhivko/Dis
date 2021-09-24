@@ -13,4 +13,3 @@ RUN apk add --no-cache curl tar bash && \
 EXPOSE 389
 EXPOSE 8080
 
-ENTRYPOINT "/usr/local/bin/mvn-entrypoint.sh"
