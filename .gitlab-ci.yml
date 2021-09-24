@@ -43,7 +43,8 @@ build:
     - mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true
   artifacts:
     paths:
-      - ./target
+      - /builds/erenderwebui/dis/target
+      - /builds/erenderwebui/dis/Dis-server/target
 
 
 test:
@@ -60,7 +61,8 @@ test:
     - mvn $MAVEN_CLI_OPTS test -P test -Dgwt.skipCompilation=true
   artifacts:
     paths:
-      - ./target
+      - /builds/erenderwebui/dis/target
+      - /builds/erenderwebui/dis/Dis-server/target
 
 deploy:
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
