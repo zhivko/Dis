@@ -34,14 +34,14 @@ build:
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
     - pwd
     - ls -all ./src/main/filters
-    - mkdir -p /builds/erenderwebui/dis/Dis-shared/src/main
-    - mkdir -p /builds/erenderwebui/dis/Dis-server/src/main
-    - mkdir -p /builds/erenderwebui/dis/Dis-client/src/main
-    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-shared/src/main/filters
-    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-client/src/main/filters
-    - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-server/src/main/filters
+    - mkdir -p $(pwd)/Dis-shared/src/main
+    - mkdir -p $(pwd)/Dis-server/src/main
+    - mkdir -p $(pwd)/Dis-client/src/main
+    - ln -s $(pwd)/src/main/filters $(pwd)/Dis-shared/src/main/filters
+    - ln -s $(pwd)/src/main/filters $(pwd)/Dis-client/src/main/filters
+    - ln -s $(pwd)/src/main/filters $(pwd)/Dis-server/src/main/filters
     - echo "---SHOW FILES ----"
-    - ls -all /builds/erenderwebui/dis/Dis-shared/src/main/filters/*.*
+    - ls -all $(pwd)/Dis-shared/src/main/filters/*.*
     - mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true
   artifacts:
     paths:
