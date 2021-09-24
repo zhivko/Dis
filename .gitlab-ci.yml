@@ -43,7 +43,7 @@ build:
     - ln -s $(pwd)/src/main/filters $(pwd)/Dis-server/src/main/filters
     - echo "---SHOW FILES ----"
     - ls -all $(pwd)/Dis-shared/src/main/filters/*.*
-    - $MAVEN_HOME/bin/mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true
+    - mvn $MAVEN_CLI_OPTS clean compile -P test -Dgwt.skipCompilation=true
   artifacts:
     paths:
       - /builds/erenderwebui/dis/target
@@ -61,7 +61,7 @@ test:
     - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-shared/src/main/filters
     - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-client/src/main/filters
     - ln -s /builds/erenderwebui/dis/src/main/filters ./Dis-server/src/main/filters
-    - $MAVEN_HOME/bin/mvn $MAVEN_CLI_OPTS test -P test -Dgwt.skipCompilation=true
+    - mvn $MAVEN_CLI_OPTS test -P test -Dgwt.skipCompilation=true
   artifacts:
     paths:
       - /builds/erenderwebui/dis/target
