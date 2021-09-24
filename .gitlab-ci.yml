@@ -24,14 +24,12 @@ cache:
     - .m2/repository/
     - target/
 
-before_script:
-#  - docker login -u gitlab-ci-token -p $DOCKER_ACCESS gitlab.telekom.si
-  - docker login -u gitlab-ci-token -p LFGPzKs8SNNR9eCKsQ5f gitlab.telekom.si
-
-
 build:
   image: erenderwebui/dis:latest
   stage: build
+  before_script:
+#  - docker login -u gitlab-ci-token -p $DOCKER_ACCESS gitlab.telekom.si
+    - docker login -u gitlab-ci-token -p LFGPzKs8SNNR9eCKsQ5f gitlab.telekom.si
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage build"
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
