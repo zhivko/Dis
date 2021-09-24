@@ -52,9 +52,7 @@ build:
 
 test:
 #  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
-  image:
-    repository: gitlab.telekom.si/erenderwebui/dis:latest
-    tag: latest
+  image: erenderwebui/dis:latest
 
   services:
   stage: test
