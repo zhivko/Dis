@@ -29,6 +29,7 @@ build:
   stage: build
   before_script:
     - docker login -u gitlab-ci-token -p LFGPzKs8SNNR9eCKsQ5f gitlab.telekom.si
+    - ls --all /usr/local/bin
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage build"
     - echo "MAVEN_OPTS:" $MAVEN_OPTS
