@@ -188,7 +188,6 @@ public class RestTest extends JerseyTest {
 		
 		Response response = client.target(baseUri.toString() + "documents/query").queryParam("dql", "select * from dm_document where folder('/Temp')").request().get();
 		String json = response.readEntity(String.class);
-		System.out.println(json);
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {
 			QueryDocumentsResponse queryDocsResp = objectMapper.readValue(json.getBytes(), QueryDocumentsResponse.class);
@@ -260,9 +259,8 @@ public class RestTest extends JerseyTest {
 			  "]," +
 			  "\"templateObjectRObjectId\":\"09062016111100009\"" +
 				"}";
-		System.out.println(jsonNewDocument);
 		
-		response = client.target(baseUri.toString() + "/documents/create")
+		response = client.target(baseUri.toString() + "documents/create")
 				.request(MediaType.APPLICATION_JSON)
 				.header("X-Transaction-Id", X_Transaction_Id).
 				post(Entity.json(jsonNewDocument));
@@ -280,7 +278,7 @@ public class RestTest extends JerseyTest {
 
 			// *************** test destroy document ******************
 //@formatter:off
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/destroy")
 					.request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id)
 					.post(Entity.text(""));
@@ -344,11 +342,9 @@ public class RestTest extends JerseyTest {
 			  "}" +
 				"}";
 
-		System.out.println(jsonLoad);
-		
 		Entity<String> jsonImport = Entity.json(jsonLoad);
 		
-		response = client.target(baseUri.toString() + "/documents/import")
+		response = client.target(baseUri.toString() + "documents/import")
 				.request(MediaType.APPLICATION_JSON)
 				.header("X-Transaction-Id", X_Transaction_Id).
 				post(jsonImport);
@@ -365,7 +361,7 @@ public class RestTest extends JerseyTest {
 			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
 
 			// *************** test read content of document ******************
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/content").request().get();
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/content").request().get();
 			assertEquals("Should return status 200", 200, response.getStatus());
 
 			String base64EncodedString = response.readEntity(String.class);
@@ -376,7 +372,7 @@ public class RestTest extends JerseyTest {
 
 			// *************** test destroy document ******************
 //@formatter:off
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/destroy")
 					.request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id)
 					.post(Entity.text(""));
@@ -439,11 +435,10 @@ public class RestTest extends JerseyTest {
 			  "}" +
 				"}";
 
-		System.out.println(jsonLoad);
-		
+	
 		Entity<String> jsonImport = Entity.json(jsonLoad);
 		
-		response = client.target(baseUri.toString() + "/documents/import")
+		response = client.target(baseUri.toString() + "documents/import")
 				.request(MediaType.APPLICATION_JSON)
 				.header("X-Transaction-Id", X_Transaction_Id).
 				post(jsonImport);
@@ -460,7 +455,7 @@ public class RestTest extends JerseyTest {
 			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
 
 			// *************** test read content of document ******************
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/content").request().get();
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/content").request().get();
 			assertEquals("Should return status 200", 200, response.getStatus());
 
 			String base64EncodedString = response.readEntity(String.class);
@@ -470,7 +465,7 @@ public class RestTest extends JerseyTest {
 			assertEquals("Content should be equal", originalContent, content);
 
 			// *************** test demote document ******************
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/demote").request(MediaType.APPLICATION_JSON)
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/demote").request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
 
 			// *************** test that document is in draft state ******************
@@ -490,7 +485,7 @@ public class RestTest extends JerseyTest {
 			assertEquals("State should be draft", "draft", doc.getState());
 
 			// *************** test promote document ******************
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/promote").request(MediaType.APPLICATION_JSON)
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/promote").request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
 
 			// *************** test that document is in effective state
@@ -512,7 +507,7 @@ public class RestTest extends JerseyTest {
 
 			// *************** test destroy document ******************
 //@formatter:off
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/destroy")
 					.request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id)
 					.post(Entity.text(""));
@@ -583,11 +578,10 @@ public class RestTest extends JerseyTest {
 						"}";
 
 
-		System.out.println(jsonLoad);
 		
 		Entity<String> jsonImport = Entity.json(jsonLoad);
 		
-		response = client.target(baseUri.toString() + "/documents/import")
+		response = client.target(baseUri.toString() + "documents/import")
 				.request(MediaType.APPLICATION_JSON)
 				.header("X-Transaction-Id", X_Transaction_Id).
 				post(jsonImport);
@@ -607,7 +601,7 @@ public class RestTest extends JerseyTest {
 			assertNotNull("Should return r_object_id for document", doc.getrObjectId());
 
 			// *************** test read content of document ******************
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/content").request().get();
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/content").request().get();
 			assertEquals("Should return status 200", 200, response.getStatus());
 
 			String base64EncodedString = response.readEntity(String.class);
@@ -646,7 +640,7 @@ public class RestTest extends JerseyTest {
 
 			Entity<UpdateDocumentRequest> jsonUpdate = Entity.json(updateDocReq);
 
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId()).request(MediaType.APPLICATION_JSON)
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId()).request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id).put(jsonUpdate);
 
 			// *************** test that document is in effective state
@@ -667,7 +661,7 @@ public class RestTest extends JerseyTest {
 			assertEquals("State should be effective", "effective", doc.getState());
 
 			// check there are two versions
-			response = client.target(baseUri.toString() + "/documents/query")
+			response = client.target(baseUri.toString() + "documents/query")
 					.queryParam("dql", "select * from mob_subscriber_document(all) where object_name ='" + barcode + "'").request().get();
 			json = response.readEntity(String.class);
 			objectMapper = new ObjectMapper();
@@ -678,7 +672,7 @@ public class RestTest extends JerseyTest {
 			doc = documentsResponse.getDocuments().get(1);
 
 			// *************** test promote document ******************
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/promote").request(MediaType.APPLICATION_JSON)
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/promote").request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id).post(Entity.json(""));
 
 			json = response.readEntity(String.class);
@@ -689,7 +683,7 @@ public class RestTest extends JerseyTest {
 
 			// *************** test destroy document ******************
 //@formatter:off
-			response = client.target(baseUri.toString() + "/documents/" + doc.getrObjectId() + "/destroy")
+			response = client.target(baseUri.toString() + "documents/" + doc.getrObjectId() + "/destroy")
 					.request(MediaType.APPLICATION_JSON)
 					.header("X-Transaction-Id", X_Transaction_Id)
 					.post(Entity.text(""));
@@ -697,7 +691,7 @@ public class RestTest extends JerseyTest {
 			assertEquals("Should return status 200", 200, response.getStatus());
 
 			// test that previous version is still available
-			response = client.target(baseUri.toString() + "/documents/query")
+			response = client.target(baseUri.toString() + "documents/query")
 					.queryParam("dql", "select * from mob_subscriber_document(all) where object_name ='" + barcode + "'").request().get();
 			json = response.readEntity(String.class);
 			objectMapper = new ObjectMapper();
@@ -772,14 +766,13 @@ public class RestTest extends JerseyTest {
 				.queryParam("wizard", "newdoc").request().get();
 		
 		String json = response.readEntity(String.class);
-		System.out.println(json);
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {
 			ProfileAttributesResponse profAttResponse = objectMapper.readValue(json.getBytes(), ProfileAttributesResponse.class);
 			for (ProfileAttribute pa : profAttResponse.getAttributes()) {
-				System.out.println(pa.toString());
+				//System.out.println(pa.toString());
 			}
-			
+			System.out.println("num atts: " + profAttResponse);
 			
 		} catch (JsonParseException e) {
 			// TODO Auto-generated catch block
