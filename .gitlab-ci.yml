@@ -51,7 +51,6 @@ build:
 
 
 test:
-#  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3-openjdk-8-slim
   image: erenderwebui/dis:latest
 
   services:
