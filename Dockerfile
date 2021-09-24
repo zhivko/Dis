@@ -10,4 +10,5 @@ RUN apk add --no-cache curl tar bash && \
   rm /tmp/maven.tar.gz
 
 
-EXPOSE 389 8080
+EXPOSE 389
+
