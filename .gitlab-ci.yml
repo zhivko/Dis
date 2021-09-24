@@ -24,8 +24,8 @@ cache:
     - .m2/repository/
     - target/
 
-#before_script:
-#  - docker info
+before_script:
+  - docker login -u gitlab-ci-token -p $DOCKER_ACCESS gitlab.telekom.si
 
 build:
   image: erenderwebui/dis:latest
