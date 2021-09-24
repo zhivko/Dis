@@ -69,4 +69,7 @@ public interface ExplorerServiceAsync {
 	void decryptZip(String loginName, String password, String r_object_id, String rObjectIdOfCertWithPK, AsyncCallback<List<String>> callback);
 	
 	void collaboraUrl(String format, String action, AsyncCallback<String> callback);
+
+	void erenderTemplateFields(Integer typeId, AsyncCallback<List<String>> callback);
+	
 }

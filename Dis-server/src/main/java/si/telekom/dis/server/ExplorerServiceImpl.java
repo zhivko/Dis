@@ -86,6 +86,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.ws.Holder;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -149,8 +150,11 @@ import com.documentum.operations.IDfOperationError;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.itextpdf.text.pdf.PdfReader;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSet;
-import com.rsa.cryptoj.o.nl;
 
+import si.telekom.dis.server.jaxwsClient.eRender.ERender;
+import si.telekom.dis.server.jaxwsClient.eRender.ERenderImplService;
+import si.telekom.dis.server.jaxwsClient.eRender.HashMapWrapper;
+import si.telekom.dis.server.jaxwsClient.eRender.KeyValue;
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGenerator;
 import si.telekom.dis.server.jaxwsClient.pdfGenerator.PdfGeneratorImplService;
 import si.telekom.dis.server.reports.IIncludeInReport;
@@ -1005,7 +1009,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				 * for nesting lookup of user that is part of groups within groups ---
 				 */
 
-				boolean isMember=false;
+				boolean isMember = false;
 				if (AdminServiceImpl.allUsers.containsValue(forUserOrGroup)) {
 					isMember = isPartOf(userGroupNames, forUserOrGroup);
 				}
@@ -4654,7 +4658,7 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				tempFile.delete();
 			}
 		}
-		
+
 		al.sort(new Comparator<String>() {
 			@Override
 			public int compare(String o1, String o2) {
@@ -5497,6 +5501,27 @@ public class ExplorerServiceImpl extends RemoteServiceServlet implements Explore
 				adminSession.getSessionManager().release(adminSession);
 		}
 
+		return ret;
+	}
+
+	@Override
+	public List<String> erenderTemplateFields(Integer typeId) throws ServerException {
+		QName qname = new QName("http://erender.telekom.si/", "ERenderImplService");
+		ArrayList<String> ret = new ArrayList<String>();
+		URL serviceUrl;
+		try {
+			serviceUrl = new URL(AdminServiceImpl.ERENDER_WSDL_ENDPOINT);
+			Logger.getLogger(this.getClass()).info("ERender webservice url endpoint: " + serviceUrl);
+			ERenderImplService erenderImplService = new ERenderImplService(serviceUrl, qname);
+			ERender client = erenderImplService.getERenderImplPort();
+			List<KeyValue> templFields = client.getTemplateFields(typeId.intValue());
+			for (KeyValue keyValue : templFields) {
+				ret.add(keyValue.getKey());
+			}  
+		} catch (Exception e) {
+			Logger.getLogger(this.getClass()).error(e);
+		}
+		
 		return ret;
 	}
 

@@ -13,7 +13,7 @@
 	</properties>
 
 	<repositories>
-	
+
 		<repository>
 			<id>telekom maven</id>
 			<url>https://bpl-trmmaven.ts.telekom.si/artifactory/ext-release-local</url>
@@ -34,7 +34,8 @@
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
-		</repository>	</repositories>
+		</repository>
+	</repositories>
 
 	<dependencyManagement>
 		<dependencies>
