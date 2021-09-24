@@ -11,7 +11,7 @@ variables:
   OC_URL_DEV: https://api.okd-test.ts.telekom.si:6443
   OC_URL_TEST: https://api.ocp-test.ts.telekom.si:6443
   OC_URL_PROD: https://api.ocp-prod.ts.telekom.si:6443
-  MAVEN_HOME: /opt/maven
+  MAVEN_HOME: /opt/apache-maven-3.8.2
 
 include:
   - template: Security/Secret-Detection.gitlab-ci.yml
