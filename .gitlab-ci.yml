@@ -75,8 +75,8 @@ deploy:
   script:
     - echo "---- GITLAB CI/CD KLEMEN SCRIPT ------ stage deploy"
 # https://console-openshift-console.apps.okd-test.ts.telekom.si/k8s/ns/dis-dev/pods/dis-5454fc4484-9jjjm/terminal
-    - oc login $OC_URL_TEST --token=$OC_TOKEN_TEST
-    - oc status
+    - /opt/openshift/oc login $OC_URL_TEST --token=$OC_TOKEN_TEST
+    - /opt/openshift/oc status
   only:
     - master
   artifacts:
